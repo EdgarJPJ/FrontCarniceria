@@ -1,0 +1,105 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Inventario</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else if (porReponer() > 0) {
+        {{ lineas().length }} productos · {{ porReponer() }} por reponer
+      } @else {
+        {{ lineas().length }} productos en existencia
+      }
+    </p>
+  </div>
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+<div class="filtro">
+  <label class="a-voz" for="buscar">Buscar producto</label>
+  <input
+    id="buscar"
+    class="filtro__caja"
+    type="search"
+    placeholder="Buscar producto o corte…"
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+
+  @if (branches().length > 1) {
+    <label class="a-voz" for="sucursal">Sucursal</label>
+    <select
+      id="sucursal"
+      class="filtro__caja"
+      (change)="cambiarSucursal($any($event.target).value)"
+    >
+      <option value="">Todas las sucursales</option>
+      @for (b of branches(); track b.id) {
+        <option [value]="b.id">{{ b.name }}</option>
+      }
+    </select>
+  }
+</div>
+
+@if (!cargando() && lineas().length === 0) {
+  <div class="vacio">
+    <p class="vacio__titulo">Todavía no hay existencias</p>
+    <p class="vacio__nota">
+      El inventario se llena solo: al registrar una entrada de mercancía, el producto aparece
+      aquí con su cantidad. Las ventas y las mermas lo van bajando.
+    </p>
+  </div>
+} @else if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Existencias por producto y sucursal</caption>
+      <thead>
+        <tr>
+          <th scope="col">Producto</th>
+          <th scope="col">Sucursal</th>
+          <th scope="col" class="num">Existencia</th>
+          <th scope="col" class="num">Precio</th>
+          <th scope="col">Actualizado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (linea of visibles(); track linea.branchId + '-' + linea.productId) {
+          <tr>
+            <th scope="row" class="nombre">
+              {{ linea.productName }}
+              @if (linea.cutType) {
+                <span class="secundario">{{ linea.cutType }}</span>
+              }
+            </th>
+            <td class="dato">{{ linea.branchName }}</td>
+            <td class="dato num">
+              <!-- El estado va junto a la cifra: es lo que se viene a mirar. -->
+              <span
+                class="existencia"
+                [class.existencia--agotado]="agotado(linea)"
+                [class.existencia--bajo]="bajo(linea)"
+              >
+                {{ cantidad(linea) }}
+              </span>
+              @if (agotado(linea)) {
+                <span class="etiqueta etiqueta--tinta">agotado</span>
+              } @else if (bajo(linea)) {
+                <span class="etiqueta">por reponer</span>
+              }
+            </td>
+            <td class="dato num">{{ pesos(linea.salePrice) }}</td>
+            <td class="dato">{{ linea.updatedAt | date: 'dd/MM/yy HH:mm' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="sin-coincidencias" colspan="5">
+              Ningún producto coincide con «{{ busqueda() }}».
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

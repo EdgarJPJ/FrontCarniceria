@@ -65,10 +65,10 @@
             <th scope="row" class="nombre">
               {{ cliente.name }}
               @if (!cliente.active) {
-                <span class="marca-baja">baja</span>
+                <span class="etiqueta">baja</span>
               }
               @if (cliente.address) {
-                <span class="domicilio">{{ cliente.address }}</span>
+                <span class="secundario">{{ cliente.address }}</span>
               }
             </th>
             <td class="dato">{{ cliente.phone || '—' }}</td>

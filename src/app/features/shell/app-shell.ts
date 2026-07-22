@@ -32,7 +32,11 @@ export class AppShell {
 
   private readonly secciones: Seccion[] = [
     { ruta: '/mostrador', etiqueta: 'Mostrador' },
+    { ruta: '/inventario', etiqueta: 'Inventario' },
     { ruta: '/clientes', etiqueta: 'Clientes' },
+    { ruta: '/sucursales', etiqueta: 'Sucursales' },
+    { ruta: '/lotes', etiqueta: 'Lotes', soloGestion: true },
+    { ruta: '/personal', etiqueta: 'Personal', soloGestion: true },
   ];
 
   protected readonly perfil = toSignal(

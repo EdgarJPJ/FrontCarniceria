@@ -1,0 +1,204 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Personal</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else {
+        {{ activos() }} de {{ lista().length }} con acceso
+      }
+    </p>
+  </div>
+
+  <button class="accion" type="button" (click)="abrirAlta()">Dar de alta</button>
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+@if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Personal de la carnicería</caption>
+      <thead>
+        <tr>
+          <th scope="col">Persona</th>
+          <th scope="col">Clave</th>
+          <th scope="col">Rol</th>
+          <th scope="col">Sucursal</th>
+          <th scope="col"><span class="a-voz">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (empleado of lista(); track empleado.id) {
+          <tr [class.baja]="!empleado.active">
+            <th scope="row" class="nombre">
+              {{ empleado.name }}
+              @if (!empleado.active) {
+                <span class="etiqueta">sin acceso</span>
+              }
+              @if (empleado.phone) {
+                <span class="secundario">{{ empleado.phone }}</span>
+              }
+            </th>
+            <td class="dato clave">{{ empleado.username }}</td>
+            <td class="dato">
+              <span class="etiqueta" [class.etiqueta--tinta]="empleado.roleName !== 'vendedor'">
+                {{ empleado.roleName }}
+              </span>
+            </td>
+            <td class="dato">{{ empleado.branchName }}</td>
+            <td class="acciones">
+              <button type="button" class="enlace" (click)="abrirEdicion(empleado)">Editar</button>
+              <button type="button" class="enlace" (click)="abrirReseteo(empleado)">
+                Contraseña
+              </button>
+              @if (!esUnoMismo(empleado)) {
+                <button type="button" class="enlace" (click)="alternarEstado(empleado)">
+                  {{ empleado.active ? 'Quitar acceso' : 'Devolver acceso' }}
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- Alta y edición -->
+@if (editando(); as enCurso) {
+  <div class="panel">
+    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="panel__titulo">
+        {{ enCurso === 'nuevo' ? 'Dar de alta' : 'Editar persona' }}
+      </h2>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="name">Nombre</label>
+        <input id="name" class="campo__caja" formControlName="name" type="text" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <p class="campo__alerta">Escribe el nombre.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="username">Clave de usuario</label>
+        <input
+          id="username"
+          class="campo__caja campo__caja--clave"
+          formControlName="username"
+          type="text"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        @if (enCurso !== 'nuevo') {
+          <p class="campo__pista">La clave no se cambia: identifica a la persona en el sistema.</p>
+        } @else if (form.controls.username.touched && form.controls.username.invalid) {
+          <p class="campo__alerta">Entre 3 y 50 caracteres.</p>
+        } @else {
+          <p class="campo__pista">Con esta clave entrará cada día. Corta y fácil de teclear.</p>
+        }
+      </div>
+
+      @if (enCurso === 'nuevo') {
+        <div class="campo">
+          <div class="campo__fila">
+            <label class="campo__etiqueta" for="password">Contraseña</label>
+            <button class="campo__ojo" type="button" (click)="alternarVer()">
+              {{ verContrasena() ? 'Ocultar' : 'Mostrar' }}
+            </button>
+          </div>
+          <input
+            id="password"
+            class="campo__caja"
+            formControlName="password"
+            [type]="verContrasena() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <p class="campo__alerta">Al menos 8 caracteres.</p>
+          } @else {
+            <p class="campo__pista">Se la entregas en persona; después puede cambiarla.</p>
+          }
+        </div>
+      }
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="phone">Teléfono</label>
+        <input id="phone" class="campo__caja" formControlName="phone" type="tel" />
+      </div>
+
+      <div class="campo campo--par">
+        <div>
+          <label class="campo__etiqueta" for="idRole">Rol</label>
+          <select id="idRole" class="campo__caja" formControlName="idRole">
+            @for (rol of roles(); track rol.id) {
+              <option [value]="rol.id">{{ rol.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="campo__etiqueta" for="idBranch">Sucursal</label>
+          <select id="idBranch" class="campo__caja" formControlName="idBranch">
+            @for (sucursal of branches(); track sucursal.id) {
+              <option [value]="sucursal.id">{{ sucursal.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <p class="campo__pista nota-rol">
+        El vendedor vende, cobra, registra merma y recibe mercancía. El administrador además
+        maneja precios, personal, clientes y reportes.
+      </p>
+
+      <div class="panel__botones">
+        <button class="entrar" type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando' : 'Guardar' }}
+        </button>
+        <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}
+
+<!-- Reemplazo de contraseña -->
+@if (reseteando(); as quien) {
+  <div class="panel">
+    <form class="panel__forma" [formGroup]="formPassword" (ngSubmit)="guardarPassword()" novalidate>
+      <h2 class="panel__titulo">Contraseña de {{ quien.name }}</h2>
+      <p class="campo__pista">
+        Se reemplaza por una nueva. La anterior deja de servir en cuanto guardes.
+      </p>
+
+      <div class="campo">
+        <div class="campo__fila">
+          <label class="campo__etiqueta" for="nueva">Contraseña nueva</label>
+          <button class="campo__ojo" type="button" (click)="alternarVer()">
+            {{ verContrasena() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+        <input
+          id="nueva"
+          class="campo__caja"
+          formControlName="password"
+          [type]="verContrasena() ? 'text' : 'password'"
+          autocomplete="new-password"
+        />
+        @if (formPassword.controls.password.touched && formPassword.controls.password.invalid) {
+          <p class="campo__alerta">Al menos 8 caracteres.</p>
+        }
+      </div>
+
+      <div class="panel__botones">
+        <button class="entrar" type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando' : 'Cambiar contraseña' }}
+        </button>
+        <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}

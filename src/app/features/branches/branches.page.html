@@ -1,0 +1,111 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Sucursales</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else {
+        {{ activas() }} de {{ lista().length }} abiertas
+      }
+    </p>
+  </div>
+
+  @if (auth.esGestion()) {
+    <button class="accion" type="button" (click)="abrirAlta()">Nueva sucursal</button>
+  }
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+@if (!cargando() && lista().length === 0) {
+  <div class="vacio">
+    <p class="vacio__titulo">No hay sucursales</p>
+    <p class="vacio__nota">
+      Cada sucursal lleva su propio inventario y sus propias ventas.
+    </p>
+  </div>
+} @else if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Sucursales de la carnicería</caption>
+      <thead>
+        <tr>
+          <th scope="col">Sucursal</th>
+          <th scope="col">Teléfono</th>
+          <th scope="col">Estado</th>
+          @if (auth.esGestion()) {
+            <th scope="col"><span class="a-voz">Acciones</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (sucursal of lista(); track sucursal.id) {
+          <tr [class.baja]="!sucursal.active">
+            <th scope="row" class="nombre">
+              {{ sucursal.name }}
+              <span class="secundario">{{ sucursal.address }}</span>
+            </th>
+            <td class="dato">{{ sucursal.phone || '—' }}</td>
+            <td class="dato">
+              @if (sucursal.active) {
+                <span class="etiqueta">abierta</span>
+              } @else {
+                <span class="etiqueta etiqueta--tinta">cerrada</span>
+              }
+            </td>
+            @if (auth.esGestion()) {
+              <td class="acciones">
+                <button type="button" class="enlace" (click)="abrirEdicion(sucursal)">Editar</button>
+                <button type="button" class="enlace" (click)="alternarEstado(sucursal)">
+                  {{ sucursal.active ? 'Cerrar' : 'Reabrir' }}
+                </button>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (editando(); as enCurso) {
+  <div class="panel">
+    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="panel__titulo">
+        {{ enCurso === 'nueva' ? 'Nueva sucursal' : 'Editar sucursal' }}
+      </h2>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="name">Nombre</label>
+        <input id="name" class="campo__caja" formControlName="name" type="text" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <p class="campo__alerta">Escribe el nombre de la sucursal.</p>
+        } @else {
+          <p class="campo__pista">Si solo tienes un local, "Matriz" funciona.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="address">Dirección</label>
+        <input id="address" class="campo__caja" formControlName="address" type="text" />
+        @if (form.controls.address.touched && form.controls.address.invalid) {
+          <p class="campo__alerta">Escribe la dirección.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="phone">Teléfono</label>
+        <input id="phone" class="campo__caja" formControlName="phone" type="tel" />
+      </div>
+
+      <div class="panel__botones">
+        <button class="entrar" type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando' : 'Guardar' }}
+        </button>
+        <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}

@@ -25,14 +25,40 @@ export const routes: Routes = [
       {
         path: 'mostrador',
         title: 'Mostrador · Carnicería',
+        loadComponent: () => import('./features/shell/mostrador.page').then((m) => m.MostradorPage),
+      },
+      {
+        path: 'inventario',
+        title: 'Inventario · Carnicería',
         loadComponent: () =>
-          import('./features/shell/mostrador.page').then((m) => m.MostradorPage),
+          import('./features/inventory/inventory.page').then((m) => m.InventoryPage),
       },
       {
         path: 'clientes',
         title: 'Clientes · Carnicería',
+        loadComponent: () => import('./features/clients/clients.page').then((m) => m.ClientsPage),
+      },
+      {
+        path: 'sucursales',
+        title: 'Sucursales · Carnicería',
         loadComponent: () =>
-          import('./features/clients/clients.page').then((m) => m.ClientsPage),
+          import('./features/branches/branches.page').then((m) => m.BranchesPage),
+      },
+      /*
+       * Personal y lotes son de gestión. El guard evita entrar por URL escrita
+       * a mano; el backend responde 403 igual, esto solo ahorra el viaje.
+       */
+      {
+        path: 'personal',
+        title: 'Personal · Carnicería',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/employees/employees.page').then((m) => m.EmployeesPage),
+      },
+      {
+        path: 'lotes',
+        title: 'Lotes · Carnicería',
+        loadComponent: () => import('./features/batches/batches.page').then((m) => m.BatchesPage),
       },
       { path: '', pathMatch: 'full', redirectTo: 'mostrador' },
     ],

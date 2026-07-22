@@ -1,0 +1,18 @@
+@use 'acceso' as *;
+@use 'tabla' as *;
+
+:host {
+  display: block;
+  padding: clamp(24px, 3.5vw, 44px);
+}
+
+/* La clave de usuario se lee como dato, igual que en el inicio de sesión. */
+.clave {
+  letter-spacing: 0.1em;
+}
+
+.nota-rol {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--junta);
+}
