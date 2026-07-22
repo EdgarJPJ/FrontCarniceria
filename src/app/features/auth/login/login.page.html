@@ -1,0 +1,75 @@
+<app-acceso-layout [sellando]="enviando()">
+  <form class="turno" [formGroup]="form" (ngSubmit)="entrar()" novalidate>
+    <header class="turno__encabezado">
+      <h2 class="turno__titulo">Inicia tu turno</h2>
+    </header>
+
+    @if (errorServidor(); as error) {
+      <p class="aviso" role="alert">{{ error }}</p>
+    }
+
+    <div class="campo">
+      <label class="campo__etiqueta" for="username">Clave de empleado</label>
+      <input
+        id="username"
+        class="campo__caja campo__caja--clave"
+        formControlName="username"
+        type="text"
+        inputmode="text"
+        autocomplete="username"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        enterkeyhint="next"
+        aria-describedby="username-pista"
+        [attr.aria-invalid]="username.touched && username.invalid ? 'true' : null"
+        autofocus
+      />
+      @if (username.touched && username.hasError('required')) {
+        <p class="campo__alerta">Escribe tu clave para entrar.</p>
+      } @else {
+        <p class="campo__pista" id="username-pista">
+          Es la clave corta que te dieron, no tu nombre completo.
+        </p>
+      }
+    </div>
+
+    <div class="campo">
+      <div class="campo__fila">
+        <label class="campo__etiqueta" for="password">Contraseña</label>
+        <button class="campo__ojo" type="button" (click)="alternarContrasena()">
+          {{ verContrasena() ? 'Ocultar' : 'Mostrar' }}
+        </button>
+      </div>
+      <input
+        id="password"
+        class="campo__caja"
+        formControlName="password"
+        [type]="verContrasena() ? 'text' : 'password'"
+        autocomplete="current-password"
+        enterkeyhint="go"
+        [attr.aria-invalid]="password.touched && password.invalid ? 'true' : null"
+      />
+      @if (password.touched && password.hasError('required')) {
+        <p class="campo__alerta">Escribe tu contraseña para entrar.</p>
+      }
+    </div>
+
+    <button class="entrar" type="submit" [disabled]="enviando()">
+      <span class="entrar__texto">{{ enviando() ? 'Entrando' : 'Entrar' }}</span>
+    </button>
+
+    <p class="turno__nota" aria-live="polite">
+      @if (enviando()) {
+        Comprobando tu clave…
+      } @else {
+        ¿Olvidaste tu contraseña? Pídele al administrador que te la cambie.
+      }
+    </p>
+
+    <p class="turno__nota">
+      ¿Vas a dar de alta tu carnicería?
+      <a class="turno__enlace" routerLink="/registrar">Créala aquí</a>.
+    </p>
+  </form>
+</app-acceso-layout>

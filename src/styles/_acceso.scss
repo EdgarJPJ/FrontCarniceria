@@ -1,0 +1,198 @@
+/* =========================================================================
+   Controles de las pantallas de acceso (login y alta).
+   Se comparten vía `stylePreprocessorOptions.includePaths`.
+   ========================================================================= */
+
+.turno {
+  width: 100%;
+  max-width: 396px;
+}
+
+.turno__titulo {
+  font-family: var(--rotulo);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--acero);
+}
+
+.turno__entrada {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--acero-medio);
+}
+
+.turno__encabezado {
+  margin-bottom: 30px;
+}
+
+.turno__nota {
+  margin-top: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--acero-tenue);
+}
+
+.turno__enlace {
+  color: var(--sangre);
+  font-weight: 500;
+  text-underline-offset: 3px;
+}
+
+/* --- Campos ------------------------------------------------------ */
+.campo + .campo {
+  margin-top: 20px;
+}
+
+.campo__fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.campo__etiqueta {
+  display: block;
+  font-family: var(--dato);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+.campo__caja {
+  width: 100%;
+  height: var(--toque);
+  margin-top: 8px;
+  padding: 0 14px;
+  font-family: var(--texto);
+  font-size: 16px;
+  color: var(--acero);
+  background: var(--azulejo);
+  border: 1px solid var(--junta);
+  border-bottom: 2px solid var(--acero-tenue);
+  border-radius: var(--canto);
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+/* La clave es un código corto: se lee como dato, no como prosa. */
+.campo__caja--clave {
+  font-family: var(--dato);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+}
+
+.campo__caja::placeholder {
+  color: var(--acero-tenue);
+}
+
+.campo__caja:hover:not(:disabled) {
+  background: var(--azulejo-hondo);
+}
+
+.campo__caja:focus {
+  background: var(--hueso);
+  border-color: var(--sangre);
+  outline: 2px solid var(--sangre);
+  outline-offset: 2px;
+}
+
+.campo__caja[aria-invalid='true'] {
+  border-bottom-color: var(--sangre);
+}
+
+.campo__caja:disabled {
+  color: var(--acero-tenue);
+  cursor: not-allowed;
+}
+
+.campo__pista,
+.campo__alerta {
+  margin-top: 7px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.campo__pista {
+  color: var(--acero-tenue);
+}
+
+.campo__alerta {
+  color: var(--sangre);
+}
+
+.campo__ojo {
+  padding: 2px 4px;
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--junta);
+  cursor: pointer;
+}
+
+.campo__ojo:hover {
+  color: var(--sangre);
+  border-bottom-color: var(--sangre);
+}
+
+/* --- Aviso del servidor ------------------------------------------ */
+.aviso {
+  margin-bottom: 22px;
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--sangre-honda);
+  background: var(--sangre-lavada);
+  border-left: 3px solid var(--sangre);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+/* --- El botón: se presiona como un sello -------------------------- */
+.entrar {
+  position: relative;
+  width: 100%;
+  height: var(--toque);
+  margin-top: 28px;
+  font-family: var(--rotulo);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hueso);
+  background: var(--sangre);
+  border: 0;
+  border-radius: var(--canto);
+  box-shadow: 0 3px 0 var(--sangre-honda);
+  cursor: pointer;
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease,
+    background-color 140ms ease;
+}
+
+.entrar:hover:not(:disabled) {
+  background: #b81430;
+}
+
+.entrar:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--sangre-honda);
+}
+
+.entrar:disabled {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--sangre-honda);
+  background: var(--sangre-honda);
+  cursor: progress;
+}

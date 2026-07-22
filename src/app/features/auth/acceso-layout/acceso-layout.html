@@ -1,0 +1,43 @@
+<div class="mostrador">
+  <!-- La pared: azulejo, junta y el sello de la casa. -->
+  <section class="pared" [class.pared--sellando]="sellando()">
+    <div class="pared__marca">
+      <svg class="sello" viewBox="0 0 160 160" role="img" aria-label="Sello de la carnicería">
+        <defs>
+          <filter id="tinta">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" result="grano" />
+            <feDisplacementMap in="SourceGraphic" in2="grano" scale="1.6" />
+          </filter>
+          <path
+            id="aro-texto"
+            fill="none"
+            d="M 80,80 m -57,0 a 57,57 0 1,1 114,0 a 57,57 0 1,1 -114,0"
+          />
+        </defs>
+
+        <g filter="url(#tinta)">
+          <circle class="sello__aro" cx="80" cy="80" r="70" />
+          <circle class="sello__aro sello__aro--fino" cx="80" cy="80" r="45" />
+          <text class="sello__vuelta">
+            <textPath href="#aro-texto" startOffset="0">
+              CARNICERÍA · CONTROL DE MOSTRADOR · CARNICERÍA · CONTROL DE MOSTRADOR ·
+            </textPath>
+          </text>
+          <text class="sello__centro" x="80" y="74">RES</text>
+          <text class="sello__centro" x="80" y="97">CERDO</text>
+        </g>
+      </svg>
+
+      <p class="pared__gremio">Sistema interno</p>
+      <h1 class="pared__nombre">Carnicería</h1>
+      <p class="pared__oficio">Mostrador, inventario y fiado, en un solo lugar y por sucursal.</p>
+    </div>
+
+    <p class="pared__pie">Uso exclusivo de personal autorizado.</p>
+  </section>
+
+  <!-- La tabla: donde se trabaja. -->
+  <section class="tabla">
+    <ng-content />
+  </section>
+</div>

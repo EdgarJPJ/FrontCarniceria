@@ -1,0 +1,196 @@
+<app-acceso-layout [sellando]="enviando()">
+  <form class="turno turno--alta" [formGroup]="form" (ngSubmit)="crear()" novalidate>
+    <header class="turno__encabezado">
+      <h2 class="turno__titulo">Da de alta tu carnicería</h2>
+      <p class="turno__entrada">
+        Se crea la carnicería, su primera sucursal y tu cuenta de administrador.
+        Después podrás agregar más sucursales y empleados.
+      </p>
+    </header>
+
+    @if (errorServidor(); as error) {
+      <p class="aviso" role="alert">{{ error }}</p>
+    }
+
+    <!-- 1 · La empresa. Sin ella no hay nada de qué colgar lo demás. -->
+    <fieldset class="bloque" formGroupName="empresa">
+      <legend class="bloque__titulo">
+        <span class="bloque__orden">1</span>
+        Tu carnicería
+      </legend>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="empresa-nombre">Nombre</label>
+        <input
+          id="empresa-nombre"
+          class="campo__caja"
+          formControlName="nombre"
+          type="text"
+          autocomplete="organization"
+          [attr.aria-invalid]="
+            campo('empresa', 'nombre').touched && campo('empresa', 'nombre').invalid ? 'true' : null
+          "
+          autofocus
+        />
+        @if (campo('empresa', 'nombre').touched && campo('empresa', 'nombre').invalid) {
+          <p class="campo__alerta">Escribe el nombre de la carnicería.</p>
+        }
+      </div>
+
+      <div class="campo campo--par">
+        <div>
+          <label class="campo__etiqueta" for="empresa-rfc">RFC <span class="campo__opcional">opcional</span></label>
+          <input id="empresa-rfc" class="campo__caja" formControlName="rfc" type="text" autocapitalize="characters" />
+        </div>
+        <div>
+          <label class="campo__etiqueta" for="empresa-telefono">Teléfono <span class="campo__opcional">opcional</span></label>
+          <input id="empresa-telefono" class="campo__caja" formControlName="telefono" type="tel" autocomplete="tel" />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- 2 · La sucursal. El inventario y las ventas viven por sucursal. -->
+    <fieldset class="bloque" formGroupName="sucursal">
+      <legend class="bloque__titulo">
+        <span class="bloque__orden">2</span>
+        Tu primera sucursal
+      </legend>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="sucursal-nombre">Nombre</label>
+        <input
+          id="sucursal-nombre"
+          class="campo__caja"
+          formControlName="nombre"
+          type="text"
+          [attr.aria-invalid]="
+            campo('sucursal', 'nombre').touched && campo('sucursal', 'nombre').invalid ? 'true' : null
+          "
+        />
+        @if (campo('sucursal', 'nombre').touched && campo('sucursal', 'nombre').invalid) {
+          <p class="campo__alerta">Escribe el nombre de la sucursal.</p>
+        } @else {
+          <p class="campo__pista">Si solo tienes un local, "Matriz" funciona.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="sucursal-direccion">Dirección</label>
+        <input
+          id="sucursal-direccion"
+          class="campo__caja"
+          formControlName="direccion"
+          type="text"
+          autocomplete="street-address"
+          [attr.aria-invalid]="
+            campo('sucursal', 'direccion').touched && campo('sucursal', 'direccion').invalid
+              ? 'true'
+              : null
+          "
+        />
+        @if (campo('sucursal', 'direccion').touched && campo('sucursal', 'direccion').invalid) {
+          <p class="campo__alerta">Escribe la dirección de la sucursal.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="sucursal-telefono">Teléfono <span class="campo__opcional">opcional</span></label>
+        <input id="sucursal-telefono" class="campo__caja" formControlName="telefono" type="tel" />
+      </div>
+    </fieldset>
+
+    <!-- 3 · La cuenta. Queda como administrador de todo lo anterior. -->
+    <fieldset class="bloque" formGroupName="cuenta">
+      <legend class="bloque__titulo">
+        <span class="bloque__orden">3</span>
+        Tu cuenta
+      </legend>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="cuenta-nombre">Tu nombre</label>
+        <input
+          id="cuenta-nombre"
+          class="campo__caja"
+          formControlName="nombre"
+          type="text"
+          autocomplete="name"
+          [attr.aria-invalid]="
+            campo('cuenta', 'nombre').touched && campo('cuenta', 'nombre').invalid ? 'true' : null
+          "
+        />
+        @if (campo('cuenta', 'nombre').touched && campo('cuenta', 'nombre').invalid) {
+          <p class="campo__alerta">Escribe tu nombre.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="cuenta-usuario">Clave de usuario</label>
+        <input
+          id="cuenta-usuario"
+          class="campo__caja campo__caja--clave"
+          formControlName="usuario"
+          type="text"
+          autocomplete="username"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          aria-describedby="usuario-pista"
+          [attr.aria-invalid]="
+            campo('cuenta', 'usuario').touched && campo('cuenta', 'usuario').invalid ? 'true' : null
+          "
+        />
+        @if (campo('cuenta', 'usuario').touched && campo('cuenta', 'usuario').invalid) {
+          <p class="campo__alerta">La clave debe tener entre 3 y 50 caracteres.</p>
+        } @else {
+          <p class="campo__pista" id="usuario-pista">
+            Con esta clave entrarás cada día. Corta y fácil de teclear.
+          </p>
+        }
+      </div>
+
+      <div class="campo">
+        <div class="campo__fila">
+          <label class="campo__etiqueta" for="cuenta-password">Contraseña</label>
+          <button class="campo__ojo" type="button" (click)="alternarContrasena()">
+            {{ verContrasena() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+        <input
+          id="cuenta-password"
+          class="campo__caja"
+          formControlName="password"
+          [type]="verContrasena() ? 'text' : 'password'"
+          autocomplete="new-password"
+          aria-describedby="password-pista"
+          [attr.aria-invalid]="
+            campo('cuenta', 'password').touched && campo('cuenta', 'password').invalid
+              ? 'true'
+              : null
+          "
+        />
+        @if (campo('cuenta', 'password').touched && campo('cuenta', 'password').invalid) {
+          <p class="campo__alerta">La contraseña necesita al menos 8 caracteres.</p>
+        } @else {
+          <p class="campo__pista" id="password-pista">Al menos 8 caracteres.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="cuenta-telefono">Tu teléfono <span class="campo__opcional">opcional</span></label>
+        <input id="cuenta-telefono" class="campo__caja" formControlName="telefono" type="tel" autocomplete="tel" />
+      </div>
+    </fieldset>
+
+    <button class="entrar" type="submit" [disabled]="enviando()">
+      <span>{{ enviando() ? 'Creando' : 'Crear carnicería' }}</span>
+    </button>
+
+    <p class="turno__nota" aria-live="polite">
+      @if (enviando()) {
+        Dando de alta tu carnicería…
+      } @else {
+        ¿Ya tienes cuenta? <a class="turno__enlace" routerLink="/entrar">Inicia tu turno</a>.
+      }
+    </p>
+  </form>
+</app-acceso-layout>

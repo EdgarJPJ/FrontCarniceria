@@ -1,0 +1,94 @@
+/* =========================================================================
+   Sistema Carnicería — base global
+   Dirección: "Mostrador". Pared de azulejo, acero frío, una sola tinta roja.
+   ========================================================================= */
+
+:root {
+  /* --- Color -------------------------------------------------------- */
+  --azulejo: #eef1f0; /* azulejo esmaltado, verde-gris frío */
+  --azulejo-hondo: #e4e9e7;
+  --junta: #d8dedc; /* linea de junta entre azulejos */
+  --hueso: #ffffff; /* superficie del mostrador */
+
+  --acero: #161c1e; /* texto principal */
+  --acero-medio: #5c6a6e; /* texto secundario */
+  --acero-tenue: #8b9899; /* texto terciario, placeholders */
+
+  --sangre: #a8102a; /* tinta única: accion, foco, error, sello */
+  --sangre-honda: #7e0c20;
+  --sangre-lavada: #fdf2f4;
+
+  /* --- Tipografía --------------------------------------------------- */
+  --rotulo: 'Archivo', system-ui, sans-serif; /* rotulación: solo titulares */
+  --texto: 'IBM Plex Sans', system-ui, sans-serif;
+  --dato: 'IBM Plex Mono', ui-monospace, monospace; /* etiquetas y claves */
+
+  /* --- Medidas ------------------------------------------------------ */
+  --canto: 2px; /* el acero y el azulejo no tienen esquinas suaves */
+  --azulejo-lado: 68px;
+  --toque: 52px; /* altura mínima de control: se usa con prisa */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--azulejo);
+  color: var(--acero);
+  font-family: var(--texto);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+/* El foco se ve siempre, y se ve en rojo: es la única tinta del sistema. */
+:focus-visible {
+  outline: 2px solid var(--sangre);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--sangre);
+  color: var(--hueso);
+}
+
+/* Solo para lectores de pantalla. */
+.a-voz {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

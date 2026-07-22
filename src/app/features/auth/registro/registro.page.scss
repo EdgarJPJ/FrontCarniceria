@@ -1,0 +1,66 @@
+@use 'acceso' as *;
+
+/* El alta es larga: se le da más ancho que al login y se respira arriba. */
+.turno--alta {
+  max-width: 460px;
+  padding: clamp(28px, 6vh, 64px) 0;
+}
+
+/* ===================================================================
+   Bloques numerados
+   El número no es adorno: marca una dependencia real. No hay sucursal
+   sin empresa, ni cuenta sin sucursal.
+   =================================================================== */
+.bloque {
+  margin: 0 0 30px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--junta);
+  padding-top: 22px;
+}
+
+.bloque__titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  margin-bottom: 16px;
+  font-family: var(--rotulo);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--acero);
+}
+
+.bloque__orden {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hueso);
+  background: var(--acero);
+  border-radius: 50%;
+}
+
+.campo--par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.campo__opcional {
+  margin-left: 6px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--acero-tenue);
+  text-transform: none;
+}
+
+@media (max-width: 520px) {
+  .campo--par {
+    grid-template-columns: 1fr;
+  }
+}
