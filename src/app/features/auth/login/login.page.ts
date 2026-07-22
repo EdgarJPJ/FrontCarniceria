@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  afterNextRender,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
@@ -24,9 +30,30 @@ export class LoginPage {
   protected readonly verContrasena = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
+    // Se precarga con la del último turno: en una terminal fija no cambia.
+    empresa: [this.auth.empresaRecordada(), Validators.required],
     username: ['', Validators.required],
     password: ['', Validators.required],
   });
+
+  protected readonly empresaConocida = this.auth.empresaRecordada() !== '';
+
+  constructor() {
+    /*
+     * El cursor arranca donde toca teclear: en la clave si el equipo ya sabe
+     * de qué carnicería es, en la carnicería si es su primer uso. Se hace por
+     * código porque el atributo `autofocus` solo actúa al parsear el HTML, y
+     * esta pantalla se pinta después, al resolverse la ruta.
+     */
+    afterNextRender(() => {
+      const id = this.empresaConocida ? 'username' : 'empresa';
+      document.getElementById(id)?.focus();
+    });
+  }
+
+  protected get empresa() {
+    return this.form.controls.empresa;
+  }
 
   protected get username() {
     return this.form.controls.username;

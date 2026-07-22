@@ -7,6 +7,7 @@ import { LoginRequest, LoginResponse, Perfil, RegistroRequest, Session } from '.
 import { isExpired, sessionFromJwt } from './jwt';
 
 const ALMACEN = 'carniceria.session';
+const ALMACEN_EMPRESA = 'carniceria.empresa';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -37,6 +38,16 @@ export class AuthService {
     return this.http.get<Perfil>(`${environment.apiUrl}/auth/perfil`);
   }
 
+  /**
+   * La carnicería del último turno en este equipo. Una terminal de mostrador
+   * es siempre de la misma carnicería, así que se teclea una vez y después
+   * entrar vuelve a ser solo clave y contraseña.
+   */
+  empresaRecordada(): string {
+    return localStorage.getItem(ALMACEN_EMPRESA) ?? '';
+  }
+
+  /** Cierra el turno pero deja la carnicería puesta: el equipo no cambia de dueño. */
   logout(): void {
     this._session.set(null);
     localStorage.removeItem(ALMACEN);
@@ -49,6 +60,8 @@ export class AuthService {
     }
     this._session.set(session);
     localStorage.setItem(ALMACEN, jwt);
+    // Se guarda el slug del token, no lo que se tecleó: es la forma canónica.
+    localStorage.setItem(ALMACEN_EMPRESA, session.companySlug);
   }
 }
 

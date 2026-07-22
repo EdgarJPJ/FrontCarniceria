@@ -1,7 +1,13 @@
 /** Contrato con `POST /api/auth/login` del backend Spring Boot. */
 
-/** Cuerpo que espera `EmployeeLoginRequest`. */
+/**
+ * Cuerpo que espera `EmployeeLoginRequest`. `empresa` acepta el slug
+ * ("el-buen-corte") o el nombre del negocio ("El Buen Corte"): la clave de
+ * usuario solo es única dentro de una empresa, así que sin este dato el
+ * backend no puede saber de qué empleado se trata.
+ */
 export interface LoginRequest {
+  empresa: string;
   username: string;
   password: string;
 }

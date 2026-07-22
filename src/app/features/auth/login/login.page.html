@@ -9,6 +9,29 @@
     }
 
     <div class="campo">
+      <label class="campo__etiqueta" for="empresa">Carnicería</label>
+      <input
+        id="empresa"
+        class="campo__caja"
+        formControlName="empresa"
+        type="text"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        enterkeyhint="next"
+        aria-describedby="empresa-pista"
+        [attr.aria-invalid]="empresa.touched && empresa.invalid ? 'true' : null"
+      />
+      @if (empresa.touched && empresa.hasError('required')) {
+        <p class="campo__alerta">Escribe a qué carnicería entras.</p>
+      } @else {
+        <p class="campo__pista" id="empresa-pista">
+          El nombre o el código que te dio tu administrador. Se queda guardado en este equipo.
+        </p>
+      }
+    </div>
+
+    <div class="campo">
       <label class="campo__etiqueta" for="username">Clave de empleado</label>
       <input
         id="username"
@@ -23,7 +46,6 @@
         enterkeyhint="next"
         aria-describedby="username-pista"
         [attr.aria-invalid]="username.touched && username.invalid ? 'true' : null"
-        autofocus
       />
       @if (username.touched && username.hasError('required')) {
         <p class="campo__alerta">Escribe tu clave para entrar.</p>

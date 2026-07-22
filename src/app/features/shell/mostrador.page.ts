@@ -34,7 +34,16 @@ import { AuthService } from '../../core/auth/auth.service';
           <dt>Rol</dt>
           <dd>{{ perfil()?.rol ?? rolDelToken() }}</dd>
         </div>
+        <div>
+          <dt>Código para entrar</dt>
+          <dd class="sala__codigo">{{ perfil()?.empresaSlug ?? auth.session()?.companySlug }}</dd>
+        </div>
       </dl>
+
+      <!-- Sin este dato, el resto del personal no puede iniciar sesión. -->
+      <p class="sala__apunte">
+        Pásale este código a tu personal: lo necesitan junto con su clave para entrar.
+      </p>
 
       <button class="sala__salir" type="button" (click)="salir()">Cerrar turno</button>
     </main>
@@ -83,6 +92,18 @@ import { AuthService } from '../../core/auth/auth.service';
       font-size: 15px;
       text-align: right;
       color: var(--acero);
+    }
+    .sala__codigo {
+      font-family: var(--dato);
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      color: var(--sangre);
+    }
+    .sala__apunte {
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--acero-tenue);
     }
     .sala__salir {
       height: var(--toque);
