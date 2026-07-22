@@ -1,0 +1,38 @@
+<div class="local">
+  <nav class="riel" aria-label="Secciones">
+    <div class="riel__marca">
+      <svg class="riel__sello" viewBox="0 0 160 160" role="img" aria-label="Carnicería">
+        <circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" stroke-width="7" />
+        <circle cx="80" cy="80" r="45" fill="none" stroke="currentColor" stroke-width="3" />
+        <text x="80" y="92" text-anchor="middle" class="riel__sigla">C</text>
+      </svg>
+      <p class="riel__negocio">{{ perfil()?.empresaNombre ?? 'Carnicería' }}</p>
+      <p class="riel__sucursal">{{ perfil()?.sucursalNombre ?? '' }}</p>
+    </div>
+
+    <ul class="riel__lista">
+      @for (seccion of visibles(); track seccion.ruta) {
+        <li>
+          <a
+            class="riel__paso"
+            [routerLink]="seccion.ruta"
+            routerLinkActive="riel__paso--aqui"
+            [routerLinkActiveOptions]="{ exact: false }"
+          >
+            {{ seccion.etiqueta }}
+          </a>
+        </li>
+      }
+    </ul>
+
+    <div class="riel__turno">
+      <p class="riel__quien">{{ perfil()?.nombre ?? auth.username() }}</p>
+      <p class="riel__rol">{{ perfil()?.rol ?? '' }}</p>
+      <button class="riel__salir" type="button" (click)="salir()">Cerrar turno</button>
+    </div>
+  </nav>
+
+  <main class="tabla-trabajo">
+    <router-outlet />
+  </main>
+</div>

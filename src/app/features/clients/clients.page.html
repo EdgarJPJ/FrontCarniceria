@@ -1,0 +1,156 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Clientes</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else {
+        {{ lista().length }} en la libreta · {{ pesos(fiadoTotal()) }} de crédito otorgado
+      }
+    </p>
+  </div>
+
+  @if (auth.esGestion()) {
+    <button class="accion" type="button" (click)="abrirAlta()">Nuevo cliente</button>
+  }
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+<div class="filtro">
+  <label class="a-voz" for="buscar">Buscar cliente</label>
+  <input
+    id="buscar"
+    class="filtro__caja"
+    type="search"
+    placeholder="Buscar por nombre…"
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+</div>
+
+@if (!cargando() && lista().length === 0) {
+  <!-- Vacío es invitación a actuar, no un lamento. -->
+  <div class="vacio">
+    <p class="vacio__titulo">Todavía no hay nadie en la libreta</p>
+    <p class="vacio__nota">
+      Aquí llevas a quién le fías, cuánto le prestas y a cuántos días.
+      @if (auth.esGestion()) {
+        Empieza por dar de alta a tu primer cliente.
+      } @else {
+        Pídele al administrador que dé de alta a los clientes.
+      }
+    </p>
+  </div>
+} @else if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Clientes con crédito</caption>
+      <thead>
+        <tr>
+          <th scope="col">Cliente</th>
+          <th scope="col">Teléfono</th>
+          <th scope="col" class="num">Límite</th>
+          <th scope="col" class="num">Días</th>
+          @if (auth.esGestion()) {
+            <th scope="col"><span class="a-voz">Acciones</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (cliente of visibles(); track cliente.id) {
+          <tr [class.baja]="!cliente.active">
+            <th scope="row" class="nombre">
+              {{ cliente.name }}
+              @if (!cliente.active) {
+                <span class="marca-baja">baja</span>
+              }
+              @if (cliente.address) {
+                <span class="domicilio">{{ cliente.address }}</span>
+              }
+            </th>
+            <td class="dato">{{ cliente.phone || '—' }}</td>
+            <td class="dato num">{{ pesos(cliente.creditLimit) }}</td>
+            <td class="dato num">{{ cliente.creditDays }}</td>
+            @if (auth.esGestion()) {
+              <td class="acciones">
+                <button type="button" class="enlace" (click)="abrirEdicion(cliente)">Editar</button>
+                <button type="button" class="enlace" (click)="alternarEstado(cliente)">
+                  {{ cliente.active ? 'Dar de baja' : 'Reactivar' }}
+                </button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td class="sin-coincidencias" [attr.colspan]="auth.esGestion() ? 5 : 4">
+              Ningún cliente coincide con «{{ busqueda() }}».
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (editando(); as enCurso) {
+  <div class="panel">
+    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="panel__titulo">
+        {{ enCurso === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente' }}
+      </h2>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="name">Nombre</label>
+        <input id="name" class="campo__caja" formControlName="name" type="text" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <p class="campo__alerta">Escribe el nombre del cliente.</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="phone">Teléfono</label>
+        <input id="phone" class="campo__caja" formControlName="phone" type="tel" />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="address">Dirección</label>
+        <input id="address" class="campo__caja" formControlName="address" type="text" />
+      </div>
+
+      <div class="campo campo--par">
+        <div>
+          <label class="campo__etiqueta" for="creditLimit">Límite de crédito</label>
+          <input
+            id="creditLimit"
+            class="campo__caja campo__caja--clave"
+            formControlName="creditLimit"
+            type="number"
+            min="0"
+            step="0.01"
+          />
+          <p class="campo__pista">0 significa que solo compra de contado.</p>
+        </div>
+        <div>
+          <label class="campo__etiqueta" for="creditDays">Días de crédito</label>
+          <input
+            id="creditDays"
+            class="campo__caja campo__caja--clave"
+            formControlName="creditDays"
+            type="number"
+            min="0"
+          />
+        </div>
+      </div>
+
+      <div class="panel__botones">
+        <button class="entrar" type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando' : 'Guardar' }}
+        </button>
+        <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}

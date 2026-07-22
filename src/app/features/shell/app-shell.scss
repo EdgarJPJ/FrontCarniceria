@@ -1,0 +1,205 @@
+:host {
+  display: block;
+}
+
+.local {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-height: 100dvh;
+}
+
+/* ===================================================================
+   El riel de acero
+   =================================================================== */
+.riel {
+  display: flex;
+  flex-direction: column;
+  padding: 26px 0;
+  background: var(--acero);
+  color: #9fb0b3;
+}
+
+.riel__marca {
+  padding: 0 22px 24px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.09);
+}
+
+.riel__sello {
+  width: 36px;
+  height: 36px;
+  color: var(--sangre);
+  transform: rotate(-7deg);
+}
+
+.riel__sigla {
+  fill: currentColor;
+  font-family: var(--rotulo);
+  font-size: 54px;
+  font-weight: 800;
+}
+
+.riel__negocio {
+  margin-top: 12px;
+  font-family: var(--rotulo);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.riel__sucursal {
+  margin-top: 2px;
+  font-family: var(--dato);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6d7e81;
+}
+
+/* --- Secciones ---------------------------------------------------- */
+.riel__lista {
+  flex: 1;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.riel__paso {
+  display: block;
+  padding: 13px 22px;
+  border-left: 3px solid transparent;
+  font-family: var(--dato);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9fb0b3;
+  text-decoration: none;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
+}
+
+.riel__paso:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 0.05);
+}
+
+/* La sección abierta se marca con la misma tinta que todo lo demás. */
+.riel__paso--aqui {
+  color: #ffffff;
+  border-left-color: var(--sangre);
+  background: rgb(255 255 255 / 0.07);
+}
+
+/* --- Turno -------------------------------------------------------- */
+.riel__turno {
+  padding: 20px 22px 0;
+  border-top: 1px solid rgb(255 255 255 / 0.09);
+}
+
+.riel__quien {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.riel__rol {
+  margin-top: 1px;
+  font-family: var(--dato);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6d7e81;
+}
+
+.riel__salir {
+  margin-top: 14px;
+  padding: 8px 12px;
+  font-family: var(--dato);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9fb0b3;
+  background: none;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: var(--canto);
+  cursor: pointer;
+}
+
+.riel__salir:hover {
+  color: #ffffff;
+  border-color: var(--sangre);
+  background: var(--sangre);
+}
+
+/* ===================================================================
+   La superficie de trabajo
+   =================================================================== */
+.tabla-trabajo {
+  min-width: 0; /* deja que las tablas anchas hagan su propio scroll */
+  background: var(--hueso);
+}
+
+/* ===================================================================
+   Angosto: el riel se acuesta arriba
+   =================================================================== */
+@media (max-width: 860px) {
+  .local {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .riel {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    overflow-x: auto;
+  }
+
+  .riel__marca,
+  .riel__turno {
+    padding: 0;
+    border: 0;
+  }
+
+  .riel__sello,
+  .riel__sucursal,
+  .riel__rol {
+    display: none;
+  }
+
+  .riel__negocio {
+    margin-top: 0;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .riel__lista {
+    display: flex;
+    flex: 1;
+    margin: 0;
+    gap: 4px;
+  }
+
+  .riel__paso {
+    padding: 9px 12px;
+    white-space: nowrap;
+    border-left: 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .riel__paso--aqui {
+    border-left: 0;
+    border-bottom-color: var(--sangre);
+  }
+
+  .riel__quien {
+    display: none;
+  }
+
+  .riel__salir {
+    margin-top: 0;
+  }
+}

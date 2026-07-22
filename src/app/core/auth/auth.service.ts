@@ -20,6 +20,19 @@ export class AuthService {
   readonly username = computed(() => this._session()?.username ?? null);
   readonly companySlug = computed(() => this._session()?.companySlug ?? null);
 
+  /*
+   * Los mismos tres niveles que `config/Roles` en el backend. Esto solo decide
+   * qué se dibuja: quien manda es el @PreAuthorize del servidor. Ocultar un
+   * botón es cortesía, no seguridad.
+   */
+  readonly esSoporte = computed(() => this.tieneRol('DEVELOPER'));
+  readonly esGestion = computed(() => this.tieneRol('DEVELOPER', 'ADMINISTRADOR'));
+
+  private tieneRol(...roles: string[]): boolean {
+    const propios = this._session()?.roles ?? [];
+    return roles.some((rol) => propios.includes(`ROLE_${rol}`));
+  }
+
   login(credenciales: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${environment.apiUrl}/auth/login`, credenciales)

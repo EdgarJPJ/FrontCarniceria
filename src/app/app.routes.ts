@@ -15,12 +15,27 @@ export const routes: Routes = [
     canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/registro/registro.page').then((m) => m.RegistroPage),
   },
+
+  // Todo lo que exige turno abierto cuelga del armazón con el riel.
   {
-    path: 'mostrador',
-    title: 'Mostrador · Carnicería',
+    path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/shell/mostrador.page').then((m) => m.MostradorPage),
+    loadComponent: () => import('./features/shell/app-shell').then((m) => m.AppShell),
+    children: [
+      {
+        path: 'mostrador',
+        title: 'Mostrador · Carnicería',
+        loadComponent: () =>
+          import('./features/shell/mostrador.page').then((m) => m.MostradorPage),
+      },
+      {
+        path: 'clientes',
+        title: 'Clientes · Carnicería',
+        loadComponent: () =>
+          import('./features/clients/clients.page').then((m) => m.ClientsPage),
+      },
+      { path: '', pathMatch: 'full', redirectTo: 'mostrador' },
+    ],
   },
-  { path: '', pathMatch: 'full', redirectTo: 'mostrador' },
-  { path: '**', redirectTo: 'mostrador' },
+  { path: '**', redirectTo: '' },
 ];
