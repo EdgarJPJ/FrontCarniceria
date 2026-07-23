@@ -26,13 +26,14 @@ export function decodeJwtPayload(jwt: string): JwtClaims | null {
 /** Arma la sesión a partir del token. Devuelve null si el token no sirve. */
 export function sessionFromJwt(jwt: string): Session | null {
   const claims = decodeJwtPayload(jwt);
-  if (!claims?.['X-Company'] || !claims.sub) return null;
+  // El soporte del sistema no trae empresa; el usuario sí es indispensable.
+  if (!claims?.sub) return null;
 
   return {
     username: claims.sub,
     jwt,
-    companySlug: claims['X-Company'],
-    branchId: claims.branch,
+    companySlug: claims['X-Company'] ?? null,
+    branchId: claims.branch ?? null,
     roles: parseAuthorities(claims.authorities),
     expiresAt: claims.exp * 1000,
   };

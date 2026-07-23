@@ -6,8 +6,8 @@
         <circle cx="80" cy="80" r="45" fill="none" stroke="currentColor" stroke-width="3" />
         <text x="80" y="92" text-anchor="middle" class="riel__sigla">C</text>
       </svg>
-      <p class="riel__negocio">{{ perfil()?.empresaNombre ?? 'Carnicería' }}</p>
-      <p class="riel__sucursal">{{ perfil()?.sucursalNombre ?? '' }}</p>
+      <p class="riel__negocio">{{ rotulo() }}</p>
+      <p class="riel__sucursal">{{ subrotulo() }}</p>
     </div>
 
     <ul class="riel__lista">

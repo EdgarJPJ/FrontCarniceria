@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  padding: clamp(24px, 3.5vw, 44px);
+}
+
+/* El slug es lo que la gente teclea para entrar: se lee como dato. */
+.codigo {
+  font-family: var(--dato);
+  letter-spacing: 0.04em;
+}
+
+/* Confirmación de una acción que ya ocurrió: no es error ni advertencia. */
+.confirmacion {
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--acero);
+  background: var(--azulejo);
+  border-left: 3px solid var(--acero);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+/* --- Cuentas de una carnicería ------------------------------------ */
+.cuentas {
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--junta);
+}
+
+.cuenta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--junta);
+}
+
+.cuenta__nombre {
+  font-size: 14.5px;
+  color: var(--acero);
+}
+
+.cuenta__detalle {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--acero-tenue);
+}
+
+.cuenta .enlace {
+  margin-left: 0;
+}
+
+.restablecer {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 2px solid var(--acero);
+}

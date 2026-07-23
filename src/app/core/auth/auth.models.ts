@@ -7,6 +7,7 @@
  * backend no puede saber de qué empleado se trata.
  */
 export interface LoginRequest {
+  /** Vacío cuando entra el soporte del sistema. */
   empresa: string;
   username: string;
   password: string;
@@ -42,8 +43,9 @@ export interface ApiErrorResponse {
 export interface JwtClaims {
   sub: string;
   authorities: string;
-  'X-Company': string;
-  branch: number;
+  /** Ausente en el soporte del sistema, que no pertenece a ninguna carnicería. */
+  'X-Company'?: string;
+  branch?: number;
   exp: number;
   iat: number;
 }
@@ -65,19 +67,21 @@ export interface Perfil {
   usuario: string;
   nombre: string;
   rol: string;
-  empresaId: number;
-  empresaNombre: string;
-  empresaSlug: string;
-  sucursalId: number;
-  sucursalNombre: string;
+  /** Vacíos en el soporte del sistema, que no pertenece a una carnicería. */
+  empresaId: number | null;
+  empresaNombre: string | null;
+  empresaSlug: string | null;
+  sucursalId: number | null;
+  sucursalNombre: string | null;
 }
 
 /** Lo que la app guarda de un turno abierto. */
 export interface Session {
   username: string;
   jwt: string;
-  companySlug: string;
-  branchId: number;
+  /** Nulo en el soporte del sistema. */
+  companySlug: string | null;
+  branchId: number | null;
   roles: string[];
   expiresAt: number;
 }

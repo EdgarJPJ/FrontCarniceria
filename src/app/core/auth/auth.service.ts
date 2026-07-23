@@ -83,8 +83,16 @@ export class AuthService {
     }
     this._session.set(session);
     localStorage.setItem(ALMACEN, jwt);
-    // Se guarda el slug del token, no lo que se tecleó: es la forma canónica.
-    localStorage.setItem(ALMACEN_EMPRESA, session.companySlug);
+
+    /*
+     * Se guarda el slug del token, no lo que se tecleó: es la forma canónica.
+     * El soporte no trae ninguno, y en ese caso no se toca lo guardado: si esa
+     * terminal es de una carnicería, debe seguir recordando la suya para
+     * cuando vuelva a entrar su personal.
+     */
+    if (session.companySlug) {
+      localStorage.setItem(ALMACEN_EMPRESA, session.companySlug);
+    }
   }
 }
 

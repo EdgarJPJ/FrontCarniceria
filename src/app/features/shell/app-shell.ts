@@ -30,7 +30,8 @@ export class AppShell {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  private readonly secciones: Seccion[] = [
+  /** Lo que usa el carnicero, dentro de su propia carnicería. */
+  private readonly delNegocio: Seccion[] = [
     { ruta: '/mostrador', etiqueta: 'Mostrador' },
     { ruta: '/ventas', etiqueta: 'Ventas' },
     { ruta: '/inventario', etiqueta: 'Inventario' },
@@ -42,13 +43,31 @@ export class AppShell {
     { ruta: '/personal', etiqueta: 'Personal', soloGestion: true },
   ];
 
+  /** Lo que usa el soporte del sistema, que no tiene carnicería. */
+  private readonly deSoporte: Seccion[] = [{ ruta: '/soporte', etiqueta: 'Carnicerías' }];
+
   protected readonly perfil = toSignal(
     this.auth.perfil().pipe(catchError(() => of(null))),
     { initialValue: null },
   );
 
+  /**
+   * El soporte no atiende un mostrador: mezclarle inventario y ventas de una
+   * carnicería a la que no pertenece solo confundiría.
+   */
   protected readonly visibles = computed(() =>
-    this.secciones.filter((s) => !s.soloGestion || this.auth.esGestion()),
+    this.auth.esSoporte()
+      ? this.deSoporte
+      : this.delNegocio.filter((s) => !s.soloGestion || this.auth.esGestion()),
+  );
+
+  /** En soporte, el encabezado dice qué es el sistema, no de quién es. */
+  protected readonly rotulo = computed(() =>
+    this.auth.esSoporte() ? 'Soporte del sistema' : (this.perfil()?.empresaNombre ?? 'Carnicería'),
+  );
+
+  protected readonly subrotulo = computed(() =>
+    this.auth.esSoporte() ? 'Todas las carnicerías' : (this.perfil()?.sucursalNombre ?? ''),
   );
 
   protected salir(): void {

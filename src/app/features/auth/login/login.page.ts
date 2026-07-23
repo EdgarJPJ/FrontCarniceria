@@ -29,9 +29,14 @@ export class LoginPage {
   protected readonly errorServidor = signal<string | null>(null);
   protected readonly verContrasena = signal(false);
 
+  /*
+   * La carnicería no es obligatoria: dejarla vacía es como entra el soporte
+   * del sistema, que no pertenece a ninguna. Si alguien más la omite, el
+   * backend responde que las credenciales no coinciden.
+   */
   protected readonly form = this.fb.nonNullable.group({
     // Se precarga con la del último turno: en una terminal fija no cambia.
-    empresa: [this.auth.empresaRecordada(), Validators.required],
+    empresa: [this.auth.empresaRecordada()],
     username: ['', Validators.required],
     password: ['', Validators.required],
   });
@@ -83,7 +88,8 @@ export class LoginPage {
     this.auth.login(this.form.getRawValue()).subscribe({
       next: () => {
         const volverA = this.route.snapshot.queryParamMap.get('volverA');
-        this.router.navigateByUrl(volverA ?? '/mostrador');
+        // El soporte arranca en su lista de carnicerías, no en un mostrador.
+        this.router.navigateByUrl(volverA ?? (this.auth.esSoporte() ? '/soporte' : '/mostrador'));
       },
       error: (error: unknown) => {
         this.enviando.set(false);

@@ -22,13 +22,10 @@
         aria-describedby="empresa-pista"
         [attr.aria-invalid]="empresa.touched && empresa.invalid ? 'true' : null"
       />
-      @if (empresa.touched && empresa.hasError('required')) {
-        <p class="campo__alerta">Escribe a qué carnicería entras.</p>
-      } @else {
-        <p class="campo__pista" id="empresa-pista">
-          El nombre o el código que te dio tu administrador. Se queda guardado en este equipo.
-        </p>
-      }
+      <p class="campo__pista" id="empresa-pista">
+        El nombre o el código que te dio tu administrador. Se queda guardado en este equipo.
+        Déjalo vacío solo si eres del equipo de soporte.
+      </p>
     </div>
 
     <div class="campo">

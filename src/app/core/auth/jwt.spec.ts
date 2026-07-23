@@ -46,8 +46,24 @@ describe('sessionFromJwt', () => {
     expect(session.roles).toEqual(['ROLE_ADMINISTRADOR', 'ROLE_VENDEDOR']);
   });
 
-  it('rechaza un token sin el claim X-Company, porque sin él no se puede llamar a la API', () => {
-    expect(sessionFromJwt(armarJwt({ ...claimsBase, 'X-Company': undefined }))).toBeNull();
+  /*
+   * El soporte del sistema no pertenece a ninguna carnicería y su token sale
+   * sin esos claims. La sesión tiene que aceptarlo: el interceptor omite la
+   * cabecera X-Company cuando no hay slug, y sus rutas no la exigen.
+   */
+  it('acepta un token sin empresa, que es el del soporte del sistema', () => {
+    const session = sessionFromJwt(
+      armarJwt({ ...claimsBase, 'X-Company': undefined, branch: undefined }),
+    )!;
+
+    expect(session).not.toBeNull();
+    expect(session.companySlug).toBeNull();
+    expect(session.branchId).toBeNull();
+    expect(session.username).toBe('jaf01');
+  });
+
+  it('rechaza un token sin usuario, que no identifica a nadie', () => {
+    expect(sessionFromJwt(armarJwt({ ...claimsBase, sub: undefined }))).toBeNull();
   });
 });
 

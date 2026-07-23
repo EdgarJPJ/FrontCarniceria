@@ -1,6 +1,8 @@
+import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 
 import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { AuthService } from './core/auth/auth.service';
 
 export const routes: Routes = [
   {
@@ -75,7 +77,20 @@ export const routes: Routes = [
         title: 'Lotes · Carnicería',
         loadComponent: () => import('./features/batches/batches.page').then((m) => m.BatchesPage),
       },
-      { path: '', pathMatch: 'full', redirectTo: 'mostrador' },
+      {
+        path: 'soporte',
+        title: 'Soporte · Carnicería',
+        loadComponent: () => import('./features/support/support.page').then((m) => m.SupportPage),
+      },
+      /*
+       * El soporte no atiende un mostrador: su punto de partida es la lista de
+       * carnicerías. Se decide al vuelo porque depende de quién abrió turno.
+       */
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: () => (inject(AuthService).esSoporte() ? 'soporte' : 'mostrador'),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

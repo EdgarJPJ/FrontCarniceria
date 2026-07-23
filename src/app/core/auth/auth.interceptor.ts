@@ -6,9 +6,13 @@ import { AuthService } from './auth.service';
 /**
  * Firma cada petición con el turno abierto.
  *
- * `X-Company` es obligatoria: `CompanyHeaderFilter` responde 400 sin ella en
- * todo lo que no sea `/auth/login`. El slug se saca del claim del token, no
- * de una config del front, para que no puedan apuntar a otra empresa.
+ * `X-Company` es obligatoria en casi todo: `CompanyHeaderFilter` responde 400
+ * sin ella. El slug se saca del claim del token, no de una config del front,
+ * para que no puedan apuntar a otra empresa.
+ *
+ * El soporte del sistema no pertenece a ninguna carnicería, así que su token
+ * no trae slug y la cabecera se omite. Sus rutas (`/api/support`) están
+ * excluidas de ese filtro justamente por eso.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const session = inject(AuthService).session();
@@ -17,12 +21,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  return next(
-    req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${session.jwt}`,
-        'X-Company': session.companySlug,
-      },
-    }),
-  );
+  const cabeceras: Record<string, string> = {
+    Authorization: `Bearer ${session.jwt}`,
+  };
+  if (session.companySlug) {
+    cabeceras['X-Company'] = session.companySlug;
+  }
+
+  return next(req.clone({ setHeaders: cabeceras }));
 };

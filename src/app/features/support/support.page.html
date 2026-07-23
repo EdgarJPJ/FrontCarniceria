@@ -1,0 +1,164 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Soporte</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else {
+        {{ lista().length }} carnicerías
+        @if (suspendidas() > 0) {
+          · {{ suspendidas() }} suspendidas
+        }
+      }
+    </p>
+  </div>
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+@if (aviso(); as a) {
+  <p class="confirmacion" role="status">{{ a }}</p>
+}
+
+<div class="filtro">
+  <label class="a-voz" for="buscar">Buscar carnicería</label>
+  <input
+    id="buscar"
+    class="filtro__caja"
+    type="search"
+    placeholder="Buscar por nombre o código…"
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+</div>
+
+@if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Carnicerías del sistema</caption>
+      <thead>
+        <tr>
+          <th scope="col">Carnicería</th>
+          <th scope="col">Plan</th>
+          <th scope="col" class="num">Sucursales</th>
+          <th scope="col" class="num">Personal</th>
+          <th scope="col">Suscripción</th>
+          <th scope="col"><span class="a-voz">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of visibles(); track c.id) {
+          <tr [class.baja]="!c.suscripcionActiva">
+            <th scope="row" class="nombre">
+              {{ c.nombre }}
+              <span class="secundario codigo">{{ c.slug }}</span>
+            </th>
+            <td class="dato">{{ c.plan | lowercase }}</td>
+            <td class="dato num">{{ c.sucursales }}</td>
+            <td class="dato num">{{ c.empleados }}</td>
+            <td class="dato">
+              @if (c.suscripcionActiva) {
+                <span class="etiqueta">al corriente</span>
+              } @else {
+                <span class="etiqueta etiqueta--tinta">suspendida</span>
+              }
+            </td>
+            <td class="acciones">
+              <button type="button" class="enlace" (click)="verAccesos(c)">Cuentas</button>
+              <button type="button" class="enlace" (click)="alternarSuscripcion(c)">
+                {{ c.suscripcionActiva ? 'Suspender' : 'Reactivar' }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="sin-coincidencias" colspan="6">
+              Ninguna carnicería coincide con «{{ busqueda() }}».
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- Cuentas de una carnicería: aquí se atiende la contraseña olvidada. -->
+@if (atendiendo(); as c) {
+  <div class="panel">
+    <div class="panel__forma">
+      <h2 class="panel__titulo">Cuentas de {{ c.nombre }}</h2>
+      <p class="campo__pista">
+        Para una contraseña olvidada, pon una nueva y dictásela a la persona. La anterior deja
+        de servir en cuanto guardes.
+      </p>
+
+      @if (cargandoAccesos()) {
+        <p class="campo__pista">Cargando…</p>
+      } @else {
+        <ul class="cuentas">
+          @for (a of accesos(); track a.id) {
+            <li class="cuenta">
+              <div>
+                <p class="cuenta__nombre">
+                  {{ a.nombre }}
+                  @if (!a.activo) {
+                    <span class="etiqueta">sin acceso</span>
+                  }
+                </p>
+                <p class="cuenta__detalle">
+                  <span class="codigo">{{ a.usuario }}</span> · {{ a.rol }}
+                  @if (a.sucursal) {
+                    · {{ a.sucursal }}
+                  }
+                </p>
+              </div>
+              <button class="enlace" type="button" (click)="abrirRestablecer(a)">Contraseña</button>
+            </li>
+          } @empty {
+            <li class="cuenta"><p class="cuenta__detalle">Esta carnicería no tiene cuentas.</p></li>
+          }
+        </ul>
+      }
+
+      @if (restableciendo(); as quien) {
+        <div class="campo restablecer">
+          <label class="campo__etiqueta" for="nueva">
+            Contraseña nueva para {{ quien.nombre }}
+          </label>
+          <input
+            id="nueva"
+            class="campo__caja"
+            type="text"
+            autocomplete="off"
+            [ngModel]="passwordNueva()"
+            (ngModelChange)="passwordNueva.set($event)"
+          />
+          <!-- Se muestra en claro a propósito: hay que poder dictarla. -->
+          <p class="campo__pista">
+            Al menos 8 caracteres. Se ve en claro porque tienes que leérsela a la persona.
+          </p>
+
+          <div class="panel__botones">
+            <button
+              class="entrar"
+              type="button"
+              (click)="guardarPassword()"
+              [disabled]="guardando() || passwordNueva().length < 8"
+            >
+              {{ guardando() ? 'Guardando' : 'Cambiar contraseña' }}
+            </button>
+            <button class="cancelar" type="button" (click)="restableciendo.set(null)">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="panel__botones">
+          <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
+        </div>
+      }
+    </div>
+  </div>
+}

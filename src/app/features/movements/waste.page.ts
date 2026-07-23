@@ -99,7 +99,8 @@ export class WastePage {
     const p = this.perfil();
     const producto = this.productoElegido();
     const cant = this.cantidad();
-    if (!p || !producto || !cant || cant <= 0 || this.guardando()) return;
+    // Sin sucursal no hay de qué inventario descontar.
+    if (!p?.sucursalId || !producto || !cant || cant <= 0 || this.guardando()) return;
 
     this.guardando.set(true);
     this.error.set(null);

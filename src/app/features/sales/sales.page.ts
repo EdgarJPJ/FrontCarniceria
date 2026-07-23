@@ -133,7 +133,9 @@ export class SalesPage {
 
   protected cobrar(): void {
     const p = this.perfil();
-    if (!p || this.partidas().length === 0 || this.cobrando()) return;
+    // Sin sucursal no hay dónde registrar la venta: es el caso del soporte,
+    // que no pertenece a ninguna carnicería.
+    if (!p?.sucursalId || this.partidas().length === 0 || this.cobrando()) return;
 
     this.cobrando.set(true);
     this.error.set(null);
