@@ -106,6 +106,27 @@
         </select>
       </div>
 
+      @if (lotesDisponibles().length > 0) {
+        <div class="campo">
+          <label class="campo__etiqueta" for="lote">Lote</label>
+          <select
+            id="lote"
+            class="campo__caja"
+            [ngModel]="loteElegido()"
+            (ngModelChange)="loteElegido.set($event)"
+          >
+            <option [ngValue]="null">Sin lote</option>
+            @for (l of lotesDisponibles(); track l.id) {
+              <option [ngValue]="l.id">{{ l.description || 'Lote #' + l.id }}</option>
+            }
+          </select>
+          <p class="campo__pista">
+            De qué canal salió. Sin lote, esta pérdida no se le atribuye a ninguna y el reporte
+            de merma la contará como faltante sin explicar.
+          </p>
+        </div>
+      }
+
       <div class="campo">
         <label class="campo__etiqueta" for="nota">Nota</label>
         <input

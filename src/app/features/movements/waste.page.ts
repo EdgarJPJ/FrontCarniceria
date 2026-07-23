@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Perfil } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
+import { Batch } from '../batches/batch.models';
+import { BatchesService } from '../batches/batches.service';
 import { Product, ProductsService } from '../products/products.service';
 import { MovementsService, Waste } from './movements.service';
 
@@ -21,12 +23,14 @@ const MOTIVOS = ['Caducado', 'Descompuesto', 'Golpeado', 'Derrame', 'Robo', 'Otr
 export class WastePage {
   private readonly movimientos = inject(MovementsService);
   private readonly productos = inject(ProductsService);
+  private readonly lotes = inject(BatchesService);
   protected readonly auth = inject(AuthService);
 
   protected readonly motivos = MOTIVOS;
 
   protected readonly lista = signal<Waste[]>([]);
   protected readonly catalogo = signal<Product[]>([]);
+  protected readonly lotesDisponibles = signal<Batch[]>([]);
   protected readonly perfil = signal<Perfil | null>(null);
 
   protected readonly cargando = signal(true);
@@ -38,6 +42,7 @@ export class WastePage {
   protected readonly cantidad = signal<number | null>(null);
   protected readonly motivo = signal<string>(MOTIVOS[0]);
   protected readonly nota = signal('');
+  protected readonly loteElegido = signal<number | null>(null);
 
   /** Cuánto se perdió este mes: es la cifra que duele y la que hay que vigilar. */
   protected readonly perdidoEsteMes = computed(() => {
@@ -53,6 +58,11 @@ export class WastePage {
   constructor() {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
+    // Los lotes son de gestión: a un vendedor le responde 403 y se queda sin selector.
+    this.lotes.listar().subscribe({
+      next: (ls) => this.lotesDisponibles.set(ls),
+      error: () => this.lotesDisponibles.set([]),
+    });
     this.cargar();
   }
 
@@ -75,6 +85,7 @@ export class WastePage {
     this.cantidad.set(null);
     this.motivo.set(MOTIVOS[0]);
     this.nota.set('');
+    this.loteElegido.set(null);
     this.error.set(null);
     this.panelAbierto.set(true);
   }
@@ -98,7 +109,9 @@ export class WastePage {
         productId: Number(producto),
         branchId: p.sucursalId,
         employeeId: p.empleadoId,
-        batchId: null,
+        // Sin lote la merma descuenta igual, pero no se le atribuye a ninguna
+        // canal y el reporte de ese lote la contará como pérdida sin explicar.
+        batchId: this.loteElegido() ? Number(this.loteElegido()) : null,
         quantity: cant,
         reason: this.motivo(),
         note: this.nota(),
