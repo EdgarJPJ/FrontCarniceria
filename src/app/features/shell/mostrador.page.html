@@ -1,0 +1,60 @@
+<p class="gremio">Turno abierto</p>
+<h1 class="titulo">Hola, {{ perfil()?.nombre ?? auth.username() }}</h1>
+
+<!-- El corte del día: lo que se vendió, y de eso qué entró y qué se fio. -->
+<section class="corte" aria-label="Corte del día">
+  <div class="corte__cifra">
+    <p class="corte__rotulo">Vendido hoy</p>
+    <p class="corte__monto">{{ cargando() ? '—' : pesos(vendidoHoy()) }}</p>
+    <p class="corte__nota">
+      {{ ventasHoy() }} {{ ventasHoy() === 1 ? 'venta' : 'ventas' }}
+    </p>
+  </div>
+
+  <div class="corte__cifra">
+    <p class="corte__rotulo">Entró en caja</p>
+    <p class="corte__monto">{{ cargando() ? '—' : pesos(enCajaHoy()) }}</p>
+    <p class="corte__nota">pagado de contado</p>
+  </div>
+
+  <div class="corte__cifra">
+    <p class="corte__rotulo">Se fio hoy</p>
+    <p class="corte__monto" [class.corte__monto--tinta]="fiadoHoy() > 0">
+      {{ cargando() ? '—' : pesos(fiadoHoy()) }}
+    </p>
+    <p class="corte__nota">todavía no entra</p>
+  </div>
+</section>
+
+<!-- Lo que pide atención. Si no hay nada, no se dice nada. -->
+@if (!cargando() && ((pendientes() > 0 && auth.esGestion()) || porReponer() > 0)) {
+  <section class="pendientes" aria-label="Requiere atención">
+    <!-- El fiado solo se ofrece a quien puede abrirlo: es de gestión. -->
+    @if (pendientes() > 0 && auth.esGestion()) {
+      <a class="pendiente" routerLink="/fiado">
+        <span class="pendiente__que">
+          {{ pendientes() }}
+          {{ pendientes() === 1 ? 'venta por cobrar' : 'ventas por cobrar' }}
+        </span>
+        <span class="pendiente__ir">Ver fiado</span>
+      </a>
+    }
+    @if (porReponer() > 0) {
+      <a class="pendiente" routerLink="/inventario">
+        <span class="pendiente__que">
+          {{ porReponer() }}
+          {{ porReponer() === 1 ? 'producto por reponer' : 'productos por reponer' }}
+        </span>
+        <span class="pendiente__ir">Ver inventario</span>
+      </a>
+    }
+  </section>
+}
+
+@if (auth.esGestion()) {
+  <section class="codigo">
+    <p class="codigo__rotulo">Código para entrar</p>
+    <p class="codigo__valor">{{ perfil()?.empresaSlug ?? auth.session()?.companySlug }}</p>
+    <p class="codigo__nota">Tu personal lo necesita junto con su clave para iniciar turno.</p>
+  </section>
+}

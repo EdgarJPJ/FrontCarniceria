@@ -1,0 +1,150 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Productos</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else {
+        {{ activos() }} de {{ lista().length }} a la venta
+      }
+    </p>
+  </div>
+
+  @if (auth.esGestion()) {
+    <button class="accion" type="button" (click)="abrirAlta()">Nuevo producto</button>
+  }
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+<div class="filtro">
+  <label class="a-voz" for="buscar">Buscar producto</label>
+  <input
+    id="buscar"
+    class="filtro__caja"
+    type="search"
+    placeholder="Buscar por nombre o corte…"
+    [value]="busqueda()"
+    (input)="busqueda.set($any($event.target).value)"
+  />
+</div>
+
+@if (!cargando() && lista().length === 0) {
+  <!-- Es lo primero que hay que hacer en una carnicería nueva. -->
+  <div class="vacio">
+    <p class="vacio__titulo">Empieza por tu catálogo</p>
+    <p class="vacio__nota">
+      Sin productos no se puede vender ni recibir mercancía. Da de alta los cortes que manejas
+      con su precio, y ya podrás registrar entradas y ventas.
+      @if (!auth.esGestion()) {
+        Pídele al administrador que los dé de alta.
+      }
+    </p>
+  </div>
+} @else if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Catálogo de productos</caption>
+      <thead>
+        <tr>
+          <th scope="col">Producto</th>
+          <th scope="col">Se vende</th>
+          <th scope="col" class="num">Precio</th>
+          @if (auth.esGestion()) {
+            <th scope="col"><span class="a-voz">Acciones</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of visibles(); track p.id) {
+          <tr [class.baja]="!p.active">
+            <th scope="row" class="nombre">
+              {{ p.name }}
+              @if (!p.active) {
+                <span class="etiqueta">retirado</span>
+              }
+              @if (p.cutType) {
+                <span class="secundario">{{ p.cutType }}</span>
+              }
+            </th>
+            <td class="dato">{{ unidad(p) }}</td>
+            <td class="dato num">{{ pesos(p.salePrice) }}</td>
+            @if (auth.esGestion()) {
+              <td class="acciones">
+                <button type="button" class="enlace" (click)="abrirEdicion(p)">Editar</button>
+                <button type="button" class="enlace" (click)="eliminar(p)">Quitar</button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td class="sin-coincidencias" [attr.colspan]="auth.esGestion() ? 4 : 3">
+              Ningún producto coincide con «{{ busqueda() }}».
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (editando(); as enCurso) {
+  <div class="panel">
+    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <h2 class="panel__titulo">
+        {{ enCurso === 'nuevo' ? 'Nuevo producto' : 'Editar producto' }}
+      </h2>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="name">Nombre</label>
+        <input id="name" class="campo__caja" formControlName="name" type="text" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <p class="campo__alerta">Escribe el nombre del producto.</p>
+        } @else {
+          <p class="campo__pista">Como lo pide la gente: "bistec", "chuleta", "molida".</p>
+        }
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="cutType">Tipo de corte</label>
+        <input id="cutType" class="campo__caja" formControlName="cutType" type="text" />
+        @if (form.controls.cutType.touched && form.controls.cutType.invalid) {
+          <p class="campo__alerta">Escribe el tipo de corte.</p>
+        }
+      </div>
+
+      <div class="campo campo--par">
+        <div>
+          <label class="campo__etiqueta" for="unitMeasure">Se vende</label>
+          <select id="unitMeasure" class="campo__caja" formControlName="unitMeasure">
+            <option value="kilo">Por kilo</option>
+            <option value="pieza">Por pieza</option>
+          </select>
+        </div>
+        <div>
+          <label class="campo__etiqueta" for="salePrice">Precio</label>
+          <input
+            id="salePrice"
+            class="campo__caja campo__caja--clave"
+            formControlName="salePrice"
+            type="number"
+            min="0"
+            step="0.01"
+          />
+          @if (form.controls.salePrice.touched && form.controls.salePrice.invalid) {
+            <p class="campo__alerta">El precio debe ser mayor que cero.</p>
+          }
+        </div>
+      </div>
+
+      <div class="panel__botones">
+        <button class="entrar" type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando' : 'Guardar' }}
+        </button>
+        <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+}

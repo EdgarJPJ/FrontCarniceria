@@ -1,0 +1,165 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Fiado</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else {
+        {{ pesos(totalPorCobrar()) }} por cobrar · {{ saldos().length }}
+        {{ saldos().length === 1 ? 'cliente debe' : 'clientes deben' }}
+        @if (sobrepasados() > 0) {
+          · {{ sobrepasados() }} sobre su límite
+        }
+      }
+    </p>
+  </div>
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+@if (aviso(); as a) {
+  <p class="confirmacion" role="status">{{ a }}</p>
+}
+
+@if (!cargando() && saldos().length === 0) {
+  <div class="vacio">
+    <p class="vacio__titulo">Nadie te debe</p>
+    <p class="vacio__nota">
+      Aquí aparecen los clientes con saldo pendiente. Una venta se fía cuando la registras a
+      nombre de un cliente en vez de cobrarla de contado.
+    </p>
+  </div>
+} @else if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Clientes con saldo pendiente</caption>
+      <thead>
+        <tr>
+          <th scope="col">Cliente</th>
+          <th scope="col" class="num">Le vendiste</th>
+          <th scope="col" class="num">Te ha pagado</th>
+          <th scope="col" class="num">Debe</th>
+          <th scope="col"><span class="a-voz">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of saldos(); track c.clientId) {
+          <tr>
+            <th scope="row" class="nombre">
+              {{ c.name }}
+              @if (sobrepasa(c)) {
+                <span class="etiqueta etiqueta--tinta">pasó su límite</span>
+                <span class="secundario">
+                  Le autorizaste {{ pesos(c.creditLimit) }}
+                </span>
+              }
+            </th>
+            <td class="dato num">{{ pesos(c.totalSold) }}</td>
+            <td class="dato num">{{ pesos(c.totalPaid) }}</td>
+            <!-- Lo que debe es a lo que se viene: pesa más que el resto. -->
+            <td class="dato num deuda" [class.deuda--alerta]="sobrepasa(c)">
+              {{ pesos(c.balance) }}
+            </td>
+            <td class="acciones">
+              <button type="button" class="enlace" (click)="abrirCobro(c)">Cobrar</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- Cobro: se elige la venta y se registra el abono. -->
+@if (cobrando(); as cliente) {
+  <div class="panel">
+    <div class="panel__forma">
+      <h2 class="panel__titulo">Cobrar a {{ cliente.name }}</h2>
+      <p class="campo__pista">
+        Debe {{ pesos(cliente.balance) }} en total. El abono se registra sobre una venta.
+      </p>
+
+      @if (cargandoVentas()) {
+        <p class="campo__pista">Cargando sus ventas…</p>
+      } @else if (!abonando()) {
+        <ul class="ventas">
+          @for (v of ventasDelCliente(); track v.id) {
+            <li class="venta">
+              <div>
+                <p class="venta__id">Venta #{{ v.id }}</p>
+                <p class="venta__detalle">
+                  {{ v.date | date: 'dd/MM/yy' }} ·
+                  {{ v.paymentStatus === 'PARCIAL' ? 'abonada en parte' : 'sin abonos' }}
+                </p>
+              </div>
+              <span class="venta__monto">{{ pesos(v.total) }}</span>
+              <button class="enlace" type="button" (click)="abrirAbono(v)">Abonar</button>
+            </li>
+          } @empty {
+            <li class="venta">
+              <p class="venta__detalle">
+                No tiene ventas pendientes. Si su saldo no es cero, revisa si alguna venta fue
+                cancelada.
+              </p>
+            </li>
+          }
+        </ul>
+      }
+
+      @if (abonando(); as venta) {
+        <div class="abono">
+          <p class="abono__rotulo">Abono a la venta #{{ venta.id }} de {{ pesos(venta.total) }}</p>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="monto">Cuánto entrega</label>
+            <input
+              id="monto"
+              class="campo__caja campo__caja--clave"
+              type="number"
+              min="0"
+              step="0.01"
+              [ngModel]="monto()"
+              (ngModelChange)="monto.set($event)"
+            />
+            <p class="campo__pista">
+              Puede abonar de a poco. El sistema rechaza un abono mayor a lo que resta.
+            </p>
+          </div>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="metodo">Con qué paga</label>
+            <select
+              id="metodo"
+              class="campo__caja"
+              [ngModel]="metodoElegido()"
+              (ngModelChange)="metodoElegido.set($event)"
+            >
+              <option [ngValue]="null">Sin especificar</option>
+              @for (m of metodos(); track m.id) {
+                <option [ngValue]="m.id">{{ m.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="panel__botones">
+            <button
+              class="entrar"
+              type="button"
+              (click)="registrarAbono()"
+              [disabled]="guardando() || !monto()"
+            >
+              {{ guardando() ? 'Registrando' : 'Registrar abono' }}
+            </button>
+            <button class="cancelar" type="button" (click)="abonando.set(null)">Volver</button>
+          </div>
+        </div>
+      } @else {
+        <div class="panel__botones">
+          <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
+        </div>
+      }
+    </div>
+  </div>
+}

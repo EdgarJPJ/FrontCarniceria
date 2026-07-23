@@ -51,9 +51,19 @@ export const routes: Routes = [
           import('./features/inventory/inventory.page').then((m) => m.InventoryPage),
       },
       {
+        path: 'fiado',
+        title: 'Fiado · Carnicería',
+        loadComponent: () => import('./features/credit/credit.page').then((m) => m.CreditPage),
+      },
+      {
         path: 'clientes',
         title: 'Clientes · Carnicería',
         loadComponent: () => import('./features/clients/clients.page').then((m) => m.ClientsPage),
+      },
+      {
+        path: 'productos',
+        title: 'Productos · Carnicería',
+        loadComponent: () => import('./features/products/products.page').then((m) => m.ProductsPage),
       },
       {
         path: 'sucursales',

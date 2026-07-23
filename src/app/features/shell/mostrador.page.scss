@@ -1,0 +1,149 @@
+:host {
+  display: block;
+  padding: clamp(24px, 3.5vw, 44px);
+}
+
+.gremio {
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sangre);
+}
+
+.titulo {
+  margin-top: 8px;
+  font-family: var(--rotulo);
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--acero);
+}
+
+/* ===================================================================
+   El corte del día
+   =================================================================== */
+.corte {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1px;
+  margin-top: 32px;
+  background: var(--junta); /* las juntas salen del fondo */
+  border: 1px solid var(--junta);
+  border-radius: var(--canto);
+  overflow: hidden;
+}
+
+.corte__cifra {
+  padding: 20px 22px;
+  background: var(--hueso);
+}
+
+.corte__rotulo {
+  font-family: var(--dato);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+.corte__monto {
+  margin-top: 8px;
+  font-family: var(--rotulo);
+  font-size: clamp(26px, 3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--acero);
+}
+
+.corte__monto--tinta {
+  color: var(--sangre);
+}
+
+.corte__nota {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--acero-tenue);
+}
+
+/* ===================================================================
+   Lo que pide atención
+   =================================================================== */
+.pendientes {
+  margin-top: 20px;
+}
+
+.pendiente {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  text-decoration: none;
+  background: var(--azulejo);
+  border-left: 3px solid var(--sangre);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+.pendiente + .pendiente {
+  margin-top: 8px;
+}
+
+.pendiente:hover {
+  background: var(--azulejo-hondo);
+}
+
+.pendiente__que {
+  font-size: 14.5px;
+  color: var(--acero);
+}
+
+.pendiente__ir {
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sangre);
+  white-space: nowrap;
+}
+
+/* ===================================================================
+   Código de la carnicería
+   =================================================================== */
+.codigo {
+  max-width: 420px;
+  margin-top: 32px;
+  padding: 20px 22px;
+  background: var(--azulejo);
+  border-left: 3px solid var(--acero-tenue);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+.codigo__rotulo {
+  font-family: var(--dato);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+.codigo__valor {
+  margin-top: 6px;
+  font-family: var(--dato);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--sangre);
+}
+
+.codigo__nota {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--acero-tenue);
+}

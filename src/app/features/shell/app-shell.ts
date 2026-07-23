@@ -34,12 +34,15 @@ export class AppShell {
   private readonly delNegocio: Seccion[] = [
     { ruta: '/mostrador', etiqueta: 'Mostrador' },
     { ruta: '/ventas', etiqueta: 'Ventas' },
+    // El fiado va junto a las ventas: es la venta que todavía no se cobra.
+    { ruta: '/fiado', etiqueta: 'Fiado', soloGestion: true },
     { ruta: '/inventario', etiqueta: 'Inventario' },
     { ruta: '/entradas', etiqueta: 'Entradas' },
     { ruta: '/mermas', etiqueta: 'Mermas' },
+    { ruta: '/productos', etiqueta: 'Productos' },
     { ruta: '/clientes', etiqueta: 'Clientes' },
-    { ruta: '/sucursales', etiqueta: 'Sucursales' },
     { ruta: '/lotes', etiqueta: 'Lotes', soloGestion: true },
+    { ruta: '/sucursales', etiqueta: 'Sucursales' },
     { ruta: '/personal', etiqueta: 'Personal', soloGestion: true },
   ];
 
