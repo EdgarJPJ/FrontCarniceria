@@ -8,6 +8,7 @@ import { mensajeDeError } from '../../core/http/api-error';
 import { Batch } from '../batches/batch.models';
 import { BatchesService } from '../batches/batches.service';
 import { Product, ProductsService } from '../products/products.service';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { MovementsService, Waste } from './movements.service';
 
 /** Motivos frecuentes, para no obligar a teclear lo mismo cada vez. */
@@ -15,7 +16,7 @@ const MOTIVOS = ['Caducado', 'Descompuesto', 'Golpeado', 'Derrame', 'Robo', 'Otr
 
 @Component({
   selector: 'app-waste-page',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, SidePanel],
   templateUrl: './waste.page.html',
   styleUrl: './waste.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

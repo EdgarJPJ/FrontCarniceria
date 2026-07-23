@@ -3,12 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Client } from './client.models';
 import { ClientsService } from './clients.service';
 
 @Component({
   selector: 'app-clients-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SidePanel],
   templateUrl: './clients.page.html',
   styleUrl: './clients.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

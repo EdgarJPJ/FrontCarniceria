@@ -81,9 +81,8 @@
 
 <!-- La caja: se arma el ticket y se cobra. -->
 @if (cajaAbierta()) {
-  <div class="panel">
-    <div class="panel__forma caja">
-      <h2 class="panel__titulo">Nueva venta</h2>
+  <app-side-panel ancho="caja" (cerrar)="cerrarCaja()">
+    <h2 class="panel__titulo">Nueva venta</h2>
 
       <!-- Alta de partidas -->
       <div class="agregar">
@@ -215,6 +214,5 @@
         </button>
         <button class="cancelar" type="button" (click)="cerrarCaja()">Cancelar</button>
       </div>
-    </div>
-  </div>
+  </app-side-panel>
 }

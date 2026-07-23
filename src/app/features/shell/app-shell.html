@@ -1,5 +1,24 @@
 <div class="local">
-  <nav class="riel" aria-label="Secciones">
+  <!-- Solo se ve en angosto: la marca y el botón que abre el riel. -->
+  <header class="barra-movil">
+    <button
+      #botonMenu
+      class="barra-movil__menu"
+      type="button"
+      (click)="abrirMenu()"
+      aria-label="Abrir secciones"
+      [attr.aria-expanded]="menuAbierto()"
+    >
+      <span class="barra-movil__icono" aria-hidden="true"></span>
+    </button>
+    <p class="barra-movil__negocio">{{ rotulo() }}</p>
+  </header>
+
+  @if (menuAbierto()) {
+    <div class="riel__fondo" (mousedown)="cerrarMenu()"></div>
+  }
+
+  <nav #riel class="riel" [class.riel--abierto]="menuAbierto()" aria-label="Secciones">
     <div class="riel__marca">
       <svg class="riel__sello" viewBox="0 0 160 160" role="img" aria-label="Carnicería">
         <circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" stroke-width="7" />
@@ -9,6 +28,10 @@
       <p class="riel__negocio">{{ rotulo() }}</p>
       <p class="riel__sucursal">{{ subrotulo() }}</p>
     </div>
+
+    <button class="riel__cerrar" type="button" (click)="cerrarMenu()" aria-label="Cerrar secciones">
+      ×
+    </button>
 
     <ul class="riel__lista">
       @for (seccion of visibles(); track seccion.ruta) {

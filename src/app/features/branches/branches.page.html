@@ -71,8 +71,8 @@
 }
 
 @if (editando(); as enCurso) {
-  <div class="panel">
-    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       <h2 class="panel__titulo">
         {{ enCurso === 'nueva' ? 'Nueva sucursal' : 'Editar sucursal' }}
       </h2>
@@ -107,5 +107,5 @@
         <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
       </div>
     </form>
-  </div>
+  </app-side-panel>
 }

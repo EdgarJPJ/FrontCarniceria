@@ -8,6 +8,7 @@ import { mensajeDeError } from '../../core/http/api-error';
 import { Client } from '../clients/client.models';
 import { ClientsService } from '../clients/clients.service';
 import { Product, ProductsService } from '../products/products.service';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { PaymentMethod, Sale } from './sale.models';
 import { SalesService } from './sales.service';
 
@@ -19,7 +20,7 @@ interface Partida {
 
 @Component({
   selector: 'app-sales-page',
-  imports: [FormsModule, DatePipe, LowerCasePipe],
+  imports: [FormsModule, DatePipe, LowerCasePipe, SidePanel],
   templateUrl: './sales.page.html',
   styleUrl: './sales.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -123,8 +124,13 @@ export class SalesPage {
         : [...ps, { product, quantity: cant }];
     });
 
+    // Se limpian los dos campos: si el selector se quedara con el producto que
+    // se acaba de agregar, parecería que todavía no entra al ticket. El foco
+    // vuelve al producto, no a la cantidad, porque lo normal es que la
+    // siguiente pieza sea de otro corte.
+    this.productoElegido.set(null);
     this.cantidad.set(null);
-    document.getElementById('cantidad')?.focus();
+    document.getElementById('producto')?.focus();
   }
 
   protected quitarPartida(productId: number): void {

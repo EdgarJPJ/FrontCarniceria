@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { mensajeDeError } from '../../core/http/api-error';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Branch } from '../branches/branch.models';
 import { BranchesService } from '../branches/branches.service';
 import { Batch, BatchReport } from './batch.models';
@@ -9,7 +10,7 @@ import { BatchesService } from './batches.service';
 
 @Component({
   selector: 'app-batches-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SidePanel],
   templateUrl: './batches.page.html',
   styleUrl: './batches.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

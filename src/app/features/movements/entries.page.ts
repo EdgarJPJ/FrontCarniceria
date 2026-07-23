@@ -8,11 +8,12 @@ import { mensajeDeError } from '../../core/http/api-error';
 import { Batch } from '../batches/batch.models';
 import { BatchesService } from '../batches/batches.service';
 import { Product, ProductsService } from '../products/products.service';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { MovementsService, StockEntry } from './movements.service';
 
 @Component({
   selector: 'app-entries-page',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, SidePanel],
   templateUrl: './entries.page.html',
   styleUrl: './entries.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

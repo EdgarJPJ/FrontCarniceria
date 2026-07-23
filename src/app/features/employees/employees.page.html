@@ -69,8 +69,8 @@
 
 <!-- Alta y edición -->
 @if (editando(); as enCurso) {
-  <div class="panel">
-    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       <h2 class="panel__titulo">
         {{ enCurso === 'nuevo' ? 'Dar de alta' : 'Editar persona' }}
       </h2>
@@ -162,13 +162,13 @@
         <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
       </div>
     </form>
-  </div>
+  </app-side-panel>
 }
 
 <!-- Reemplazo de contraseña -->
 @if (reseteando(); as quien) {
-  <div class="panel">
-    <form class="panel__forma" [formGroup]="formPassword" (ngSubmit)="guardarPassword()" novalidate>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <form [formGroup]="formPassword" (ngSubmit)="guardarPassword()" novalidate>
       <h2 class="panel__titulo">Contraseña de {{ quien.name }}</h2>
       <p class="campo__pista">
         Se reemplaza por una nueva. La anterior deja de servir en cuanto guardes.
@@ -200,5 +200,5 @@
         <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
       </div>
     </form>
-  </div>
+  </app-side-panel>
 }

@@ -133,6 +133,11 @@
   background: var(--sangre);
 }
 
+/* --- Cerrar el menú, solo existe dentro del riel en angosto -------- */
+.riel__cerrar {
+  display: none;
+}
+
 /* ===================================================================
    La superficie de trabajo
    =================================================================== */
@@ -142,7 +147,21 @@
 }
 
 /* ===================================================================
-   Angosto: el riel se acuesta arriba
+   La barra angosta: no existe en escritorio.
+   =================================================================== */
+.barra-movil {
+  display: none;
+}
+
+.riel__fondo {
+  display: none;
+}
+
+/* ===================================================================
+   Angosto: doce secciones no caben acostadas en una fila que se
+   desliza — nada avisa que hay más, ni dónde te quedaste. El riel se
+   vuelve un menú que se abre con un botón: quieto mientras no se pide,
+   completo cuando se pide.
    =================================================================== */
 @media (max-width: 860px) {
   .local {
@@ -150,56 +169,134 @@
     grid-template-rows: auto 1fr;
   }
 
-  .riel {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    overflow-x: auto;
-  }
-
-  .riel__marca,
-  .riel__turno {
-    padding: 0;
-    border: 0;
-  }
-
-  .riel__sello,
-  .riel__sucursal,
-  .riel__rol {
-    display: none;
-  }
-
-  .riel__negocio {
-    margin-top: 0;
-    font-size: 15px;
-    white-space: nowrap;
-  }
-
-  .riel__lista {
+  .barra-movil {
     display: flex;
-    flex: 1;
-    margin: 0;
-    gap: 4px;
+    align-items: center;
+    gap: 14px;
+    height: 52px;
+    padding: 0 8px 0 6px;
+    background: var(--acero);
   }
 
-  .riel__paso {
-    padding: 9px 12px;
+  .barra-movil__menu {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: 0;
+    border-radius: var(--canto);
+    cursor: pointer;
+  }
+
+  .barra-movil__menu:hover,
+  .barra-movil__menu:focus-visible {
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  /* Tres barras dibujadas con box-shadow: el ícono universal de "más". */
+  .barra-movil__icono,
+  .barra-movil__icono::before,
+  .barra-movil__icono::after {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+  }
+
+  .barra-movil__icono {
+    position: relative;
+  }
+
+  .barra-movil__icono::before,
+  .barra-movil__icono::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+
+  .barra-movil__icono::before {
+    top: -6px;
+  }
+
+  .barra-movil__icono::after {
+    top: 6px;
+  }
+
+  .barra-movil__negocio {
+    font-family: var(--rotulo);
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
     white-space: nowrap;
-    border-left: 0;
-    border-bottom: 2px solid transparent;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .riel__paso--aqui {
-    border-left: 0;
-    border-bottom-color: var(--sangre);
+  .riel__fondo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgb(22 28 30 / 0.42);
+    z-index: 39;
+    animation: riel-fondo 140ms ease-out;
   }
 
-  .riel__quien {
-    display: none;
+  /* El riel es el mismo menú de escritorio, solo que aparece encima en
+     vez de vivir siempre en su columna. */
+  .riel {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(82vw, 300px);
+    z-index: 40;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .riel__salir {
-    margin-top: 0;
+  /* Compuesto con .riel a propósito: misma especificidad que la regla base
+     no basta para ganarle de forma confiable tras la optimización de CSS. */
+  .riel.riel--abierto {
+    transform: translateX(0);
+  }
+
+  .riel__cerrar {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: 18px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    font-size: 22px;
+    line-height: 1;
+    color: #9fb0b3;
+    background: none;
+    border: 0;
+    border-radius: var(--canto);
+    cursor: pointer;
+  }
+
+  .riel__cerrar:hover,
+  .riel__cerrar:focus-visible {
+    color: #ffffff;
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .riel {
+      transition: none;
+    }
+
+    .riel__fondo {
+      animation: none;
+    }
+  }
+}
+
+@keyframes riel-fondo {
+  from {
+    opacity: 0;
   }
 }

@@ -3,11 +3,12 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 
 import { mensajeDeError } from '../../core/http/api-error';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Acceso, Carniceria, SupportService } from './support.service';
 
 @Component({
   selector: 'app-support-page',
-  imports: [FormsModule, LowerCasePipe],
+  imports: [FormsModule, LowerCasePipe, SidePanel],
   templateUrl: './support.page.html',
   styleUrl: './support.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

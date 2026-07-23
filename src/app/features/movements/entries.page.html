@@ -73,9 +73,8 @@
 }
 
 @if (panelAbierto()) {
-  <div class="panel">
-    <div class="panel__forma">
-      <h2 class="panel__titulo">Registrar entrada</h2>
+  <app-side-panel (cerrar)="cerrar()">
+    <h2 class="panel__titulo">Registrar entrada</h2>
 
       <div class="campo">
         <label class="campo__etiqueta" for="producto">Producto</label>
@@ -149,6 +148,5 @@
         </button>
         <button class="cancelar" type="button" (click)="cerrar()">Cancelar</button>
       </div>
-    </div>
-  </div>
+  </app-side-panel>
 }

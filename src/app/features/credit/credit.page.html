@@ -74,9 +74,8 @@
 
 <!-- Cobro: se elige la venta y se registra el abono. -->
 @if (cobrando(); as cliente) {
-  <div class="panel">
-    <div class="panel__forma">
-      <h2 class="panel__titulo">Cobrar a {{ cliente.name }}</h2>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <h2 class="panel__titulo">Cobrar a {{ cliente.name }}</h2>
       <p class="campo__pista">
         Debe {{ pesos(cliente.balance) }} en total. El abono se registra sobre una venta.
       </p>
@@ -160,6 +159,5 @@
           <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
         </div>
       }
-    </div>
-  </div>
+  </app-side-panel>
 }

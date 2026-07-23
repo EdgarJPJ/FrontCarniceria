@@ -3,12 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Branch } from './branch.models';
 import { BranchesService } from './branches.service';
 
 @Component({
   selector: 'app-branches-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SidePanel],
   templateUrl: './branches.page.html',
   styleUrl: './branches.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

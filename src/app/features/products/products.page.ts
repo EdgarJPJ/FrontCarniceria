@@ -3,11 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Product, ProductsService } from './products.service';
 
 @Component({
   selector: 'app-products-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SidePanel, ConfirmDialog],
   templateUrl: './products.page.html',
   styleUrl: './products.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +25,8 @@ export class ProductsPage {
   protected readonly guardando = signal(false);
   protected readonly editando = signal<Product | 'nuevo' | null>(null);
   protected readonly busqueda = signal('');
+  /** Producto a punto de quitarse, en espera de que confirmen. */
+  protected readonly borrando = signal<Product | null>(null);
 
   protected readonly activos = computed(() => this.lista().filter((p) => p.active).length);
 
@@ -115,8 +119,14 @@ export class ProductsPage {
    * eso se avisa antes: no hay forma de deshacerlo.
    */
   protected eliminar(p: Product): void {
-    if (!confirm(`¿Quitar "${p.name}" del catálogo? No se puede deshacer.`)) return;
+    this.borrando.set(p);
+  }
 
+  protected confirmarEliminar(): void {
+    const p = this.borrando();
+    if (!p) return;
+
+    this.borrando.set(null);
     this.error.set(null);
     this.productos.eliminar(p.id).subscribe({
       next: () => this.cargar(),

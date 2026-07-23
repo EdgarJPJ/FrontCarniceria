@@ -5,12 +5,13 @@ import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
 import { Branch } from '../branches/branch.models';
 import { BranchesService } from '../branches/branches.service';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Employee, Role } from './employee.models';
 import { EmployeesService } from './employees.service';
 
 @Component({
   selector: 'app-employees-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SidePanel],
   templateUrl: './employees.page.html',
   styleUrl: './employees.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

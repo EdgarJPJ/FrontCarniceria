@@ -91,8 +91,8 @@
 }
 
 @if (editando(); as enCurso) {
-  <div class="panel">
-    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       <h2 class="panel__titulo">
         {{ enCurso === 'nuevo' ? 'Nuevo producto' : 'Editar producto' }}
       </h2>
@@ -146,5 +146,14 @@
         <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
       </div>
     </form>
-  </div>
+  </app-side-panel>
+}
+
+@if (borrando(); as p) {
+  <app-confirm-dialog
+    [mensaje]="'¿Quitar «' + p.name + '» del catálogo? No se puede deshacer.'"
+    textoConfirmar="Quitar"
+    (confirmar)="confirmarEliminar()"
+    (cancelar)="borrando.set(null)"
+  />
 }

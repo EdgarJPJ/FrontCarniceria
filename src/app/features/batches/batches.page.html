@@ -63,8 +63,8 @@
 
 <!-- Alta y edición -->
 @if (editando(); as enCurso) {
-  <div class="panel">
-    <form class="panel__forma" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       <h2 class="panel__titulo">
         {{ enCurso === 'nuevo' ? 'Registrar lote' : 'Editar lote' }}
       </h2>
@@ -121,14 +121,13 @@
         <button class="cancelar" type="button" (click)="cerrarPanel()">Cancelar</button>
       </div>
     </form>
-  </div>
+  </app-side-panel>
 }
 
 <!-- Reporte de merma -->
 @if (reporte(); as r) {
-  <div class="panel">
-    <div class="panel__forma">
-      <h2 class="panel__titulo">Merma del lote</h2>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <h2 class="panel__titulo">Merma del lote</h2>
       <p class="campo__pista">{{ r.description || 'Lote #' + r.batchId }}</p>
 
       <!-- El recorrido del peso, de la compra al mostrador. -->
@@ -174,6 +173,5 @@
       <div class="panel__botones">
         <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
       </div>
-    </div>
-  </div>
+  </app-side-panel>
 }

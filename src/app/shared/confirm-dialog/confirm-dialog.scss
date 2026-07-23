@@ -1,0 +1,99 @@
+:host {
+  display: contents;
+}
+
+.confirmar {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(22 28 30 / 0.42);
+  z-index: 50; /* por encima de un <app-side-panel>, si acaso coinciden */
+  animation: confirmar-fondo 140ms ease-out;
+}
+
+.confirmar__caja {
+  width: min(360px, 100%);
+  padding: 26px;
+  background: var(--hueso);
+  border-top: 3px solid var(--sangre);
+  border-radius: var(--canto);
+  box-shadow: 0 12px 32px rgb(22 28 30 / 0.28);
+  animation: confirmar-caja 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.confirmar__mensaje {
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--acero);
+}
+
+.confirmar__botones {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.confirmar__cancelar,
+.confirmar__ok {
+  flex: 1;
+  height: var(--toque);
+  font-family: var(--rotulo);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: var(--canto);
+  cursor: pointer;
+}
+
+/* La salida segura: neutra, y es donde arranca el foco. */
+.confirmar__cancelar {
+  color: var(--acero);
+  background: none;
+  border: 1px solid var(--junta);
+}
+
+.confirmar__cancelar:hover,
+.confirmar__cancelar:focus-visible {
+  border-color: var(--acero);
+}
+
+/* La pérdida: la misma tinta que el resto del sistema usa para eso. */
+.confirmar__ok {
+  color: var(--hueso);
+  background: var(--sangre);
+  border: 0;
+  box-shadow: 0 3px 0 var(--sangre-honda);
+}
+
+.confirmar__ok:hover {
+  background: #b81430;
+}
+
+.confirmar__ok:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--sangre-honda);
+}
+
+@keyframes confirmar-fondo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes confirmar-caja {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirmar,
+  .confirmar__caja {
+    animation: none;
+  }
+}

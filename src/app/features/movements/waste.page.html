@@ -59,9 +59,8 @@
 }
 
 @if (panelAbierto()) {
-  <div class="panel">
-    <div class="panel__forma">
-      <h2 class="panel__titulo">Registrar merma</h2>
+  <app-side-panel (cerrar)="cerrar()">
+    <h2 class="panel__titulo">Registrar merma</h2>
       <p class="campo__pista">Esto descuenta del inventario. No se puede deshacer.</p>
 
       <div class="campo">
@@ -145,6 +144,5 @@
         </button>
         <button class="cancelar" type="button" (click)="cerrar()">Cancelar</button>
       </div>
-    </div>
-  </div>
+  </app-side-panel>
 }

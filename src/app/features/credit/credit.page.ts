@@ -3,13 +3,14 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 
 import { mensajeDeError } from '../../core/http/api-error';
+import { SidePanel } from '../../shared/side-panel/side-panel';
 import { PaymentMethod, Sale } from '../sales/sale.models';
 import { SalesService } from '../sales/sales.service';
 import { CreditService, SaldoCliente } from './credit.service';
 
 @Component({
   selector: 'app-credit-page',
-  imports: [FormsModule, DatePipe],
+  imports: [FormsModule, DatePipe, SidePanel],
   templateUrl: './credit.page.html',
   styleUrl: './credit.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

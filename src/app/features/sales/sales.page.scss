@@ -3,10 +3,7 @@
   padding: clamp(24px, 3.5vw, 44px);
 }
 
-/* La caja es más ancha: aquí se trabaja, no solo se llena un formulario. */
-.caja {
-  width: min(500px, 100%);
-}
+/* El ancho de "caja" lo pone <app-side-panel [ancho]="'caja'">. */
 
 /* ===================================================================
    Alta de partidas

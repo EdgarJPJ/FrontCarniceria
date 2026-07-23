@@ -225,24 +225,10 @@
   color: var(--acero-medio);
 }
 
-/* --- Panel lateral ------------------------------------------------ */
-.panel {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  justify-content: flex-end;
-  background: rgb(22 28 30 / 0.42);
-  z-index: 10;
-}
-
-.panel__forma {
-  width: min(420px, 100%);
-  padding: clamp(24px, 4vw, 40px);
-  overflow-y: auto;
-  background: var(--hueso);
-  border-left: 1px solid var(--junta);
-}
-
+/* --- Panel lateral -------------------------------------------------
+   El fondo y la hoja (.panel / .panel__forma) los pone <app-side-panel>,
+   en su propia hoja de estilos. Lo de aquí es lo que va DENTRO: título,
+   botones — contenido proyectado que cualquier página puede escribir. */
 .panel__titulo {
   margin-bottom: 22px;
   font-family: var(--rotulo);

@@ -86,9 +86,8 @@
 
 <!-- Cuentas de una carnicería: aquí se atiende la contraseña olvidada. -->
 @if (atendiendo(); as c) {
-  <div class="panel">
-    <div class="panel__forma">
-      <h2 class="panel__titulo">Cuentas de {{ c.nombre }}</h2>
+  <app-side-panel (cerrar)="cerrarPanel()">
+    <h2 class="panel__titulo">Cuentas de {{ c.nombre }}</h2>
       <p class="campo__pista">
         Para una contraseña olvidada, pon una nueva y dictásela a la persona. La anterior deja
         de servir en cuanto guardes.
@@ -159,6 +158,5 @@
           <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
         </div>
       }
-    </div>
-  </div>
+  </app-side-panel>
 }
