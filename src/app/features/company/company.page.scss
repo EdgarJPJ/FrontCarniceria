@@ -1,0 +1,56 @@
+:host {
+  display: block;
+  padding: clamp(24px, 3.5vw, 44px);
+}
+
+/* El código se lee como dato, igual que en el inicio de sesión. */
+.codigo {
+  font-family: var(--dato);
+  letter-spacing: 0.04em;
+  color: var(--sangre);
+}
+
+.confirmacion {
+  margin-bottom: 22px;
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--acero);
+  background: var(--azulejo);
+  border-left: 3px solid var(--acero);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+/* Es un formulario de un solo registro: se le da el ancho de una tarjeta, no
+   el de la pantalla completa. */
+.ficha {
+  max-width: 480px;
+}
+
+.guardar {
+  width: auto;
+  padding: 0 26px;
+}
+
+.ficha__meta {
+  display: flex;
+  gap: 28px;
+  margin: 30px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--junta);
+}
+
+.ficha__meta dt {
+  font-family: var(--dato);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+.ficha__meta dd {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--acero);
+}

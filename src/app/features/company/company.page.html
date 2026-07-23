@@ -1,0 +1,76 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Mi carnicería</h1>
+    <p class="encabezado__resumen">
+      @if (!cargando() && empresa(); as e) {
+        Código para entrar: <span class="codigo">{{ e.slug }}</span>
+      }
+    </p>
+  </div>
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+@if (aviso(); as a) {
+  <p class="confirmacion" role="status">{{ a }}</p>
+}
+
+@if (!cargando()) {
+  <form class="ficha" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+    <div class="campo">
+      <label class="campo__etiqueta" for="name">Nombre de la carnicería</label>
+      <input
+        id="name"
+        class="campo__caja"
+        formControlName="name"
+        type="text"
+        [attr.aria-invalid]="form.controls.name.touched && form.controls.name.invalid ? 'true' : null"
+      />
+      @if (form.controls.name.touched && form.controls.name.invalid) {
+        <p class="campo__alerta">Escribe el nombre de la carnicería.</p>
+      } @else {
+        <p class="campo__pista">
+          Es el nombre que ves en el riel. No afecta tu código para entrar: ese no cambia.
+        </p>
+      }
+    </div>
+
+    <div class="campo campo--par">
+      <div>
+        <label class="campo__etiqueta" for="rfc">RFC <span class="campo__opcional">opcional</span></label>
+        <input id="rfc" class="campo__caja" formControlName="rfc" type="text" autocapitalize="characters" />
+      </div>
+      <div>
+        <label class="campo__etiqueta" for="phone">Teléfono <span class="campo__opcional">opcional</span></label>
+        <input id="phone" class="campo__caja" formControlName="phone" type="tel" autocomplete="tel" />
+      </div>
+    </div>
+
+    <div class="campo">
+      <label class="campo__etiqueta" for="plan">Plan</label>
+      <select id="plan" class="campo__caja" formControlName="plan">
+        <option value="basico">Básico</option>
+        <option value="pro">Pro</option>
+      </select>
+    </div>
+
+    <button class="entrar guardar" type="submit" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando' : 'Guardar cambios' }}
+    </button>
+
+    @if (empresa(); as e) {
+      <dl class="ficha__meta">
+        <div>
+          <dt>Alta</dt>
+          <dd>{{ e.createdAt | date: 'dd/MM/yyyy' }}</dd>
+        </div>
+        <div>
+          <dt>Estado</dt>
+          <dd>{{ e.active ? 'Activa' : 'Inactiva' }}</dd>
+        </div>
+      </dl>
+    }
+  </form>
+}

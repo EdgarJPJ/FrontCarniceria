@@ -43,22 +43,4 @@
   border-radius: 50%;
 }
 
-.campo--par {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.campo__opcional {
-  margin-left: 6px;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  color: var(--acero-tenue);
-  text-transform: none;
-}
-
-@media (max-width: 520px) {
-  .campo--par {
-    grid-template-columns: 1fr;
-  }
-}
+/* .campo--par y .campo__opcional ya son globales (_tabla.scss / _acceso.scss). */

@@ -44,6 +44,7 @@ export class AppShell {
     { ruta: '/lotes', etiqueta: 'Lotes', soloGestion: true },
     { ruta: '/sucursales', etiqueta: 'Sucursales' },
     { ruta: '/personal', etiqueta: 'Personal', soloGestion: true },
+    { ruta: '/empresa', etiqueta: 'Mi carnicería', soloGestion: true },
   ];
 
   /** Lo que usa el soporte del sistema, que no tiene carnicería. */

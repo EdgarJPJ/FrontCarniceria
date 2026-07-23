@@ -146,6 +146,14 @@
   border-bottom-color: var(--sangre);
 }
 
+.campo__opcional {
+  margin-left: 6px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--acero-tenue);
+  text-transform: none;
+}
+
 /* --- Aviso del servidor ------------------------------------------ */
 .aviso {
   margin-bottom: 22px;

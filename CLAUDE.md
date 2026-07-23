@@ -74,11 +74,13 @@ List screens all follow the same shape: `.encabezado` with a one-line summary, `
 
 ## State
 
-Every backend endpoint has a screen. Sections: mostrador (daily cut), ventas, fiado, inventario, entradas, mermas, productos, clientes, lotes, sucursales, personal, and soporte for the `developer` role, which sees only that one.
+Every backend endpoint has a screen. Sections: mostrador (daily cut), ventas, fiado, inventario, entradas, mermas, productos, clientes, lotes, sucursales, personal, empresa (the carnicería's own record), and soporte for the `developer` role, which sees only that one.
 
 Tests cover `jwt.ts` and `api-error.ts` — the two pieces with real logic and no backend needed. Screens are verified by driving the running app against the real API, not by component tests.
 
-Known gaps: no screen edits the company's own data (`PUT /api/companies/{id}` exists), product removal calls a hard `DELETE` so a sold product takes its history with it, and `Product.active` is never set false by any endpoint.
+**`empresa` is a single-record settings form, not a list** — no `.libreta`/`.panel`, the form is the page. `CompanyService` calls `/api/companies/mine`, never `/api/companies/{id}`: that path is soporte-only now (an administrador who called it with their own id used to get a 200, which is exactly the bug — nothing stopped them from passing anyone else's). `/mine` resolves the id server-side from the token, so there's no id to tamper with. After saving, the confirmation says the rail's name updates on next login rather than pretending to refresh it live — `AuthService.perfil()` is a cached, unparametrized Observable with no invalidation hook, and adding one just for this label wasn't worth the risk of it going stale somewhere it's trusted more.
+
+Known gaps: product removal calls a hard `DELETE` so a sold product takes its history with it, and `Product.active` is never set false by any endpoint (would need a soft-delete endpoint on the backend first, same shape as clients/branches).
 
 ## Git
 

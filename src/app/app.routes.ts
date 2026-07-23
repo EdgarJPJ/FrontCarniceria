@@ -88,6 +88,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/batches/batches.page').then((m) => m.BatchesPage),
       },
       {
+        path: 'empresa',
+        title: 'Mi carnicería · Carnicería',
+        loadComponent: () => import('./features/company/company.page').then((m) => m.CompanyPage),
+      },
+      {
         path: 'soporte',
         title: 'Soporte · Carnicería',
         loadComponent: () => import('./features/support/support.page').then((m) => m.SupportPage),
