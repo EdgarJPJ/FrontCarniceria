@@ -1,0 +1,16 @@
+:host {
+  display: block;
+  padding: clamp(24px, 3.5vw, 44px);
+}
+
+/* Aviso de captura incompleta: informa, no alarma. */
+.advertencia {
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--acero);
+  background: var(--azulejo);
+  border-left: 3px solid var(--acero-tenue);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}

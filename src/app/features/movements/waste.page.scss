@@ -1,0 +1,9 @@
+:host {
+  display: block;
+  padding: clamp(24px, 3.5vw, 44px);
+}
+
+/* Lo perdido va en la tinta y con signo: es una salida, no una cifra neutra. */
+.perdida {
+  color: var(--sangre);
+}

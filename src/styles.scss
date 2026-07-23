@@ -3,6 +3,15 @@
    Dirección: "Mostrador". Pared de azulejo, acero frío, una sola tinta roja.
    ========================================================================= */
 
+/*
+ * Los controles y las listas se cargan aquí, una sola vez. Antes cada pantalla
+ * los traía con @use y Sass los copiaba enteros dentro de su hoja con ámbito:
+ * seis copias del mismo CSS, y una de ellas ya rebasaba el presupuesto. Son
+ * clases del sistema de diseño, no de un componente, así que su lugar es este.
+ */
+@use 'styles/acceso';
+@use 'styles/tabla';
+
 :root {
   /* --- Color -------------------------------------------------------- */
   --azulejo: #eef1f0; /* azulejo esmaltado, verde-gris frío */

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { LoginRequest, LoginResponse, Perfil, RegistroRequest, Session } from './auth.models';
@@ -46,10 +46,19 @@ export class AuthService {
       .pipe(tap((respuesta) => this.abrirTurno(respuesta.jwt)));
   }
 
-  /** Nombres para mostrar (empresa y sucursal), que el token no trae. */
+  /**
+   * Nombres para mostrar y el id del empleado, que el token no trae. Se
+   * comparte entre pantallas: casi todas lo necesitan y no tiene caso pedirlo
+   * una vez por cada una.
+   */
   perfil(): Observable<Perfil> {
-    return this.http.get<Perfil>(`${environment.apiUrl}/auth/perfil`);
+    this.perfilEnCurso ??= this.http
+      .get<Perfil>(`${environment.apiUrl}/auth/perfil`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.perfilEnCurso;
   }
+
+  private perfilEnCurso: Observable<Perfil> | null = null;
 
   /**
    * La carnicería del último turno en este equipo. Una terminal de mostrador
@@ -63,6 +72,7 @@ export class AuthService {
   /** Cierra el turno pero deja la carnicería puesta: el equipo no cambia de dueño. */
   logout(): void {
     this._session.set(null);
+    this.perfilEnCurso = null;
     localStorage.removeItem(ALMACEN);
   }
 

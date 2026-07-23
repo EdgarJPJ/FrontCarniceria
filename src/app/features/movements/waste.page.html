@@ -1,0 +1,129 @@
+<header class="encabezado">
+  <div>
+    <h1 class="encabezado__titulo">Mermas</h1>
+    <p class="encabezado__resumen">
+      @if (cargando()) {
+        Cargando…
+      } @else {
+        {{ perdidoEsteMes() }} kg perdidos este mes · {{ lista().length }} registros
+      }
+    </p>
+  </div>
+
+  <button class="accion" type="button" (click)="abrir()">Registrar merma</button>
+</header>
+
+@if (error(); as e) {
+  <p class="aviso" role="alert">{{ e }}</p>
+}
+
+@if (!cargando() && lista().length === 0) {
+  <div class="vacio">
+    <p class="vacio__titulo">No hay mermas registradas</p>
+    <p class="vacio__nota">
+      Registrar lo que se echa a perder descuenta del inventario y explica la diferencia entre
+      lo que entró y lo que se vendió. Sin esto, la pérdida aparece como faltante sin motivo.
+    </p>
+  </div>
+} @else if (!cargando()) {
+  <div class="libreta">
+    <table class="libreta__tabla">
+      <caption class="a-voz">Mermas registradas</caption>
+      <thead>
+        <tr>
+          <th scope="col">Producto</th>
+          <th scope="col" class="num">Cantidad</th>
+          <th scope="col">Motivo</th>
+          <th scope="col">Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (merma of lista(); track merma.id) {
+          <tr>
+            <th scope="row" class="nombre">
+              {{ merma.productName }}
+              @if (merma.note) {
+                <span class="secundario">{{ merma.note }}</span>
+              }
+            </th>
+            <td class="dato num perdida">
+              −{{ merma.quantity }} {{ unidadDe(merma.productId) }}
+            </td>
+            <td class="dato">{{ merma.reason }}</td>
+            <td class="dato">{{ merma.date | date: 'dd/MM/yy HH:mm' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (panelAbierto()) {
+  <div class="panel">
+    <div class="panel__forma">
+      <h2 class="panel__titulo">Registrar merma</h2>
+      <p class="campo__pista">Esto descuenta del inventario. No se puede deshacer.</p>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="producto">Producto</label>
+        <select
+          id="producto"
+          class="campo__caja"
+          [ngModel]="productoElegido()"
+          (ngModelChange)="productoElegido.set($event)"
+        >
+          <option [ngValue]="null">Elige un producto…</option>
+          @for (p of catalogo(); track p.id) {
+            <option [ngValue]="p.id">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="cantidad">Cantidad perdida</label>
+        <input
+          id="cantidad"
+          class="campo__caja campo__caja--clave"
+          type="number"
+          min="0"
+          step="0.001"
+          [ngModel]="cantidad()"
+          (ngModelChange)="cantidad.set($event)"
+        />
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="motivo">Motivo</label>
+        <select
+          id="motivo"
+          class="campo__caja"
+          [ngModel]="motivo()"
+          (ngModelChange)="motivo.set($event)"
+        >
+          @for (m of motivos; track m) {
+            <option [ngValue]="m">{{ m }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="nota">Nota</label>
+        <input
+          id="nota"
+          class="campo__caja"
+          type="text"
+          [ngModel]="nota()"
+          (ngModelChange)="nota.set($event)"
+        />
+        <p class="campo__pista">Opcional, pero ayuda a entender el patrón después.</p>
+      </div>
+
+      <div class="panel__botones">
+        <button class="entrar" type="button" (click)="guardar()" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando' : 'Registrar merma' }}
+        </button>
+        <button class="cancelar" type="button" (click)="cerrar()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}

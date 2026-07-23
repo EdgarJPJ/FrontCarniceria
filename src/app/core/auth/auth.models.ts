@@ -60,6 +60,8 @@ export interface RegistroRequest {
  * salen de aquí, resueltos por el backend desde el empleado autenticado.
  */
 export interface Perfil {
+  /** Necesario para registrar ventas, entradas y mermas. */
+  empleadoId: number;
   usuario: string;
   nombre: string;
   rol: string;

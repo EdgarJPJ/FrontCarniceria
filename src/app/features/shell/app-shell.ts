@@ -32,7 +32,10 @@ export class AppShell {
 
   private readonly secciones: Seccion[] = [
     { ruta: '/mostrador', etiqueta: 'Mostrador' },
+    { ruta: '/ventas', etiqueta: 'Ventas' },
     { ruta: '/inventario', etiqueta: 'Inventario' },
+    { ruta: '/entradas', etiqueta: 'Entradas' },
+    { ruta: '/mermas', etiqueta: 'Mermas' },
     { ruta: '/clientes', etiqueta: 'Clientes' },
     { ruta: '/sucursales', etiqueta: 'Sucursales' },
     { ruta: '/lotes', etiqueta: 'Lotes', soloGestion: true },

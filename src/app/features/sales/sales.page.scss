@@ -1,0 +1,145 @@
+:host {
+  display: block;
+  padding: clamp(24px, 3.5vw, 44px);
+}
+
+/* La caja es más ancha: aquí se trabaja, no solo se llena un formulario. */
+.caja {
+  width: min(500px, 100%);
+}
+
+/* ===================================================================
+   Alta de partidas
+   =================================================================== */
+.agregar {
+  display: grid;
+  grid-template-columns: 1fr 110px auto;
+  align-items: end;
+  gap: 10px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--junta);
+}
+
+.agregar .campo + .campo {
+  margin-top: 0;
+}
+
+.agregar__boton {
+  height: var(--toque);
+  padding: 0 16px;
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--acero);
+  background: none;
+  border: 1px solid var(--acero);
+  border-radius: var(--canto);
+  cursor: pointer;
+}
+
+.agregar__boton:hover {
+  color: var(--hueso);
+  background: var(--acero);
+}
+
+/* ===================================================================
+   El ticket
+   =================================================================== */
+.ticket {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket__vacio {
+  margin-top: 24px;
+  padding: 22px 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--acero-tenue);
+  border-bottom: 1px solid var(--junta);
+}
+
+.ticket__linea {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px dashed var(--junta);
+}
+
+.ticket__que {
+  font-size: 14.5px;
+  color: var(--acero);
+}
+
+.ticket__detalle {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--dato);
+  font-size: 12px;
+  color: var(--acero-tenue);
+}
+
+.ticket__importe {
+  font-family: var(--dato);
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--acero);
+}
+
+.ticket__quitar {
+  width: 24px;
+  height: 24px;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--acero-tenue);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.ticket__quitar:hover {
+  color: var(--sangre);
+}
+
+/* El total cierra el ticket, con la barra gruesa de una cuenta. */
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 2px solid var(--acero);
+}
+
+.total__rotulo {
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+.total__cifra {
+  font-family: var(--rotulo);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--acero);
+}
+
+@media (max-width: 520px) {
+  .agregar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .agregar__boton {
+    grid-column: 1 / -1;
+  }
+}

@@ -28,6 +28,21 @@ export const routes: Routes = [
         loadComponent: () => import('./features/shell/mostrador.page').then((m) => m.MostradorPage),
       },
       {
+        path: 'ventas',
+        title: 'Ventas · Carnicería',
+        loadComponent: () => import('./features/sales/sales.page').then((m) => m.SalesPage),
+      },
+      {
+        path: 'entradas',
+        title: 'Entradas · Carnicería',
+        loadComponent: () => import('./features/movements/entries.page').then((m) => m.EntriesPage),
+      },
+      {
+        path: 'mermas',
+        title: 'Mermas · Carnicería',
+        loadComponent: () => import('./features/movements/waste.page').then((m) => m.WastePage),
+      },
+      {
         path: 'inventario',
         title: 'Inventario · Carnicería',
         loadComponent: () =>
