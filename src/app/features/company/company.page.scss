@@ -3,22 +3,40 @@
   padding: clamp(24px, 3.5vw, 44px);
 }
 
-/* El código se lee como dato, igual que en el inicio de sesión. */
-.codigo {
+/* El código de acceso, con su explicación: es lo primero que necesita un
+   dueño para dar de alta a su gente. Se lee como dato, en la tinta única. */
+.codigo-caja {
+  max-width: 480px;
+  margin-bottom: 28px;
+  padding: 18px 22px;
+  background: var(--azulejo);
+  border-left: 3px solid var(--sangre);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+.codigo-caja__rotulo {
   font-family: var(--dato);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+.codigo-caja__valor {
+  margin-top: 6px;
+  font-family: var(--dato);
+  font-size: 22px;
+  font-weight: 500;
   letter-spacing: 0.04em;
   color: var(--sangre);
 }
 
-.confirmacion {
-  margin-bottom: 22px;
-  padding: 13px 15px;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--acero);
-  background: var(--azulejo);
-  border-left: 3px solid var(--acero);
-  border-radius: 0 var(--canto) var(--canto) 0;
+.codigo-caja__nota {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--acero-medio);
 }
 
 /* Es un formulario de un solo registro: se le da el ancho de una tarjeta, no

@@ -1,6 +1,8 @@
-import { DatePipe, LowerCasePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { Perfil } from '../../core/auth/auth.models';
@@ -18,9 +20,19 @@ interface Partida {
   quantity: number;
 }
 
+/** Los tres pasos de la caja, en orden. */
+type Paso = 1 | 2 | 3;
+
+/** Lo que se muestra al terminar: el recibo de que la venta quedó. */
+interface Recibo {
+  total: number;
+  productos: number;
+  fiado: boolean;
+}
+
 @Component({
   selector: 'app-sales-page',
-  imports: [FormsModule, DatePipe, LowerCasePipe, SidePanel],
+  imports: [FormsModule, DatePipe, SidePanel],
   templateUrl: './sales.page.html',
   styleUrl: './sales.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,6 +42,8 @@ export class SalesPage {
   private readonly productos = inject(ProductsService);
   private readonly clientes = inject(ClientsService);
   protected readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   protected readonly lista = signal<Sale[]>([]);
   protected readonly catalogo = signal<Product[]>([]);
@@ -41,6 +55,15 @@ export class SalesPage {
   protected readonly error = signal<string | null>(null);
   protected readonly cobrando = signal(false);
   protected readonly cajaAbierta = signal(false);
+
+  /** En qué paso de la caja va: qué lleva, para quién, cómo paga. */
+  protected readonly paso = signal<Paso>(1);
+
+  /** Lo que falta para seguir. Se dice, no se deja el botón mudo. */
+  protected readonly avisoPaso = signal<string | null>(null);
+
+  /** Cuando existe, la caja muestra el recibo en vez del formulario. */
+  protected readonly recibo = signal<Recibo | null>(null);
 
   /** El ticket en construcción. */
   protected readonly partidas = signal<Partida[]>([]);
@@ -76,6 +99,15 @@ export class SalesPage {
     this.clientes.listar(undefined, true).subscribe({ next: (cs) => this.clientesActivos.set(cs) });
     this.ventas.metodosPago().subscribe({ next: (ms) => this.metodos.set(ms) });
     this.cargar();
+
+    // El riel abre la caja desde cualquier pantalla con ?nueva=1. Se limpia
+    // el parámetro al vuelo para que recargar o volver atrás no la reabra.
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      if (params.get('nueva') !== null) {
+        this.abrirCaja();
+        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+      }
+    });
   }
 
   protected cargar(): void {
@@ -100,21 +132,54 @@ export class SalesPage {
     this.metodoElegido.set(null);
     this.descuento.set(0);
     this.error.set(null);
+    this.avisoPaso.set(null);
+    this.recibo.set(null);
+    this.paso.set(1);
     this.cajaAbierta.set(true);
   }
 
   protected cerrarCaja(): void {
     this.cajaAbierta.set(false);
     this.error.set(null);
+    this.avisoPaso.set(null);
+  }
+
+  /** Avanza al paso siguiente, pero solo si lo del paso actual está completo. */
+  protected siguiente(): void {
+    if (this.paso() === 1 && this.partidas().length === 0) {
+      this.avisoPaso.set('Agrega al menos un producto para continuar.');
+      return;
+    }
+    this.avisoPaso.set(null);
+    this.paso.update((p) => (p < 3 ? ((p + 1) as Paso) : p));
+  }
+
+  /** Solo deja volver a un paso ya recorrido: hacia adelante se valida. */
+  protected irAPaso(destino: Paso): void {
+    if (destino <= this.paso()) {
+      this.avisoPaso.set(null);
+      this.paso.set(destino);
+    }
   }
 
   protected agregarPartida(): void {
     const id = this.productoElegido();
     const cant = this.cantidad();
-    if (!id || !cant || cant <= 0) return;
+
+    // El botón no se queda mudo: dice qué falta en vez de no hacer nada.
+    if (!id) {
+      this.avisoPaso.set('Elige un producto de la lista.');
+      return;
+    }
+    if (!cant || cant <= 0) {
+      this.avisoPaso.set('Escribe cuánto lleva, en kilos o piezas.');
+      return;
+    }
 
     const product = this.catalogo().find((p) => p.id === Number(id));
     if (!product) return;
+
+    this.avisoPaso.set(null);
 
     // Si el producto ya está en el ticket, se suma en vez de duplicar la línea.
     this.partidas.update((ps) => {
@@ -139,9 +204,18 @@ export class SalesPage {
 
   protected cobrar(): void {
     const p = this.perfil();
+    if (this.partidas().length === 0 || this.cobrando()) return;
+
     // Sin sucursal no hay dónde registrar la venta: es el caso del soporte,
-    // que no pertenece a ninguna carnicería.
-    if (!p?.sucursalId || this.partidas().length === 0 || this.cobrando()) return;
+    // que no pertenece a ninguna carnicería. Antes fallaba en silencio.
+    if (!p?.sucursalId) {
+      this.error.set('Tu usuario no está en una sucursal, así que no hay dónde registrar la venta.');
+      return;
+    }
+
+    const fiado = this.esFiado();
+    const total = this.total();
+    const productos = this.partidas().length;
 
     this.cobrando.set(true);
     this.error.set(null);
@@ -161,7 +235,9 @@ export class SalesPage {
       .subscribe({
         next: () => {
           this.cobrando.set(false);
-          this.cerrarCaja();
+          // La caja no se cierra sola: muestra el recibo de que quedó. Cerrar
+          // sin decir nada dejaba al carnicero sin saber si se cobró o no.
+          this.recibo.set({ total, productos, fiado });
           this.cargar();
         },
         error: (e: unknown) => {
@@ -169,6 +245,11 @@ export class SalesPage {
           this.error.set(mensajeDeError(e));
         },
       });
+  }
+
+  /** Tras cobrar: deja la caja lista para la siguiente sin cerrarla. */
+  protected otraVenta(): void {
+    this.abrirCaja();
   }
 
   protected cancelar(venta: Sale): void {
@@ -181,6 +262,18 @@ export class SalesPage {
 
   protected unidad(p: Product): string {
     return p.unitOfMeasure === 'KILO' ? 'kg' : 'pz';
+  }
+
+  /** El estado de pago en palabras del mostrador, no el enum del servidor. */
+  protected estadoPago(v: Sale): string {
+    switch (v.paymentStatus) {
+      case 'PAGADO':
+        return 'pagada';
+      case 'PARCIAL':
+        return 'abonada en parte';
+      default:
+        return 'sin pagar';
+    }
   }
 
   protected pesos(monto: number): string {

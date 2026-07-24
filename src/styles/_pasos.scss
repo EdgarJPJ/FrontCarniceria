@@ -1,0 +1,99 @@
+/* =========================================================================
+   Indicador de pasos: un formulario largo partido en tramos con nombre.
+   Lo usan la caja de ventas (tres pasos) y el cobro de fiado (dos), así que
+   se reparte en columnas iguales sin importar cuántos sean.
+
+   Marca dónde estás (tinta roja) y qué ya recorriste (acero con palomita).
+   Solo se puede volver a un paso ya hecho; hacia adelante siempre se valida.
+   ========================================================================= */
+.pasos {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.pasos__paso {
+  min-width: 0;
+}
+
+.pasos__boton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 4px 11px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 3px solid var(--junta);
+  cursor: pointer;
+}
+
+/* Un paso de adelante no invita al clic: hacia allá se llega validando. */
+.pasos__paso:not(.pasos__paso--hecho):not(.pasos__paso--aqui) .pasos__boton {
+  cursor: default;
+}
+
+.pasos__num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--acero-tenue);
+  background: var(--azulejo);
+  border-radius: 50%;
+}
+
+.pasos__nombre {
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acero-tenue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* El paso en curso: la tinta roja marca dónde estás parado. */
+.pasos__paso--aqui .pasos__boton {
+  border-top-color: var(--sangre);
+}
+
+.pasos__paso--aqui .pasos__num {
+  color: var(--hueso);
+  background: var(--sangre);
+}
+
+.pasos__paso--aqui .pasos__nombre {
+  color: var(--acero);
+}
+
+/* Un paso ya recorrido: acero, y el número cede su lugar a una palomita. */
+.pasos__paso--hecho .pasos__boton {
+  border-top-color: var(--acero-medio);
+}
+
+.pasos__paso--hecho .pasos__num {
+  color: var(--hueso);
+  background: var(--acero-medio);
+  font-size: 0; /* se oculta el dígito para dejar la palomita */
+}
+
+.pasos__paso--hecho .pasos__num::after {
+  content: '✓';
+  font-size: 12px;
+}
+
+.pasos__paso--hecho .pasos__nombre {
+  color: var(--acero-medio);
+}

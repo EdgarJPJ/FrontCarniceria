@@ -4,6 +4,100 @@
 }
 
 /* El ancho de "caja" lo pone <app-side-panel [ancho]="'caja'">. */
+/* El indicador `.pasos` es del sistema (lo usan ventas y fiado): vive en
+   styles/_pasos.scss, cargado una sola vez, no copiado aquí. */
+
+/* ===================================================================
+   Total compacto: acompaña en los pasos 2 y 3 para no perder el monto
+   =================================================================== */
+.resumen-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  padding: 12px 16px;
+  background: var(--azulejo);
+  border-left: 3px solid var(--acero);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+.resumen-total__rotulo {
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+.resumen-total__cifra {
+  font-family: var(--rotulo);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--acero);
+}
+
+/* La nota de que la venta se fía: informa, no alarma — por eso va en acero. */
+.fiado-nota {
+  padding: 14px 16px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--acero);
+  background: var(--azulejo);
+  border-left: 3px solid var(--acero-tenue);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
+/* ===================================================================
+   El recibo: confirmación de que la venta quedó
+   =================================================================== */
+.hecho {
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* La palomita va en acero, no en rojo: el rojo se gasta en lo que sale mal,
+   y esto salió bien. Es la misma convención que las confirmaciones. */
+.hecho__sello {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 8px auto 20px;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--hueso);
+  background: var(--acero);
+  border-radius: 50%;
+}
+
+.hecho__titulo {
+  margin-bottom: 10px;
+}
+
+.hecho__cifra {
+  font-family: var(--rotulo);
+  font-size: clamp(34px, 6vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--acero);
+}
+
+.hecho__detalle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--acero-medio);
+}
+
+.hecho .panel__botones {
+  margin-top: 28px;
+}
+
+/* La fila "atrás + siguiente" (.panel__botones--par y .volver) es del sistema:
+   la usan ventas y fiado, así que vive en styles/_tabla.scss. */
 
 /* ===================================================================
    Alta de partidas

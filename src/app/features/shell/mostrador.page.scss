@@ -22,13 +22,112 @@
 }
 
 /* ===================================================================
-   El corte del día
+   Lo que se viene a hacer: la acción es lo más grande de la portada
+   =================================================================== */
+.acciones {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+/* Con un solo botón (el vendedor no cobra fiado) no tiene sentido partir la
+   fila: la venta ocupa el ancho y no queda un hueco al lado. */
+.acciones:has(.hacer:only-child) {
+  grid-template-columns: 1fr;
+}
+
+.hacer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 16px;
+  align-content: center;
+  min-height: 112px;
+  padding: 22px 24px;
+  text-decoration: none;
+  border-radius: var(--canto);
+  transition:
+    transform 90ms ease,
+    box-shadow 90ms ease,
+    background-color 140ms ease;
+}
+
+.hacer__icono {
+  grid-row: 1 / 3;
+  align-self: center;
+  width: 34px;
+  height: 34px;
+}
+
+.hacer__nombre {
+  font-family: var(--rotulo);
+  font-size: clamp(22px, 2.6vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.hacer__nota {
+  margin-top: 3px;
+  font-size: 13.5px;
+}
+
+/* La acción principal gasta la tinta roja y se presiona como un sello. */
+.hacer--vender {
+  color: var(--hueso);
+  background: var(--sangre);
+  box-shadow: 0 4px 0 var(--sangre-honda);
+}
+
+.hacer--vender:hover {
+  background: #b81430;
+}
+
+.hacer--vender:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--sangre-honda);
+}
+
+.hacer--vender .hacer__nota {
+  color: rgb(255 255 255 / 0.82);
+}
+
+/* La segunda acción es de acero: existe, pero no compite con la venta. */
+.hacer--cobrar {
+  color: var(--acero);
+  background: var(--azulejo);
+  border: 1px solid var(--junta);
+  border-bottom: 2px solid var(--acero-tenue);
+}
+
+.hacer--cobrar:hover {
+  background: var(--azulejo-hondo);
+  border-bottom-color: var(--sangre);
+}
+
+.hacer--cobrar .hacer__icono {
+  color: var(--sangre);
+}
+
+.hacer--cobrar .hacer__nota {
+  color: var(--acero-medio);
+}
+
+@media (max-width: 620px) {
+  .acciones {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================================================
+   El corte del día — ahora bajo la acción, y más discreto
    =================================================================== */
 .corte {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1px;
-  margin-top: 32px;
+  margin-top: 28px;
   background: var(--junta); /* las juntas salen del fondo */
   border: 1px solid var(--junta);
   border-radius: var(--canto);
@@ -36,7 +135,7 @@
 }
 
 .corte__cifra {
-  padding: 20px 22px;
+  padding: 18px 20px;
   background: var(--hueso);
 }
 
@@ -50,9 +149,9 @@
 }
 
 .corte__monto {
-  margin-top: 8px;
+  margin-top: 7px;
   font-family: var(--rotulo);
-  font-size: clamp(26px, 3vw, 32px);
+  font-size: clamp(22px, 2.4vw, 26px);
   font-weight: 800;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -112,38 +211,130 @@
 }
 
 /* ===================================================================
-   Código de la carnicería
+   Inventario de hoy: qué se está por acabar, de un vistazo
    =================================================================== */
-.codigo {
-  max-width: 420px;
+.existencias {
   margin-top: 32px;
-  padding: 20px 22px;
+}
+
+.existencias__enca {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.existencias__titulo {
+  font-family: var(--rotulo);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--acero);
+}
+
+.existencias__ver {
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+  text-decoration: none;
+  border-bottom: 1px solid var(--junta);
+  white-space: nowrap;
+}
+
+.existencias__ver:hover {
+  color: var(--sangre);
+  border-bottom-color: var(--sangre);
+}
+
+/* Cuando no hay nada que reponer se dice con acero, no con rojo: es una
+   buena noticia, y el rojo es para lo que hay que atender. */
+.existencias__bien {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  font-size: 14.5px;
+  color: var(--acero-medio);
   background: var(--azulejo);
   border-left: 3px solid var(--acero-tenue);
   border-radius: 0 var(--canto) var(--canto) 0;
 }
 
-.codigo__rotulo {
-  font-family: var(--dato);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.existencias__palomita {
+  width: 18px;
+  height: 18px;
+  flex: none;
   color: var(--acero-medio);
 }
 
-.codigo__valor {
-  margin-top: 6px;
+.existencias__resumen {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--acero-medio);
+}
+
+.bajos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--junta);
+  border-radius: var(--canto);
+}
+
+.bajo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+}
+
+.bajo + .bajo {
+  border-top: 1px solid var(--junta);
+}
+
+.bajo__corte {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--acero);
+}
+
+.bajo__tipo {
+  margin-left: 8px;
+  font-size: 12.5px;
+  color: var(--acero-tenue);
+}
+
+.bajo__cantidad {
   font-family: var(--dato);
-  font-size: 19px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--acero);
+  white-space: nowrap;
+}
+
+.bajo__cantidad--agotado {
   color: var(--sangre);
 }
 
-.codigo__nota {
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--acero-tenue);
+.existencias__mas {
+  display: inline-block;
+  margin-top: 12px;
+  font-family: var(--dato);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--acero-medio);
+  text-decoration: none;
+  border-bottom: 1px solid var(--junta);
+}
+
+.existencias__mas:hover {
+  color: var(--sangre);
+  border-bottom-color: var(--sangre);
 }

@@ -9,18 +9,6 @@
   letter-spacing: 0.04em;
 }
 
-/* Confirmación de una acción que ya ocurrió: no es error ni advertencia. */
-.confirmacion {
-  margin-bottom: 20px;
-  padding: 13px 15px;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--acero);
-  background: var(--azulejo);
-  border-left: 3px solid var(--acero);
-  border-radius: 0 var(--canto) var(--canto) 0;
-}
-
 /* --- Cuentas de una carnicería ------------------------------------ */
 .cuentas {
   margin: 22px 0 0;

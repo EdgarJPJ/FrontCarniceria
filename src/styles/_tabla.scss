@@ -248,6 +248,34 @@
   flex: 1;
 }
 
+/* La fila de navegación entre pasos: "Atrás" a la izquierda y la acción a la
+   derecha, ambos a la misma altura (sin el margen que empuja al botón suelto).
+   La comparten la caja de ventas y el cobro de fiado. */
+.panel__botones--par .entrar {
+  margin-top: 0;
+}
+
+.volver {
+  flex: none;
+  height: var(--toque);
+  padding: 0 20px;
+  font-family: var(--dato);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+  background: none;
+  border: 1px solid var(--junta);
+  border-radius: var(--canto);
+  cursor: pointer;
+}
+
+.volver:hover {
+  color: var(--acero);
+  border-color: var(--acero-tenue);
+}
+
 .cancelar {
   margin-top: 28px;
   padding: 0 4px;

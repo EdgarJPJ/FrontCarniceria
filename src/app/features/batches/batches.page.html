@@ -1,16 +1,17 @@
 <header class="encabezado">
   <div>
-    <h1 class="encabezado__titulo">Lotes</h1>
+    <h1 class="encabezado__titulo">Canales compradas</h1>
     <p class="encabezado__resumen">
       @if (cargando()) {
         Cargando…
       } @else {
-        {{ lista().length }} lotes · {{ pesos(invertido()) }} en compra
+        {{ lista().length }} {{ lista().length === 1 ? 'canal' : 'canales' }} ·
+        {{ pesos(invertido()) }} en compra
       }
     </p>
   </div>
 
-  <button class="accion" type="button" (click)="abrirAlta()">Registrar lote</button>
+  <button class="accion" type="button" (click)="abrirAlta()">Registrar canal</button>
 </header>
 
 @if (error(); as e) {
@@ -19,19 +20,20 @@
 
 @if (!cargando() && lista().length === 0) {
   <div class="vacio">
-    <p class="vacio__titulo">Todavía no registras lotes</p>
+    <p class="vacio__titulo">Todavía no registras canales</p>
     <p class="vacio__nota">
-      Un lote es la compra de una canal completa. Al registrar el peso y lo que pagaste, el
-      sistema calcula solo cuánto se perdió al despiezar y cuánto se fue en el mostrador.
+      Una canal es una compra completa —media res, un cerdo entero—. Al registrar el peso y lo
+      que pagaste, el sistema calcula solo cuánto se perdió al despiezar y cuánto se fue en el
+      mostrador.
     </p>
   </div>
 } @else if (!cargando()) {
   <div class="libreta">
     <table class="libreta__tabla">
-      <caption class="a-voz">Lotes comprados</caption>
+      <caption class="a-voz">Canales compradas</caption>
       <thead>
         <tr>
-          <th scope="col">Lote</th>
+          <th scope="col">Canal</th>
           <th scope="col">Sucursal</th>
           <th scope="col" class="num">Peso</th>
           <th scope="col" class="num">Costo</th>
@@ -43,7 +45,7 @@
         @for (lote of lista(); track lote.id) {
           <tr>
             <th scope="row" class="nombre">
-              {{ lote.description || 'Lote #' + lote.id }}
+              {{ lote.description || 'Canal #' + lote.id }}
               <span class="secundario">{{ lote.date }}</span>
             </th>
             <td class="dato">{{ lote.branchName }}</td>
@@ -66,7 +68,7 @@
   <app-side-panel (cerrar)="cerrarPanel()">
     <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
       <h2 class="panel__titulo">
-        {{ enCurso === 'nuevo' ? 'Registrar lote' : 'Editar lote' }}
+        {{ enCurso === 'nuevo' ? 'Registrar canal' : 'Editar canal' }}
       </h2>
 
       <div class="campo">
@@ -111,7 +113,7 @@
 
       <p class="campo__pista nota">
         El peso y el costo son la base del reporte de merma y del margen. Si los dejas vacíos,
-        el lote se guarda igual pero el reporte no podrá calcular nada.
+        la canal se guarda igual pero el reporte no podrá calcular nada.
       </p>
 
       <div class="panel__botones">
@@ -127,8 +129,8 @@
 <!-- Reporte de merma -->
 @if (reporte(); as r) {
   <app-side-panel (cerrar)="cerrarPanel()">
-    <h2 class="panel__titulo">Merma del lote</h2>
-      <p class="campo__pista">{{ r.description || 'Lote #' + r.batchId }}</p>
+    <h2 class="panel__titulo">Merma de la canal</h2>
+      <p class="campo__pista">{{ r.description || 'Canal #' + r.batchId }}</p>
 
       <!-- El recorrido del peso, de la compra al mostrador. -->
       <dl class="merma">

@@ -72,92 +72,108 @@
   </div>
 }
 
-<!-- Cobro: se elige la venta y se registra el abono. -->
+<!-- Cobro: se elige la venta y se registra el abono, en dos pasos. -->
 @if (cobrando(); as cliente) {
   <app-side-panel (cerrar)="cerrarPanel()">
     <h2 class="panel__titulo">Cobrar a {{ cliente.name }}</h2>
-      <p class="campo__pista">
-        Debe {{ pesos(cliente.balance) }} en total. El abono se registra sobre una venta.
-      </p>
 
-      @if (cargandoVentas()) {
-        <p class="campo__pista">Cargando sus ventas…</p>
-      } @else if (!abonando()) {
-        <ul class="ventas">
-          @for (v of ventasDelCliente(); track v.id) {
-            <li class="venta">
-              <div>
-                <p class="venta__id">Venta #{{ v.id }}</p>
-                <p class="venta__detalle">
-                  {{ v.date | date: 'dd/MM/yy' }} ·
-                  {{ v.paymentStatus === 'PARCIAL' ? 'abonada en parte' : 'sin abonos' }}
-                </p>
-              </div>
-              <span class="venta__monto">{{ pesos(v.total) }}</span>
-              <button class="enlace" type="button" (click)="abrirAbono(v)">Abonar</button>
-            </li>
-          } @empty {
-            <li class="venta">
+    <!-- Los dos tramos del cobro: cuál venta, y cuánto abona. -->
+    <ol class="pasos">
+      <li class="pasos__paso" [class.pasos__paso--aqui]="!abonando()" [class.pasos__paso--hecho]="abonando()">
+        <button type="button" class="pasos__boton" (click)="volverAVentas()">
+          <span class="pasos__num">1</span>
+          <span class="pasos__nombre">Cuál venta</span>
+        </button>
+      </li>
+      <li class="pasos__paso" [class.pasos__paso--aqui]="abonando()">
+        <button type="button" class="pasos__boton">
+          <span class="pasos__num">2</span>
+          <span class="pasos__nombre">Cuánto abona</span>
+        </button>
+      </li>
+    </ol>
+
+    <p class="campo__pista">
+      Debe {{ pesos(cliente.balance) }} en total. El abono se registra sobre una venta.
+    </p>
+
+    @if (cargandoVentas()) {
+      <p class="campo__pista">Cargando sus ventas…</p>
+    } @else if (!abonando()) {
+      <!-- Paso 1 · Cuál venta -->
+      <ul class="ventas">
+        @for (v of ventasDelCliente(); track v.id) {
+          <li class="venta">
+            <div>
+              <p class="venta__id">Venta #{{ v.id }}</p>
               <p class="venta__detalle">
-                No tiene ventas pendientes. Si su saldo no es cero, revisa si alguna venta fue
-                cancelada.
+                {{ v.date | date: 'dd/MM/yy' }} ·
+                {{ v.paymentStatus === 'PARCIAL' ? 'abonada en parte' : 'sin abonos' }}
               </p>
-            </li>
-          }
-        </ul>
-      }
-
-      @if (abonando(); as venta) {
-        <div class="abono">
-          <p class="abono__rotulo">Abono a la venta #{{ venta.id }} de {{ pesos(venta.total) }}</p>
-
-          <div class="campo">
-            <label class="campo__etiqueta" for="monto">Cuánto entrega</label>
-            <input
-              id="monto"
-              class="campo__caja campo__caja--clave"
-              type="number"
-              min="0"
-              step="0.01"
-              [ngModel]="monto()"
-              (ngModelChange)="monto.set($event)"
-            />
-            <p class="campo__pista">
-              Puede abonar de a poco. El sistema rechaza un abono mayor a lo que resta.
+            </div>
+            <span class="venta__monto">{{ pesos(v.total) }}</span>
+            <button class="enlace" type="button" (click)="abrirAbono(v)">Abonar</button>
+          </li>
+        } @empty {
+          <li class="venta">
+            <p class="venta__detalle">
+              No tiene ventas pendientes. Si su saldo no es cero, revisa si alguna venta fue
+              cancelada.
             </p>
-          </div>
+          </li>
+        }
+      </ul>
 
-          <div class="campo">
-            <label class="campo__etiqueta" for="metodo">Con qué paga</label>
-            <select
-              id="metodo"
-              class="campo__caja"
-              [ngModel]="metodoElegido()"
-              (ngModelChange)="metodoElegido.set($event)"
-            >
-              <option [ngValue]="null">Sin especificar</option>
-              @for (m of metodos(); track m.id) {
-                <option [ngValue]="m.id">{{ m.name }}</option>
-              }
-            </select>
-          </div>
+      <div class="panel__botones">
+        <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
+      </div>
+    } @else if (abonando(); as venta) {
+      <!-- Paso 2 · Cuánto abona -->
+      <div class="abono">
+        <p class="abono__rotulo">Abono a la venta #{{ venta.id }} de {{ pesos(venta.total) }}</p>
 
-          <div class="panel__botones">
-            <button
-              class="entrar"
-              type="button"
-              (click)="registrarAbono()"
-              [disabled]="guardando() || !monto()"
-            >
-              {{ guardando() ? 'Registrando' : 'Registrar abono' }}
-            </button>
-            <button class="cancelar" type="button" (click)="abonando.set(null)">Volver</button>
-          </div>
+        @if (avisoMonto(); as a) {
+          <p class="aviso" role="alert">{{ a }}</p>
+        }
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="monto">Cuánto entrega</label>
+          <input
+            id="monto"
+            class="campo__caja campo__caja--clave"
+            type="number"
+            min="0"
+            step="0.01"
+            [ngModel]="monto()"
+            (ngModelChange)="monto.set($event); avisoMonto.set(null)"
+          />
+          <p class="campo__pista">
+            Puede abonar de a poco. El sistema rechaza un abono mayor a lo que resta.
+          </p>
         </div>
-      } @else {
-        <div class="panel__botones">
-          <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="metodo">Con qué paga</label>
+          <select
+            id="metodo"
+            class="campo__caja"
+            [ngModel]="metodoElegido()"
+            (ngModelChange)="metodoElegido.set($event)"
+          >
+            <option [ngValue]="null">Sin especificar</option>
+            @for (m of metodos(); track m.id) {
+              <option [ngValue]="m.id">{{ m.name }}</option>
+            }
+          </select>
         </div>
-      }
+
+        <div class="panel__botones panel__botones--par">
+          <button class="volver" type="button" (click)="volverAVentas()">Atrás</button>
+          <button class="entrar" type="button" (click)="registrarAbono()" [disabled]="guardando()">
+            {{ guardando() ? 'Registrando' : 'Registrar abono' }}
+          </button>
+        </div>
+      </div>
+    }
   </app-side-panel>
 }

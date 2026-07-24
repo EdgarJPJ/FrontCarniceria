@@ -17,13 +17,13 @@
   <p class="aviso" role="alert">{{ e }}</p>
 }
 
-<!-- Sin lote, el reporte de merma de ese lote no puede medir nada. -->
+<!-- Sin canal, el reporte de merma de esa canal no puede medir nada. -->
 @if (sinLigar() > 0 && auth.esGestion()) {
   <p class="advertencia">
     {{ sinLigar() }}
     {{ sinLigar() === 1 ? 'entrada no está ligada' : 'entradas no están ligadas' }}
-    a ningún lote. El reporte de merma se calcula contra el lote, así que esa mercancía no
-    cuenta como producción de ninguna canal.
+    a ninguna canal. El reporte de merma se calcula contra la canal, así que esa mercancía no
+    cuenta como producción de ninguna.
   </p>
 }
 
@@ -43,7 +43,7 @@
         <tr>
           <th scope="col">Producto</th>
           <th scope="col" class="num">Cantidad</th>
-          <th scope="col">Lote</th>
+          <th scope="col">Canal</th>
           <th scope="col">Fecha</th>
         </tr>
       </thead>
@@ -59,9 +59,9 @@
             <td class="dato num">{{ entrada.quantity }} {{ unidadDe(entrada.productId) }}</td>
             <td class="dato">
               @if (entrada.batchId) {
-                Lote #{{ entrada.batchId }}
+                Canal #{{ entrada.batchId }}
               } @else {
-                <span class="etiqueta">sin lote</span>
+                <span class="etiqueta">sin canal</span>
               }
             </td>
             <td class="dato">{{ entrada.date | date: 'dd/MM/yy HH:mm' }}</td>
@@ -106,24 +106,24 @@
 
       @if (lotesDisponibles().length > 0) {
         <div class="campo">
-          <label class="campo__etiqueta" for="lote">Lote</label>
+          <label class="campo__etiqueta" for="lote">Canal</label>
           <select
             id="lote"
             class="campo__caja"
             [ngModel]="loteElegido()"
             (ngModelChange)="loteElegido.set($event)"
           >
-            <option [ngValue]="null">Sin lote</option>
+            <option [ngValue]="null">Sin canal</option>
             @for (l of lotesDisponibles(); track l.id) {
               <option [ngValue]="l.id">
-                {{ l.description || 'Lote #' + l.id }}
+                {{ l.description || 'Canal #' + l.id }}
               </option>
             }
           </select>
           @if (sinLote()) {
             <p class="campo__alerta">
-              Sin lote, esta mercancía no contará como producción de ninguna canal y el reporte
-              de merma no podrá medirla.
+              Sin canal, esta mercancía no contará como producción de ninguna y el reporte de
+              merma no podrá medirla.
             </p>
           } @else {
             <p class="campo__pista">De qué canal salió esta mercancía.</p>

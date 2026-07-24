@@ -1,6 +1,24 @@
 <p class="gremio">Turno abierto</p>
 <h1 class="titulo">Hola, {{ perfil()?.nombre ?? auth.username() }}</h1>
 
+<!-- Lo primero de la portada es lo que se viene a hacer, no lo que se lee. -->
+<section class="acciones" aria-label="Acciones">
+  <a class="hacer hacer--vender" routerLink="/ventas" [queryParams]="{ nueva: 1 }">
+    <app-icono class="hacer__icono" nombre="nueva" />
+    <span class="hacer__nombre">Nueva venta</span>
+    <span class="hacer__nota">Cobra en el mostrador</span>
+  </a>
+
+  <!-- Cobrar un abono es de gestión: no se le ofrece a quien recibiría un 403. -->
+  @if (auth.esGestion()) {
+    <a class="hacer hacer--cobrar" routerLink="/fiado">
+      <app-icono class="hacer__icono" nombre="pago" />
+      <span class="hacer__nombre">Registrar pago</span>
+      <span class="hacer__nota">Abono de un cliente fiado</span>
+    </a>
+  }
+</section>
+
 <!-- El corte del día: lo que se vendió, y de eso qué entró y qué se fio. -->
 <section class="corte" aria-label="Corte del día">
   <div class="corte__cifra">
@@ -27,34 +45,63 @@
 </section>
 
 <!-- Lo que pide atención. Si no hay nada, no se dice nada. -->
-@if (!cargando() && ((pendientes() > 0 && auth.esGestion()) || porReponer() > 0)) {
+@if (!cargando() && pendientes() > 0 && auth.esGestion()) {
   <section class="pendientes" aria-label="Requiere atención">
     <!-- El fiado solo se ofrece a quien puede abrirlo: es de gestión. -->
-    @if (pendientes() > 0 && auth.esGestion()) {
-      <a class="pendiente" routerLink="/fiado">
-        <span class="pendiente__que">
-          {{ pendientes() }}
-          {{ pendientes() === 1 ? 'venta por cobrar' : 'ventas por cobrar' }}
-        </span>
-        <span class="pendiente__ir">Ver fiado</span>
-      </a>
-    }
-    @if (porReponer() > 0) {
-      <a class="pendiente" routerLink="/inventario">
-        <span class="pendiente__que">
-          {{ porReponer() }}
-          {{ porReponer() === 1 ? 'producto por reponer' : 'productos por reponer' }}
-        </span>
-        <span class="pendiente__ir">Ver inventario</span>
-      </a>
-    }
+    <a class="pendiente" routerLink="/fiado">
+      <span class="pendiente__que">
+        {{ pendientes() }}
+        {{ pendientes() === 1 ? 'venta por cobrar' : 'ventas por cobrar' }}
+      </span>
+      <span class="pendiente__ir">Ver fiado</span>
+    </a>
   </section>
 }
 
-@if (auth.esGestion()) {
-  <section class="codigo">
-    <p class="codigo__rotulo">Código para entrar</p>
-    <p class="codigo__valor">{{ perfil()?.empresaSlug ?? auth.session()?.companySlug }}</p>
-    <p class="codigo__nota">Tu personal lo necesita junto con su clave para iniciar turno.</p>
+<!-- El inventario de un vistazo: qué se está por acabar, sin entrar a la lista. -->
+@if (!cargando()) {
+  <section class="existencias" aria-label="Inventario de hoy">
+    <div class="existencias__enca">
+      <h2 class="existencias__titulo">Inventario de hoy</h2>
+      <a class="existencias__ver" routerLink="/inventario">Ver todo</a>
+    </div>
+
+    @if (cortesBajos().length === 0) {
+      <p class="existencias__bien">
+        <app-icono class="existencias__palomita" nombre="inicio" />
+        Todo con existencia. Nada por reponer ahora mismo.
+      </p>
+    } @else {
+      <p class="existencias__resumen">
+        {{ totalBajos() }}
+        {{ totalBajos() === 1 ? 'corte por reponer' : 'cortes por reponer' }}
+        antes de que se acaben:
+      </p>
+      <ul class="bajos">
+        @for (linea of cortesBajos(); track linea.branchId + '-' + linea.productId) {
+          <li class="bajo">
+            <span class="bajo__corte">
+              {{ linea.productName }}
+              @if (linea.cutType) {
+                <span class="bajo__tipo">{{ linea.cutType }}</span>
+              }
+            </span>
+            <span class="bajo__cantidad" [class.bajo__cantidad--agotado]="agotado(linea)">
+              {{ cantidad(linea) }}
+            </span>
+            @if (agotado(linea)) {
+              <span class="etiqueta etiqueta--tinta">agotado</span>
+            } @else {
+              <span class="etiqueta">por reponer</span>
+            }
+          </li>
+        }
+      </ul>
+      @if (totalBajos() > cortesBajos().length) {
+        <a class="existencias__mas" routerLink="/inventario">
+          Y {{ totalBajos() - cortesBajos().length }} más en el inventario
+        </a>
+      }
+    }
   </section>
 }

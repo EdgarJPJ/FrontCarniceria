@@ -36,6 +36,9 @@ export class CreditPage {
   protected readonly metodoElegido = signal<number | null>(null);
   protected readonly guardando = signal(false);
 
+  /** Lo que falta para registrar el abono. Se dice, no se deja el botón mudo. */
+  protected readonly avisoMonto = signal<string | null>(null);
+
   protected readonly totalPorCobrar = computed(() =>
     this.saldos().reduce((s, c) => s + c.balance, 0),
   );
@@ -96,19 +99,34 @@ export class CreditPage {
     this.abonando.set(null);
     this.monto.set(null);
     this.error.set(null);
+    this.avisoMonto.set(null);
   }
 
   protected abrirAbono(venta: Sale): void {
     this.abonando.set(venta);
     this.monto.set(null);
     this.metodoElegido.set(null);
+    this.avisoMonto.set(null);
+  }
+
+  /** Vuelve al paso 1: elegir otra venta del mismo cliente. */
+  protected volverAVentas(): void {
+    this.abonando.set(null);
+    this.avisoMonto.set(null);
   }
 
   protected registrarAbono(): void {
     const venta = this.abonando();
     const cantidad = this.monto();
-    if (!venta || !cantidad || cantidad <= 0 || this.guardando()) return;
+    if (!venta || this.guardando()) return;
 
+    // El botón no se queda mudo: dice qué falta en vez de no hacer nada.
+    if (!cantidad || cantidad <= 0) {
+      this.avisoMonto.set('Escribe cuánto está entregando el cliente.');
+      return;
+    }
+
+    this.avisoMonto.set(null);
     this.guardando.set(true);
     this.error.set(null);
 

@@ -60,9 +60,9 @@
             <td class="dato num">{{ pesos(venta.total) }}</td>
             <td class="dato">
               @if (venta.paymentStatus === 'PAGADO') {
-                <span class="etiqueta">pagado</span>
+                <span class="etiqueta">{{ estadoPago(venta) }}</span>
               } @else {
-                <span class="etiqueta etiqueta--tinta">{{ venta.paymentStatus | lowercase }}</span>
+                <span class="etiqueta etiqueta--tinta">{{ estadoPago(venta) }}</span>
               }
             </td>
             @if (auth.esGestion()) {
@@ -79,140 +79,231 @@
   </div>
 }
 
-<!-- La caja: se arma el ticket y se cobra. -->
+<!-- La caja: se arma el ticket, en tres pasos, y se cobra. -->
 @if (cajaAbierta()) {
   <app-side-panel ancho="caja" (cerrar)="cerrarCaja()">
-    <h2 class="panel__titulo">Nueva venta</h2>
-
-      <!-- Alta de partidas -->
-      <div class="agregar">
-        <div class="campo">
-          <label class="campo__etiqueta" for="producto">Producto</label>
-          <select
-            id="producto"
-            class="campo__caja"
-            [ngModel]="productoElegido()"
-            (ngModelChange)="productoElegido.set($event)"
-          >
-            <option [ngValue]="null">Elige un producto…</option>
-            @for (p of catalogo(); track p.id) {
-              <option [ngValue]="p.id">
-                {{ p.name }} — {{ pesos(p.salePrice) }}/{{ unidad(p) }}
-              </option>
-            }
-          </select>
-        </div>
-
-        <div class="campo">
-          <label class="campo__etiqueta" for="cantidad">Cantidad</label>
-          <input
-            id="cantidad"
-            class="campo__caja campo__caja--clave"
-            type="number"
-            min="0"
-            step="0.001"
-            [ngModel]="cantidad()"
-            (ngModelChange)="cantidad.set($event)"
-            (keydown.enter)="agregarPartida()"
-          />
-        </div>
-
-        <button class="agregar__boton" type="button" (click)="agregarPartida()">Agregar</button>
-      </div>
-
-      <!-- El ticket -->
-      @if (partidas().length === 0) {
-        <p class="ticket__vacio">Agrega productos para armar la venta.</p>
-      } @else {
-        <ul class="ticket">
-          @for (p of partidas(); track p.product.id) {
-            <li class="ticket__linea">
-              <div class="ticket__que">
-                {{ p.product.name }}
-                <span class="ticket__detalle">
-                  {{ p.quantity }} {{ unidad(p.product) }} × {{ pesos(p.product.salePrice) }}
-                </span>
-              </div>
-              <span class="ticket__importe">{{ pesos(p.product.salePrice * p.quantity) }}</span>
-              <button
-                class="ticket__quitar"
-                type="button"
-                (click)="quitarPartida(p.product.id)"
-                [attr.aria-label]="'Quitar ' + p.product.name"
-              >
-                ×
-              </button>
-            </li>
-          }
-        </ul>
-
-        <div class="campo">
-          <label class="campo__etiqueta" for="descuento">Descuento</label>
-          <input
-            id="descuento"
-            class="campo__caja campo__caja--clave"
-            type="number"
-            min="0"
-            step="0.01"
-            [ngModel]="descuento()"
-            (ngModelChange)="descuento.set($event)"
-          />
-        </div>
-
-        <p class="total">
-          <span class="total__rotulo">Total</span>
-          <span class="total__cifra">{{ pesos(total()) }}</span>
+    <!-- Terminada la venta, la caja muestra el recibo, no el formulario. -->
+    @if (recibo(); as r) {
+      <div class="hecho">
+        <span class="hecho__sello" aria-hidden="true">✓</span>
+        <h2 class="panel__titulo hecho__titulo">Venta registrada</h2>
+        <p class="hecho__cifra">{{ pesos(r.total) }}</p>
+        <p class="hecho__detalle">
+          {{ r.productos }} {{ r.productos === 1 ? 'producto' : 'productos' }} ·
+          {{ r.fiado ? 'quedó fiada' : 'cobrada de contado' }}
         </p>
+
+        <div class="panel__botones">
+          <button class="entrar" type="button" (click)="otraVenta()">Otra venta</button>
+          <button class="cancelar" type="button" (click)="cerrarCaja()">Cerrar</button>
+        </div>
+      </div>
+    } @else {
+      <h2 class="panel__titulo">Nueva venta</h2>
+
+      <!-- Los tres pasos: dónde va y cuáles ya recorrió. -->
+      <ol class="pasos">
+        <li
+          class="pasos__paso"
+          [class.pasos__paso--aqui]="paso() === 1"
+          [class.pasos__paso--hecho]="paso() > 1"
+        >
+          <button type="button" class="pasos__boton" (click)="irAPaso(1)">
+            <span class="pasos__num">1</span>
+            <span class="pasos__nombre">Qué lleva</span>
+          </button>
+        </li>
+        <li
+          class="pasos__paso"
+          [class.pasos__paso--aqui]="paso() === 2"
+          [class.pasos__paso--hecho]="paso() > 2"
+        >
+          <button type="button" class="pasos__boton" (click)="irAPaso(2)">
+            <span class="pasos__num">2</span>
+            <span class="pasos__nombre">Para quién</span>
+          </button>
+        </li>
+        <li class="pasos__paso" [class.pasos__paso--aqui]="paso() === 3">
+          <button type="button" class="pasos__boton" (click)="irAPaso(3)">
+            <span class="pasos__num">3</span>
+            <span class="pasos__nombre">Cómo paga</span>
+          </button>
+        </li>
+      </ol>
+
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
+      @if (avisoPaso(); as a) {
+        <p class="aviso" role="alert">{{ a }}</p>
       }
 
-      <!-- Cómo se cobra -->
-      <div class="campo">
-        <label class="campo__etiqueta" for="cliente">Cliente</label>
-        <select
-          id="cliente"
-          class="campo__caja"
-          [ngModel]="clienteElegido()"
-          (ngModelChange)="clienteElegido.set($event)"
-        >
-          <option [ngValue]="null">Público en general (de contado)</option>
-          @for (c of clientesActivos(); track c.id) {
-            <option [ngValue]="c.id">{{ c.name }}</option>
-          }
-        </select>
-        @if (esFiado()) {
-          <p class="campo__pista">
-            La venta queda fiada y aparecerá en los saldos de este cliente hasta que la liquide.
+      <!-- Paso 1 · Qué lleva -->
+      @if (paso() === 1) {
+        <div class="agregar">
+          <div class="campo">
+            <label class="campo__etiqueta" for="producto">Producto</label>
+            <select
+              id="producto"
+              class="campo__caja"
+              [ngModel]="productoElegido()"
+              (ngModelChange)="productoElegido.set($event); avisoPaso.set(null)"
+            >
+              <option [ngValue]="null">Elige un producto…</option>
+              @for (p of catalogo(); track p.id) {
+                <option [ngValue]="p.id">
+                  {{ p.name }} — {{ pesos(p.salePrice) }}/{{ unidad(p) }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="cantidad">Cantidad</label>
+            <input
+              id="cantidad"
+              class="campo__caja campo__caja--clave"
+              type="number"
+              min="0"
+              step="0.001"
+              [ngModel]="cantidad()"
+              (ngModelChange)="cantidad.set($event); avisoPaso.set(null)"
+              (keydown.enter)="agregarPartida()"
+            />
+          </div>
+
+          <button class="agregar__boton" type="button" (click)="agregarPartida()">Agregar</button>
+        </div>
+
+        @if (partidas().length === 0) {
+          <p class="ticket__vacio">Agrega productos para armar la venta.</p>
+        } @else {
+          <ul class="ticket">
+            @for (p of partidas(); track p.product.id) {
+              <li class="ticket__linea">
+                <div class="ticket__que">
+                  {{ p.product.name }}
+                  <span class="ticket__detalle">
+                    {{ p.quantity }} {{ unidad(p.product) }} × {{ pesos(p.product.salePrice) }}
+                  </span>
+                </div>
+                <span class="ticket__importe">{{ pesos(p.product.salePrice * p.quantity) }}</span>
+                <button
+                  class="ticket__quitar"
+                  type="button"
+                  (click)="quitarPartida(p.product.id)"
+                  [attr.aria-label]="'Quitar ' + p.product.name"
+                >
+                  ×
+                </button>
+              </li>
+            }
+          </ul>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="descuento">Descuento</label>
+            <input
+              id="descuento"
+              class="campo__caja campo__caja--clave"
+              type="number"
+              min="0"
+              step="0.01"
+              [ngModel]="descuento()"
+              (ngModelChange)="descuento.set($event)"
+            />
+          </div>
+
+          <p class="total">
+            <span class="total__rotulo">Total</span>
+            <span class="total__cifra">{{ pesos(total()) }}</span>
           </p>
         }
-      </div>
 
-      @if (!esFiado()) {
-        <div class="campo">
-          <label class="campo__etiqueta" for="metodo">Forma de pago</label>
-          <select
-            id="metodo"
-            class="campo__caja"
-            [ngModel]="metodoElegido()"
-            (ngModelChange)="metodoElegido.set($event)"
-          >
-            <option [ngValue]="null">Sin especificar</option>
-            @for (m of metodos(); track m.id) {
-              <option [ngValue]="m.id">{{ m.name }}</option>
-            }
-          </select>
+        <div class="panel__botones">
+          <button class="entrar" type="button" (click)="siguiente()">Siguiente: para quién</button>
+          <button class="cancelar" type="button" (click)="cerrarCaja()">Cancelar</button>
         </div>
       }
 
-      <div class="panel__botones">
-        <button
-          class="entrar"
-          type="button"
-          (click)="cobrar()"
-          [disabled]="cobrando() || partidas().length === 0"
-        >
-          {{ cobrando() ? 'Cobrando' : esFiado() ? 'Fiar ' + pesos(total()) : 'Cobrar ' + pesos(total()) }}
-        </button>
-        <button class="cancelar" type="button" (click)="cerrarCaja()">Cancelar</button>
-      </div>
+      <!-- Paso 2 · Para quién -->
+      @if (paso() === 2) {
+        <p class="resumen-total">
+          <span class="resumen-total__rotulo">Total</span>
+          <span class="resumen-total__cifra">{{ pesos(total()) }}</span>
+        </p>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="cliente">Cliente</label>
+          <select
+            id="cliente"
+            class="campo__caja"
+            [ngModel]="clienteElegido()"
+            (ngModelChange)="clienteElegido.set($event)"
+          >
+            <option [ngValue]="null">Público en general (de contado)</option>
+            @for (c of clientesActivos(); track c.id) {
+              <option [ngValue]="c.id">{{ c.name }}</option>
+            }
+          </select>
+          @if (esFiado()) {
+            <p class="campo__pista">
+              La venta queda fiada y aparecerá en los saldos de este cliente hasta que la liquide.
+            </p>
+          } @else {
+            <p class="campo__pista">
+              Sin cliente, la venta es de contado y se cobra ahora.
+            </p>
+          }
+        </div>
+
+        <div class="panel__botones panel__botones--par">
+          <button class="volver" type="button" (click)="irAPaso(1)">Atrás</button>
+          <button class="entrar" type="button" (click)="siguiente()">Siguiente: cómo paga</button>
+        </div>
+      }
+
+      <!-- Paso 3 · Cómo paga -->
+      @if (paso() === 3) {
+        <p class="resumen-total">
+          <span class="resumen-total__rotulo">Total</span>
+          <span class="resumen-total__cifra">{{ pesos(total()) }}</span>
+        </p>
+
+        @if (esFiado()) {
+          <p class="fiado-nota">
+            Esta venta queda <strong>fiada</strong>. No se cobra ahora: aparecerá en los saldos del
+            cliente y se abona desde <strong>Fiado y cobros</strong>.
+          </p>
+        } @else {
+          <div class="campo">
+            <label class="campo__etiqueta" for="metodo">Forma de pago</label>
+            <select
+              id="metodo"
+              class="campo__caja"
+              [ngModel]="metodoElegido()"
+              (ngModelChange)="metodoElegido.set($event)"
+            >
+              <option [ngValue]="null">Sin especificar</option>
+              @for (m of metodos(); track m.id) {
+                <option [ngValue]="m.id">{{ m.name }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div class="panel__botones panel__botones--par">
+          <button class="volver" type="button" (click)="irAPaso(2)">Atrás</button>
+          <button class="entrar" type="button" (click)="cobrar()" [disabled]="cobrando()">
+            {{
+              cobrando()
+                ? 'Registrando'
+                : esFiado()
+                  ? 'Fiar ' + pesos(total())
+                  : 'Cobrar ' + pesos(total())
+            }}
+          </button>
+        </div>
+      }
+    }
   </app-side-panel>
 }

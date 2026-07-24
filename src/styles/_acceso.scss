@@ -166,6 +166,22 @@
   border-radius: 0 var(--canto) var(--canto) 0;
 }
 
+/* --- Confirmación: algo que ya ocurrió ---------------------------- */
+/* Va aquí, junto a `.aviso`, porque son la misma pieza vista al derecho y al
+   revés: el servidor contestó. La diferencia es la tinta — el rojo se gasta
+   en lo que salió mal, y una confirmación no salió mal. Estaba copiada en
+   tres hojas de componente, que es exactamente lo que no debe pasar. */
+.confirmacion {
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--acero);
+  background: var(--azulejo);
+  border-left: 3px solid var(--acero);
+  border-radius: 0 var(--canto) var(--canto) 0;
+}
+
 /* --- El botón: se presiona como un sello -------------------------- */
 .entrar {
   position: relative;

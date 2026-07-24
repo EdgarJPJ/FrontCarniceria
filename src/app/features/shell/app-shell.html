@@ -12,6 +12,14 @@
       <span class="barra-movil__icono" aria-hidden="true"></span>
     </button>
     <p class="barra-movil__negocio">{{ rotulo() }}</p>
+
+    <!-- La acción del día también en angosto: es a lo que se viene. -->
+    @if (!auth.esSoporte()) {
+      <a class="barra-movil__venta" routerLink="/ventas" [queryParams]="{ nueva: 1 }">
+        <app-icono nombre="nueva" class="barra-movil__cruz" />
+        Vender
+      </a>
+    }
   </header>
 
   @if (menuAbierto()) {
@@ -33,20 +41,77 @@
       ×
     </button>
 
-    <ul class="riel__lista">
-      @for (seccion of visibles(); track seccion.ruta) {
-        <li>
-          <a
-            class="riel__paso"
-            [routerLink]="seccion.ruta"
-            routerLinkActive="riel__paso--aqui"
-            [routerLinkActiveOptions]="{ exact: false }"
-          >
-            {{ seccion.etiqueta }}
+    <!-- Lo que se hace varias veces al día, a un clic desde donde sea. -->
+    @if (!auth.esSoporte()) {
+      <div class="riel__acciones">
+        <a class="riel__venta" routerLink="/ventas" [queryParams]="{ nueva: 1 }">
+          <app-icono nombre="nueva" class="riel__cruz" />
+          Nueva venta
+        </a>
+
+        <!-- Cobrar un abono es de gestión: ofrecérselo a un vendedor solo lo
+             llevaría a un 403, porque el permiso lo decide el backend. -->
+        @if (auth.esGestion()) {
+          <a class="riel__pago" routerLink="/fiado">
+            <app-icono nombre="pago" class="riel__icono" />
+            Registrar pago
           </a>
-        </li>
+        }
+      </div>
+    }
+
+    <div class="riel__secciones">
+      <ul class="riel__lista">
+        @for (seccion of visibles(); track seccion.ruta) {
+          <li>
+            <a
+              class="riel__paso"
+              [routerLink]="seccion.ruta"
+              routerLinkActive="riel__paso--aqui"
+              [routerLinkActiveOptions]="{ exact: false }"
+            >
+              <app-icono class="riel__icono" [nombre]="seccion.icono" />
+              {{ seccion.etiqueta }}
+            </a>
+          </li>
+        }
+      </ul>
+
+      <!-- Lo de una vez al mes, plegado: está bien que cueste un clic más. -->
+      @if (ajustes().length > 0) {
+        <button
+          class="riel__grupo"
+          type="button"
+          (click)="alternarMas()"
+          [attr.aria-expanded]="masAbierto()"
+        >
+          Más
+          <app-icono
+            class="riel__galon"
+            [class.riel__galon--abierto]="masAbierto()"
+            nombre="galon"
+          />
+        </button>
+
+        @if (masAbierto()) {
+          <ul class="riel__lista">
+            @for (seccion of ajustes(); track seccion.ruta) {
+              <li>
+                <a
+                  class="riel__paso"
+                  [routerLink]="seccion.ruta"
+                  routerLinkActive="riel__paso--aqui"
+                  [routerLinkActiveOptions]="{ exact: false }"
+                >
+                  <app-icono class="riel__icono" [nombre]="seccion.icono" />
+                  {{ seccion.etiqueta }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
       }
-    </ul>
+    </div>
 
     <div class="riel__turno">
       <p class="riel__quien">{{ perfil()?.nombre ?? auth.username() }}</p>

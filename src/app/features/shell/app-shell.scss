@@ -4,7 +4,9 @@
 
 .local {
   display: grid;
-  grid-template-columns: 236px 1fr;
+  /* Un poco más ancho que antes: ahora cada sección lleva ícono y su nombre
+     completo, y "Entrada de mercancía" no debe partirse en dos renglones. */
+  grid-template-columns: 252px 1fr;
   min-height: 100dvh;
 }
 
@@ -14,6 +16,11 @@
 .riel {
   display: flex;
   flex-direction: column;
+  /* Se queda a la vista mientras la superficie de trabajo se desplaza: las
+     dos acciones de arriba deben seguir a un clic aunque la lista sea larga. */
+  position: sticky;
+  top: 0;
+  height: 100dvh;
   padding: 26px 0;
   background: var(--acero);
   color: #9fb0b3;
@@ -56,24 +63,110 @@
   color: #6d7e81;
 }
 
+/* --- Las dos acciones del día ------------------------------------- */
+/* Van separadas de las secciones y encima de todas ellas: no son un lugar
+   al que ir, son lo que se viene a hacer. */
+.riel__acciones {
+  display: grid;
+  gap: 9px;
+  padding: 18px 16px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.09);
+}
+
+/* El elemento más visible del sistema. Se presiona como un sello, igual que
+   el botón de acceso, y es lo único del riel que gasta la tinta roja. */
+.riel__venta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 14px;
+  font-family: var(--rotulo);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hueso);
+  text-decoration: none;
+  background: var(--sangre);
+  border-radius: var(--canto);
+  box-shadow: 0 3px 0 var(--sangre-honda);
+  transition:
+    background-color 140ms ease,
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.riel__venta:hover {
+  background: #b81430;
+}
+
+.riel__venta:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--sangre-honda);
+}
+
+.riel__cruz {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+/* La segunda acción existe, pero no compite con la primera. */
+.riel__pago {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--toque);
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  text-decoration: none;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: var(--canto);
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.riel__pago:hover {
+  border-color: rgb(255 255 255 / 0.4);
+  background: rgb(255 255 255 / 0.06);
+}
+
 /* --- Secciones ---------------------------------------------------- */
-.riel__lista {
+/* Las listas ya no crecen solas: crece el contenedor, para que "Más" quede
+   pegado a las secciones y el turno siga anclado abajo. */
+.riel__secciones {
   flex: 1;
-  margin: 18px 0 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.riel__lista {
+  margin: 12px 0 0;
   padding: 0;
   list-style: none;
 }
 
+/*
+ * Antes iban en mono, en versalitas y con mucho tracking. Se veía bien y se
+ * leía despacio: quien usa esto no es quien lo construyó, y busca "Clientes"
+ * de un vistazo, no lo deletrea. Caja normal y la fuente de texto.
+ */
 .riel__paso {
-  display: block;
-  padding: 13px 22px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 44px;
+  padding: 9px 20px 9px 19px;
   border-left: 3px solid transparent;
-  font-family: var(--dato);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #9fb0b3;
+  font-family: var(--texto);
+  font-size: 14px;
+  color: #b9c7c9;
   text-decoration: none;
   transition:
     color 120ms ease,
@@ -90,6 +183,57 @@
   color: #ffffff;
   border-left-color: var(--sangre);
   background: rgb(255 255 255 / 0.07);
+}
+
+/* El ícono acompaña, no señala: se queda en acero aunque la sección esté
+   abierta. El rojo ya está haciendo ese trabajo en el filo izquierdo. */
+.riel__icono {
+  flex: none;
+  color: #7e8f92;
+  transition: color 120ms ease;
+}
+
+.riel__paso:hover .riel__icono,
+.riel__paso--aqui .riel__icono {
+  color: #b9c7c9;
+}
+
+/* --- El grupo plegado --------------------------------------------- */
+.riel__grupo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px 20px 10px;
+  font-family: var(--dato);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: left;
+  color: #6d7e81;
+  background: none;
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 0.09);
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.riel__grupo:hover {
+  color: #b9c7c9;
+}
+
+.riel__galon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  transition: transform 160ms ease;
+}
+
+.riel__galon--abierto {
+  transform: rotate(180deg);
 }
 
 /* --- Turno -------------------------------------------------------- */
@@ -225,6 +369,8 @@
   }
 
   .barra-movil__negocio {
+    flex: 1;
+    min-width: 0;
     font-family: var(--rotulo);
     font-size: 15px;
     font-weight: 700;
@@ -232,6 +378,33 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* En angosto el riel está cerrado casi siempre. Si vender quedara detrás
+     del menú, la tarea más frecuente costaría dos clics justo en el aparato
+     donde más prisa hay. */
+  .barra-movil__venta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: none;
+    height: 38px;
+    padding: 0 14px;
+    font-family: var(--rotulo);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--hueso);
+    text-decoration: none;
+    background: var(--sangre);
+    border-radius: var(--canto);
+  }
+
+  .barra-movil__cruz {
+    width: 16px;
+    height: 16px;
+    flex: none;
   }
 
   .riel__fondo {
