@@ -61,9 +61,9 @@ export class AuthService {
   private perfilEnCurso: Observable<Perfil> | null = null;
 
   /**
-   * La carnicería del último turno en este equipo. Una terminal de mostrador
-   * es siempre de la misma carnicería, así que se teclea una vez y después
-   * entrar vuelve a ser solo clave y contraseña.
+   * La carnicería del último turno en este equipo. Ya no hace falta para
+   * entrar —el backend resuelve la clave sin ella—, pero sirve para precargar
+   * el campo si la clave y la contraseña resultan ambiguas entre carnicerías.
    */
   empresaRecordada(): string {
     return localStorage.getItem(ALMACEN_EMPRESA) ?? '';

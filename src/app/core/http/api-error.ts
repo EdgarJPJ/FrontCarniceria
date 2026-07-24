@@ -27,6 +27,12 @@ export function mensajeDeError(error: unknown): string {
     case 'SUBSCRIPTION_EXPIRED':
       return 'La suscripción de esta carnicería está suspendida. Contacta a soporte para reactivarla.';
 
+    // A diferencia de AUTHENTICATION_FAILED_EXCEPTION, aquí sí conviene el
+    // mensaje del backend: dice justo lo que falta (la carnicería), y solo se
+    // dispara cuando la clave y la contraseña ya eran correctas.
+    case 'EMPRESA_REQUERIDA_EXCEPTION':
+      return cuerpo.message ?? 'Escribe el nombre de tu carnicería para entrar.';
+
     case 'METHOD_ARGUMENT_NOT_VALID_EXCEPTION':
     case 'CONSTRAINT_VIOLATION_EXCEPTION':
       return cuerpo.message ?? 'Faltan datos para entrar.';
@@ -60,4 +66,15 @@ export function mensajeDeError(error: unknown): string {
   }
 
   return cuerpo?.message ?? 'Algo falló al iniciar el turno. Intenta de nuevo.';
+}
+
+/**
+ * Solo es cierto cuando el backend ya validó clave y contraseña y encontró
+ * más de una carnicería con ellas — nunca por una contraseña incorrecta, así
+ * que no sirve para tantear cuentas ajenas.
+ */
+export function esEmpresaRequerida(error: unknown): boolean {
+  if (!(error instanceof HttpErrorResponse)) return false;
+  const cuerpo = error.error as Partial<ApiErrorResponse> | null;
+  return cuerpo?.code === 'EMPRESA_REQUERIDA_EXCEPTION';
 }

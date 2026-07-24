@@ -9,7 +9,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { mensajeDeError } from '../../../core/http/api-error';
+import { esEmpresaRequerida, mensajeDeError } from '../../../core/http/api-error';
 import { AccesoLayout } from '../acceso-layout/acceso-layout';
 
 @Component({
@@ -30,29 +30,21 @@ export class LoginPage {
   protected readonly verContrasena = signal(false);
 
   /*
-   * La carnicería no es obligatoria: dejarla vacía es como entra el soporte
-   * del sistema, que no pertenece a ninguna. Si alguien más la omite, el
-   * backend responde que las credenciales no coinciden.
+   * La carnicería casi nunca hace falta: el backend busca la clave entre
+   * todas. Este campo arranca oculto y solo aparece si el backend responde
+   * que esa clave y contraseña coinciden en más de una carnicería.
    */
+  protected readonly pedirEmpresa = signal(false);
+
   protected readonly form = this.fb.nonNullable.group({
-    // Se precarga con la del último turno: en una terminal fija no cambia.
-    empresa: [this.auth.empresaRecordada()],
+    empresa: [''],
     username: ['', Validators.required],
     password: ['', Validators.required],
   });
 
-  protected readonly empresaConocida = this.auth.empresaRecordada() !== '';
-
   constructor() {
-    /*
-     * El cursor arranca donde toca teclear: en la clave si el equipo ya sabe
-     * de qué carnicería es, en la carnicería si es su primer uso. Se hace por
-     * código porque el atributo `autofocus` solo actúa al parsear el HTML, y
-     * esta pantalla se pinta después, al resolverse la ruta.
-     */
     afterNextRender(() => {
-      const id = this.empresaConocida ? 'username' : 'empresa';
-      document.getElementById(id)?.focus();
+      document.getElementById('username')?.focus();
     });
   }
 
@@ -95,8 +87,20 @@ export class LoginPage {
         this.enviando.set(false);
         this.form.enable({ emitEvent: false });
         this.errorServidor.set(mensajeDeError(error));
-        this.password.reset('');
-        document.getElementById('password')?.focus();
+
+        // La clave y la contraseña ya eran correctas: lo que falta es decir
+        // de cuál carnicería, no volver a teclear una contraseña que ya
+        // quedó comprobada.
+        if (esEmpresaRequerida(error)) {
+          this.pedirEmpresa.set(true);
+          this.empresa.addValidators(Validators.required);
+          this.empresa.updateValueAndValidity();
+          this.empresa.setValue(this.auth.empresaRecordada());
+          queueMicrotask(() => document.getElementById('empresa')?.focus());
+        } else {
+          this.password.reset('');
+          document.getElementById('password')?.focus();
+        }
       },
     });
   }

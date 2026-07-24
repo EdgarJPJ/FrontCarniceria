@@ -9,26 +9,6 @@
     }
 
     <div class="campo">
-      <label class="campo__etiqueta" for="empresa">Carnicería</label>
-      <input
-        id="empresa"
-        class="campo__caja"
-        formControlName="empresa"
-        type="text"
-        autocapitalize="off"
-        autocorrect="off"
-        spellcheck="false"
-        enterkeyhint="next"
-        aria-describedby="empresa-pista"
-        [attr.aria-invalid]="empresa.touched && empresa.invalid ? 'true' : null"
-      />
-      <p class="campo__pista" id="empresa-pista">
-        El nombre o el código que te dio tu administrador. Se queda guardado en este equipo.
-        Déjalo vacío solo si eres del equipo de soporte.
-      </p>
-    </div>
-
-    <div class="campo">
       <label class="campo__etiqueta" for="username">Clave de empleado</label>
       <input
         id="username"
@@ -73,6 +53,31 @@
         <p class="campo__alerta">Escribe tu contraseña para entrar.</p>
       }
     </div>
+
+    @if (pedirEmpresa()) {
+      <div class="campo">
+        <label class="campo__etiqueta" for="empresa">Carnicería</label>
+        <input
+          id="empresa"
+          class="campo__caja"
+          formControlName="empresa"
+          type="text"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="go"
+          aria-describedby="empresa-pista"
+          [attr.aria-invalid]="empresa.touched && empresa.invalid ? 'true' : null"
+        />
+        @if (empresa.touched && empresa.hasError('required')) {
+          <p class="campo__alerta">Escribe el nombre de tu carnicería.</p>
+        } @else {
+          <p class="campo__pista" id="empresa-pista">
+            El nombre o el código que te dio tu administrador.
+          </p>
+        }
+      </div>
+    }
 
     <button class="entrar" type="submit" [disabled]="enviando()">
       <span class="entrar__texto">{{ enviando() ? 'Entrando' : 'Entrar' }}</span>
