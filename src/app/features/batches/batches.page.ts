@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { mensajeDeError } from '../../core/http/api-error';
 import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Branch } from '../branches/branch.models';
 import { BranchesService } from '../branches/branches.service';
-import { Batch, BatchReport } from './batch.models';
+import { Batch, BatchReport, EstadoCanal } from './batch.models';
 import { BatchesService } from './batches.service';
 
 @Component({
@@ -30,8 +31,31 @@ export class BatchesPage {
   protected readonly reporte = signal<BatchReport | null>(null);
   protected readonly cargandoReporte = signal(false);
 
+  /**
+   * El reporte de cada canal, por id. Es lo único que sabe cuánto queda de
+   * ella: `lotes` no guarda ningún estado, así que "agotada" se deduce de los
+   * pesos. Un reporte que falla se omite del mapa y la canal queda sin estado
+   * en vez de aparecer acabada por error.
+   */
+  protected readonly reportes = signal<Map<number, BatchReport>>(new Map());
+
+  /** Las acabadas estorban a diario; se pueden volver a mostrar. */
+  protected readonly ocultarAgotadas = signal(true);
+
   protected readonly invertido = computed(() =>
     this.lista().reduce((suma, l) => suma + (l.totalPrice ?? 0), 0),
+  );
+
+  protected readonly agotadas = computed(
+    () => this.lista().filter((l) => this.estado(l) === 'agotada').length,
+  );
+
+  protected readonly abiertas = computed(() => this.lista().length - this.agotadas());
+
+  protected readonly visibles = computed(() =>
+    this.ocultarAgotadas()
+      ? this.lista().filter((l) => this.estado(l) !== 'agotada')
+      : this.lista(),
   );
 
   protected readonly form = this.fb.nonNullable.group({
@@ -52,11 +76,35 @@ export class BatchesPage {
       next: (ls) => {
         this.lista.set(ls);
         this.cargando.set(false);
+        this.cargarReportes(ls);
       },
       error: (e: unknown) => {
         this.error.set(mensajeDeError(e));
         this.cargando.set(false);
       },
+    });
+  }
+
+  /**
+   * Un reporte por canal, en paralelo. Es una petición por fila, pero es la
+   * única forma de saber qué queda de cada una sin un endpoint que las
+   * resuma. Cada una absorbe su propio error para que una canal rota no deje
+   * la lista entera sin estado.
+   */
+  private cargarReportes(lotes: Batch[]): void {
+    if (lotes.length === 0) {
+      this.reportes.set(new Map());
+      return;
+    }
+
+    forkJoin(
+      lotes.map((l) => this.lotes.reporte(l.id).pipe(catchError(() => of(null)))),
+    ).subscribe((rs) => {
+      const mapa = new Map<number, BatchReport>();
+      rs.forEach((r) => {
+        if (r) mapa.set(r.batchId, r);
+      });
+      this.reportes.set(mapa);
     });
   }
 
@@ -128,6 +176,46 @@ export class BatchesPage {
         this.cargandoReporte.set(false);
       },
     });
+  }
+
+  /**
+   * Cuánto queda de la canal: lo que salió del despiece menos lo vendido y lo
+   * mermado. Null cuando no hay con qué calcularlo.
+   */
+  protected restante(lote: Batch): number | null {
+    const r = this.reportes().get(lote.id);
+    if (!r || !r.medible) return null;
+    return r.weightProduced - r.weightSold - r.weightManualWaste;
+  }
+
+  /**
+   * En qué punto va la canal. No hay campo en la base: se deduce del peso, y
+   * cuando falta captura se dice eso en vez de inventar un estado.
+   */
+  protected estado(lote: Batch): EstadoCanal {
+    const r = this.reportes().get(lote.id);
+    return r ? this.estadoDeReporte(r) : 'sin-datos';
+  }
+
+  protected estadoDeReporte(r: BatchReport): EstadoCanal {
+    if (r.entryCount === 0) return 'sin-despiezar';
+    if (!r.medible) return 'sin-datos';
+
+    return r.agotado ? 'agotada' : 'abierta';
+  }
+
+  /** Lo que se pinta en la columna de restante. */
+  protected textoRestante(lote: Batch): string {
+    switch (this.estado(lote)) {
+      case 'agotada':
+        return 'Agotada';
+      case 'sin-despiezar':
+        return 'Sin despiezar';
+      case 'sin-datos':
+        return '—';
+      default:
+        return this.kilos(this.restante(lote));
+    }
   }
 
   /** Qué proporción del peso comprado se perdió. */

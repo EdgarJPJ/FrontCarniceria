@@ -35,6 +35,7 @@
       <thead>
         <tr>
           <th scope="col">Venta</th>
+          <th scope="col">Vendió</th>
           <th scope="col">Pago</th>
           <th scope="col" class="num">Total</th>
           <th scope="col">Estado</th>
@@ -56,7 +57,13 @@
                 {{ venta.details.length }} {{ venta.details.length === 1 ? 'producto' : 'productos' }}
               </span>
             </th>
-            <td class="dato">{{ venta.paymentMethodName || (venta.clientId ? 'Fiado' : '—') }}</td>
+            <td class="dato">{{ venta.employeeName || '—' }}</td>
+            <td class="dato">
+              {{ venta.paymentMethodName || (venta.clientId ? 'Fiado' : 'Contado') }}
+              @if (venta.clientName) {
+                <span class="secundario">{{ venta.clientName }}</span>
+              }
+            </td>
             <td class="dato num">{{ pesos(venta.total) }}</td>
             <td class="dato">
               @if (venta.paymentStatus === 'PAGADO') {

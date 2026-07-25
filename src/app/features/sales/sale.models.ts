@@ -11,8 +11,12 @@ export interface SaleDetail {
 export interface Sale {
   id: number;
   clientId: number | null;
+  clientName: string | null;
   branchId: number;
   employeeId: number;
+  /** Quién la cobró. Viene en la respuesta porque un vendedor no puede
+   *  consultar /api/employees para resolverlo. */
+  employeeName: string | null;
   paymentMethodId: number | null;
   paymentMethodName: string | null;
   date: string;

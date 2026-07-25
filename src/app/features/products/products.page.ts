@@ -33,15 +33,11 @@ export class ProductsPage {
   protected readonly visibles = computed(() => {
     const t = this.busqueda().trim().toLowerCase();
     if (!t) return this.lista();
-    return this.lista().filter(
-      (p) => p.name.toLowerCase().includes(t) || (p.cutType ?? '').toLowerCase().includes(t),
-    );
+    return this.lista().filter((p) => p.name.toLowerCase().includes(t));
   });
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
-    // El backend rechaza el corte vacío al actualizar, así que se pide siempre.
-    cutType: ['', [Validators.required, Validators.maxLength(100)]],
     unitMeasure: ['kilo', Validators.required],
     salePrice: [0, [Validators.required, Validators.min(0.01)]],
   });
@@ -65,14 +61,13 @@ export class ProductsPage {
   }
 
   protected abrirAlta(): void {
-    this.form.reset({ name: '', cutType: '', unitMeasure: 'kilo', salePrice: 0 });
+    this.form.reset({ name: '', unitMeasure: 'kilo', salePrice: 0 });
     this.editando.set('nuevo');
   }
 
   protected abrirEdicion(p: Product): void {
     this.form.reset({
       name: p.name,
-      cutType: p.cutType ?? '',
       unitMeasure: p.unitOfMeasure.toLowerCase(),
       salePrice: p.salePrice,
     });

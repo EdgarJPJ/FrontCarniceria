@@ -14,3 +14,19 @@
   border-left: 3px solid var(--acero-tenue);
   border-radius: 0 var(--canto) var(--canto) 0;
 }
+
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: var(--toque);
+  font-size: 14.5px;
+  color: var(--acero);
+  cursor: pointer;
+}
+
+.casilla input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sangre);
+}

@@ -82,9 +82,6 @@
           <li class="bajo">
             <span class="bajo__corte">
               {{ linea.productName }}
-              @if (linea.cutType) {
-                <span class="bajo__tipo">{{ linea.cutType }}</span>
-              }
             </span>
             <span class="bajo__cantidad" [class.bajo__cantidad--agotado]="agotado(linea)">
               {{ cantidad(linea) }}

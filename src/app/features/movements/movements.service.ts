@@ -23,6 +23,8 @@ export interface StockEntryRequest {
   batchId: number | null;
   quantity: number;
   note: string;
+  /** Marca la canal como despiezada por completo: no se esperan más entradas contra ella. */
+  despieceTerminado: boolean;
 }
 
 export interface Waste {

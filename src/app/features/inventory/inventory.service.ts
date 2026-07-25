@@ -10,7 +10,6 @@ export interface InventoryLine {
   branchName: string;
   productId: number;
   productName: string;
-  cutType: string | null;
   unitOfMeasure: 'KILO' | 'PIEZA';
   salePrice: number;
   stock: number;

@@ -7,7 +7,6 @@ import { environment } from '../../../environments/environment';
 export interface Product {
   id: number;
   name: string;
-  cutType: string | null;
   unitOfMeasure: 'KILO' | 'PIEZA';
   salePrice: number;
   active: boolean;
@@ -16,7 +15,6 @@ export interface Product {
 
 export interface ProductRequest {
   name: string;
-  cutType: string;
   /** El backend lo compara sin distinguir mayúsculas: "kilo" o "pieza". */
   unitMeasure: string;
   salePrice: number;

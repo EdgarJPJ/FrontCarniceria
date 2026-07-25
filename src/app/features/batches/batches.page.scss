@@ -9,6 +9,36 @@
   border-top: 1px solid var(--junta);
 }
 
+/* Esconder las canales acabadas es lo normal, no un filtro de búsqueda:
+   por eso es una palomita y no una caja de texto. */
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: var(--toque);
+  font-size: 14.5px;
+  color: var(--acero);
+  cursor: pointer;
+}
+
+.casilla input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sangre);
+}
+
+/* Cuando no se puede calcular, el reporte lo dice antes de las cifras. */
+.sin-medir {
+  margin: 20px 0 0;
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--acero);
+  background: var(--azulejo);
+  border-left: 3px solid var(--sangre);
+  border-radius: var(--canto);
+}
+
 /* ===================================================================
    El recorrido del peso: de la canal comprada a lo que se vendió.
    Se lee de arriba abajo, y lo que se perdió se marca con la tinta.

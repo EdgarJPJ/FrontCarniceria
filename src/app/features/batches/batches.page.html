@@ -5,8 +5,11 @@
       @if (cargando()) {
         Cargando…
       } @else {
-        {{ lista().length }} {{ lista().length === 1 ? 'canal' : 'canales' }} ·
-        {{ pesos(invertido()) }} en compra
+        {{ abiertas() }} {{ abiertas() === 1 ? 'canal abierta' : 'canales abiertas' }}
+        @if (agotadas() > 0) {
+          · {{ agotadas() }} {{ agotadas() === 1 ? 'agotada' : 'agotadas' }}
+        }
+        · {{ pesos(invertido()) }} en compra
       }
     </p>
   </div>
@@ -28,6 +31,19 @@
     </p>
   </div>
 } @else if (!cargando()) {
+  @if (agotadas() > 0) {
+    <div class="filtro">
+      <label class="casilla">
+        <input
+          type="checkbox"
+          [checked]="ocultarAgotadas()"
+          (change)="ocultarAgotadas.set($any($event.target).checked)"
+        />
+        Ocultar las canales ya agotadas ({{ agotadas() }})
+      </label>
+    </div>
+  }
+
   <div class="libreta">
     <table class="libreta__tabla">
       <caption class="a-voz">Canales compradas</caption>
@@ -36,25 +52,36 @@
           <th scope="col">Canal</th>
           <th scope="col">Sucursal</th>
           <th scope="col" class="num">Peso</th>
+          <th scope="col" class="num">Queda</th>
           <th scope="col" class="num">Costo</th>
           <th scope="col" class="num">Por kilo</th>
           <th scope="col"><span class="a-voz">Acciones</span></th>
         </tr>
       </thead>
       <tbody>
-        @for (lote of lista(); track lote.id) {
-          <tr>
+        @for (lote of visibles(); track lote.id) {
+          <tr [class.baja]="estado(lote) === 'agotada'">
             <th scope="row" class="nombre">
               {{ lote.description || 'Canal #' + lote.id }}
+              @if (estado(lote) === 'agotada') {
+                <span class="etiqueta">agotada</span>
+              }
               <span class="secundario">{{ lote.date }}</span>
             </th>
             <td class="dato">{{ lote.branchName }}</td>
             <td class="dato num">{{ kilos(lote.totalWeight) }}</td>
+            <td class="dato num">{{ textoRestante(lote) }}</td>
             <td class="dato num">{{ pesos(lote.totalPrice) }}</td>
             <td class="dato num">{{ costoPorKilo(lote) }}</td>
             <td class="acciones">
               <button type="button" class="enlace" (click)="verReporte(lote)">Merma</button>
               <button type="button" class="enlace" (click)="abrirEdicion(lote)">Editar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="sin-coincidencias" colspan="7">
+              Todas las canales están agotadas. Quita la palomita para verlas.
             </td>
           </tr>
         }
@@ -132,6 +159,19 @@
     <h2 class="panel__titulo">Merma de la canal</h2>
       <p class="campo__pista">{{ r.description || 'Canal #' + r.batchId }}</p>
 
+      @if (!r.medible) {
+        <p class="sin-medir">
+          @if (r.entryCount === 0) {
+            Ninguna entrada de inventario está ligada a esta canal, así que no se sabe qué
+            salió de ella. Al registrar la entrada de los cortes, elige esta canal y las
+            cifras se calcularán solas.
+          } @else {
+            Falta el peso de compra de la canal. Sin él no hay contra qué comparar: anótalo
+            en «Editar» y el reporte se podrá calcular.
+          }
+        </p>
+      }
+
       <!-- El recorrido del peso, de la compra al mostrador. -->
       <dl class="merma">
         <div class="merma__fila">
@@ -160,10 +200,13 @@
           <dt>Merma registrada a mano</dt>
           <dd class="merma__cifra">{{ kilos(r.weightManualWaste) }}</dd>
         </div>
-        <div class="merma__fila merma__fila--perdida">
+        <!-- Lo que salió del despiece y no se ha vendido ni mermado. Mientras
+             la canal siga abierta eso está en el mostrador, así que no se
+             pinta en rojo: sólo es pérdida cuando ya no debería quedar nada. -->
+        <div class="merma__fila">
           <dt>
-            Sin explicar
-            <span class="merma__nota">ni vendido ni reportado como merma</span>
+            Todavía sin vender
+            <span class="merma__nota">sigue en el mostrador, o se perdió sin registrarse</span>
           </dt>
           <dd class="merma__cifra">
             {{ kilos(r.handlingWaste) }}
@@ -171,6 +214,13 @@
           </dd>
         </div>
       </dl>
+
+      @if (estadoDeReporte(r) === 'agotada') {
+        <p class="campo__pista nota">
+          Esta canal ya se acabó: todo lo que salió de ella está vendido o registrado como
+          merma.
+        </p>
+      }
 
       <div class="panel__botones">
         <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>

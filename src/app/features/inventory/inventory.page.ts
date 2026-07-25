@@ -31,11 +31,7 @@ export class InventoryPage {
   protected readonly visibles = computed(() => {
     const texto = this.busqueda().trim().toLowerCase();
     if (!texto) return this.lineas();
-    return this.lineas().filter(
-      (l) =>
-        l.productName.toLowerCase().includes(texto) ||
-        (l.cutType ?? '').toLowerCase().includes(texto),
-    );
+    return this.lineas().filter((l) => l.productName.toLowerCase().includes(texto));
   });
 
   /** Lo que hay que reponer: agotado o por agotarse. */

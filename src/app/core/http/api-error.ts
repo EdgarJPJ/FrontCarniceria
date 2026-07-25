@@ -47,6 +47,9 @@ export function mensajeDeError(error: unknown): string {
 
     case 'DATA_INTEGRITY_VIOLATION_EXCEPTION':
       return 'Esos datos chocan con algo que ya existe. Revisa la clave de usuario.';
+
+    case 'BATCH_AGOTADA_EXCEPTION':
+      return 'Esa canal ya se agotó, no se le pueden ligar más entradas.';
   }
 
   // Sin `code` reconocible, se responde por estado.

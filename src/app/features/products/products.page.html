@@ -25,7 +25,7 @@
     id="buscar"
     class="filtro__caja"
     type="search"
-    placeholder="Buscar por nombre o corte…"
+    placeholder="Buscar por nombre…"
     [value]="busqueda()"
     (input)="busqueda.set($any($event.target).value)"
   />
@@ -65,9 +65,6 @@
               @if (!p.active) {
                 <span class="etiqueta">retirado</span>
               }
-              @if (p.cutType) {
-                <span class="secundario">{{ p.cutType }}</span>
-              }
             </th>
             <td class="dato">{{ unidad(p) }}</td>
             <td class="dato num">{{ pesos(p.salePrice) }}</td>
@@ -104,14 +101,6 @@
           <p class="campo__alerta">Escribe el nombre del producto.</p>
         } @else {
           <p class="campo__pista">Como lo pide la gente: "bistec", "chuleta", "molida".</p>
-        }
-      </div>
-
-      <div class="campo">
-        <label class="campo__etiqueta" for="cutType">Tipo de corte</label>
-        <input id="cutType" class="campo__caja" formControlName="cutType" type="text" />
-        @if (form.controls.cutType.touched && form.controls.cutType.invalid) {
-          <p class="campo__alerta">Escribe el tipo de corte.</p>
         }
       </div>
 

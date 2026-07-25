@@ -104,7 +104,7 @@
         />
       </div>
 
-      @if (lotesDisponibles().length > 0) {
+      @if (lotesSeleccionables().length > 0) {
         <div class="campo">
           <label class="campo__etiqueta" for="lote">Canal</label>
           <select
@@ -114,7 +114,7 @@
             (ngModelChange)="loteElegido.set($event)"
           >
             <option [ngValue]="null">Sin canal</option>
-            @for (l of lotesDisponibles(); track l.id) {
+            @for (l of lotesSeleccionables(); track l.id) {
               <option [ngValue]="l.id">
                 {{ l.description || 'Canal #' + l.id }}
               </option>
@@ -127,6 +127,14 @@
             </p>
           } @else {
             <p class="campo__pista">De qué canal salió esta mercancía.</p>
+            <label class="casilla">
+              <input
+                type="checkbox"
+                [checked]="despieceTerminado()"
+                (change)="despieceTerminado.set($any($event.target).checked)"
+              />
+              Esta fue la última entrada de esta canal
+            </label>
           }
         </div>
       }
