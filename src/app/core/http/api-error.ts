@@ -50,6 +50,9 @@ export function mensajeDeError(error: unknown): string {
 
     case 'BATCH_AGOTADA_EXCEPTION':
       return 'Esa canal ya se agotó, no se le pueden ligar más entradas.';
+
+    case 'CREDIT_LIMIT_EXCEEDED_EXCEPTION':
+      return cuerpo.message ?? 'Esta venta deja al cliente por encima de su límite de crédito.';
   }
 
   // Sin `code` reconocible, se responde por estado.

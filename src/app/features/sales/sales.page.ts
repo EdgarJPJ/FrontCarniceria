@@ -9,6 +9,7 @@ import { Perfil } from '../../core/auth/auth.models';
 import { mensajeDeError } from '../../core/http/api-error';
 import { Client } from '../clients/client.models';
 import { ClientsService } from '../clients/clients.service';
+import { CreditService } from '../credit/credit.service';
 import { Product, ProductsService } from '../products/products.service';
 import { SidePanel } from '../../shared/side-panel/side-panel';
 import { PaymentMethod, Sale } from './sale.models';
@@ -41,6 +42,7 @@ export class SalesPage {
   private readonly ventas = inject(SalesService);
   private readonly productos = inject(ProductsService);
   private readonly clientes = inject(ClientsService);
+  private readonly credito = inject(CreditService);
   protected readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -50,6 +52,15 @@ export class SalesPage {
   protected readonly clientesActivos = signal<Client[]>([]);
   protected readonly metodos = signal<PaymentMethod[]>([]);
   protected readonly perfil = signal<Perfil | null>(null);
+
+  /**
+   * Cuánto debe cada cliente ahora mismo, por id. Es de gestión
+   * (`/api/client-balances`); a un vendedor le responde 403 y se queda
+   * vacío — la venta que exceda el límite la rechaza igual el backend, solo
+   * que sin el aviso previo.
+   */
+  protected readonly saldosClientes = signal<Map<number, number>>(new Map());
+  protected readonly forzarCredito = signal(false);
 
   protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
@@ -82,6 +93,20 @@ export class SalesPage {
   /** Fiado: si hay cliente, la venta nace pendiente de pago. */
   protected readonly esFiado = computed(() => this.clienteElegido() !== null);
 
+  protected readonly clienteInfo = computed(() => {
+    const id = this.clienteElegido();
+    if (id === null) return null;
+    return this.clientesActivos().find((c) => c.id === Number(id)) ?? null;
+  });
+
+  /** Si esta venta se registra tal cual, deja al cliente por encima de lo que se le autorizó. */
+  protected readonly excedeLimite = computed(() => {
+    const cliente = this.clienteInfo();
+    if (!cliente) return false;
+    const saldoActual = this.saldosClientes().get(cliente.id) ?? 0;
+    return saldoActual + this.total() > cliente.creditLimit;
+  });
+
   protected readonly ventaDelDia = computed(() => {
     const hoy = new Date().toDateString();
     return this.lista()
@@ -97,6 +122,10 @@ export class SalesPage {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
     this.clientes.listar(undefined, true).subscribe({ next: (cs) => this.clientesActivos.set(cs) });
+    this.credito.saldos().subscribe({
+      next: (ss) => this.saldosClientes.set(new Map(ss.map((s) => [s.clientId, s.balance]))),
+      error: () => this.saldosClientes.set(new Map()),
+    });
     this.ventas.metodosPago().subscribe({ next: (ms) => this.metodos.set(ms) });
     this.cargar();
 
@@ -131,11 +160,18 @@ export class SalesPage {
     this.clienteElegido.set(null);
     this.metodoElegido.set(null);
     this.descuento.set(0);
+    this.forzarCredito.set(false);
     this.error.set(null);
     this.avisoPaso.set(null);
     this.recibo.set(null);
     this.paso.set(1);
     this.cajaAbierta.set(true);
+  }
+
+  /** Cambiar de cliente no debe arrastrar la autorización que se dio para otro. */
+  protected elegirCliente(id: number | null): void {
+    this.clienteElegido.set(id);
+    this.forzarCredito.set(false);
   }
 
   protected cerrarCaja(): void {
@@ -148,6 +184,10 @@ export class SalesPage {
   protected siguiente(): void {
     if (this.paso() === 1 && this.partidas().length === 0) {
       this.avisoPaso.set('Agrega al menos un producto para continuar.');
+      return;
+    }
+    if (this.paso() === 2 && this.excedeLimite() && !(this.auth.esGestion() && this.forzarCredito())) {
+      this.avisoPaso.set('Esta venta deja al cliente por encima de su límite de crédito.');
       return;
     }
     this.avisoPaso.set(null);
@@ -231,6 +271,7 @@ export class SalesPage {
           productId: x.product.id,
           quantity: x.quantity,
         })),
+        overrideCreditLimit: this.forzarCredito(),
       })
       .subscribe({
         next: () => {

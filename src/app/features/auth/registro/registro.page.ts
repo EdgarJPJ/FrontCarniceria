@@ -41,9 +41,9 @@ export class RegistroPage {
     titulo: string;
     grupo: 'empresa' | 'sucursal' | 'cuenta';
   }> = [
-    { numero: 1, titulo: 'Tu carnicería', grupo: 'empresa' },
-    { numero: 2, titulo: 'Tu sucursal', grupo: 'sucursal' },
-    { numero: 3, titulo: 'Tu cuenta', grupo: 'cuenta' },
+    { numero: 1, titulo: 'Carnicería', grupo: 'empresa' },
+    { numero: 2, titulo: 'Sucursal', grupo: 'sucursal' },
+    { numero: 3, titulo: 'Cuenta', grupo: 'cuenta' },
   ];
 
   protected readonly pasoActual = signal(1);
@@ -117,6 +117,14 @@ export class RegistroPage {
   protected atras(): void {
     this.pasoActual.update((p) => Math.max(p - 1, 1));
     this.enfocarPrimerCampo();
+  }
+
+  /** Solo deja volver a un paso ya recorrido: hacia adelante se valida. */
+  protected irAPaso(destino: number): void {
+    if (destino <= this.pasoActual()) {
+      this.pasoActual.set(destino);
+      this.enfocarPrimerCampo();
+    }
   }
 
   /**

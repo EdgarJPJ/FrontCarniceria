@@ -94,6 +94,10 @@
         {{ enCurso === 'nuevo' ? 'Nuevo producto' : 'Editar producto' }}
       </h2>
 
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
+
       <div class="campo">
         <label class="campo__etiqueta" for="name">Nombre</label>
         <input id="name" class="campo__caja" formControlName="name" type="text" />

@@ -66,7 +66,7 @@
               @if (estado(lote) === 'agotada') {
                 <span class="etiqueta">agotada</span>
               }
-              <span class="secundario">{{ lote.date }}</span>
+              <span class="secundario">{{ lote.date | date: 'dd/MM/yy HH:mm' }}</span>
             </th>
             <td class="dato">{{ lote.branchName }}</td>
             <td class="dato num">{{ kilos(lote.totalWeight) }}</td>
@@ -97,6 +97,10 @@
       <h2 class="panel__titulo">
         {{ enCurso === 'nuevo' ? 'Registrar canal' : 'Editar canal' }}
       </h2>
+
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
 
       <div class="campo">
         <label class="campo__etiqueta" for="description">Descripción</label>

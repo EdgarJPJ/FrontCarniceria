@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, forkJoin, of } from 'rxjs';
@@ -11,7 +12,7 @@ import { BatchesService } from './batches.service';
 
 @Component({
   selector: 'app-batches-page',
-  imports: [ReactiveFormsModule, SidePanel],
+  imports: [ReactiveFormsModule, SidePanel, DatePipe],
   templateUrl: './batches.page.html',
   styleUrl: './batches.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

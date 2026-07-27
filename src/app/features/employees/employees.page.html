@@ -75,6 +75,10 @@
         {{ enCurso === 'nuevo' ? 'Dar de alta' : 'Editar persona' }}
       </h2>
 
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
+
       <div class="campo">
         <label class="campo__etiqueta" for="name">Nombre</label>
         <input id="name" class="campo__caja" formControlName="name" type="text" />
@@ -173,6 +177,10 @@
       <p class="campo__pista">
         Se reemplaza por una nueva. La anterior deja de servir en cuanto guardes.
       </p>
+
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
 
       <div class="campo">
         <div class="campo__fila">

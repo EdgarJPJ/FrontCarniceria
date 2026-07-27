@@ -35,6 +35,8 @@ export interface SaleRequest {
   paymentMethodId: number | null;
   discount: number;
   details: { productId: number; quantity: number }[];
+  /** Solo gestión puede mandarla en true: registra la venta aunque deje al cliente por encima de su límite. */
+  overrideCreditLimit: boolean;
 }
 
 export interface PaymentMethod {

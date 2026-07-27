@@ -79,6 +79,22 @@
   outline-offset: 2px;
 }
 
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: var(--toque);
+  font-size: 14.5px;
+  color: var(--acero);
+  cursor: pointer;
+}
+
+.casilla input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sangre);
+}
+
 /* --- La libreta --------------------------------------------------- */
 .libreta {
   overflow-x: auto; /* la tabla hace su propio scroll, la página no */

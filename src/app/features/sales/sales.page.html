@@ -244,7 +244,7 @@
             id="cliente"
             class="campo__caja"
             [ngModel]="clienteElegido()"
-            (ngModelChange)="clienteElegido.set($event)"
+            (ngModelChange)="elegirCliente($event)"
           >
             <option [ngValue]="null">Público en general (de contado)</option>
             @for (c of clientesActivos(); track c.id) {
@@ -259,6 +259,24 @@
             <p class="campo__pista">
               Sin cliente, la venta es de contado y se cobra ahora.
             </p>
+          }
+          @if (excedeLimite()) {
+            <p class="campo__alerta">
+              {{ clienteInfo()?.name }} quedaría debiendo más de lo autorizado
+              ({{ pesos(clienteInfo()!.creditLimit) }}).
+            </p>
+            @if (auth.esGestion()) {
+              <label class="casilla">
+                <input
+                  type="checkbox"
+                  [checked]="forzarCredito()"
+                  (change)="forzarCredito.set($any($event.target).checked)"
+                />
+                Registrarla de todos modos
+              </label>
+            } @else {
+              <p class="campo__pista">Pídele a un administrador que la registre.</p>
+            }
           }
         </div>
 

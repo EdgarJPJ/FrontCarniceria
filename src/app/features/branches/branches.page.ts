@@ -22,6 +22,7 @@ export class BranchesPage {
   protected readonly lista = signal<Branch[]>([]);
   protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
+  protected readonly aviso = signal<string | null>(null);
   protected readonly guardando = signal(false);
   protected readonly editando = signal<Branch | 'nueva' | null>(null);
 
@@ -54,6 +55,7 @@ export class BranchesPage {
   protected abrirAlta(): void {
     this.form.reset({ name: '', address: '', phone: '' });
     this.editando.set('nueva');
+    this.aviso.set(null);
   }
 
   protected abrirEdicion(sucursal: Branch): void {
@@ -63,6 +65,7 @@ export class BranchesPage {
       phone: sucursal.phone ?? '',
     });
     this.editando.set(sucursal);
+    this.aviso.set(null);
   }
 
   protected cerrarPanel(): void {
@@ -82,6 +85,9 @@ export class BranchesPage {
     this.error.set(null);
 
     const datos = this.form.getRawValue();
+    // Si es la sucursal del turno actual, el riel no se entera solo: ya
+    // sacó el nombre de auth.perfil(), que se cachea sin invalidarse.
+    const esLaPropia = enCurso !== 'nueva' && enCurso.id === this.auth.session()?.branchId;
     const peticion =
       enCurso === 'nueva'
         ? this.sucursales.registrar(datos)
@@ -92,6 +98,9 @@ export class BranchesPage {
         this.guardando.set(false);
         this.cerrarPanel();
         this.cargar();
+        if (esLaPropia) {
+          this.aviso.set('Guardado. El nombre en el riel se actualiza al volver a iniciar turno.');
+        }
       },
       error: (e: unknown) => {
         this.guardando.set(false);

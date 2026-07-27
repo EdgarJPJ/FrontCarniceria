@@ -17,12 +17,14 @@
     <ol class="pasos" aria-label="Progreso del alta">
       @for (paso of pasos; track paso.numero) {
         <li
-          class="pasos__item"
-          [class.pasos__item--activo]="pasoActual() === paso.numero"
-          [class.pasos__item--hecho]="pasoActual() > paso.numero"
+          class="pasos__paso"
+          [class.pasos__paso--aqui]="pasoActual() === paso.numero"
+          [class.pasos__paso--hecho]="pasoActual() > paso.numero"
         >
-          <span class="pasos__numero">{{ paso.numero }}</span>
-          {{ paso.titulo }}
+          <button type="button" class="pasos__boton" (click)="irAPaso(paso.numero)">
+            <span class="pasos__num">{{ paso.numero }}</span>
+            <span class="pasos__nombre">{{ paso.titulo }}</span>
+          </button>
         </li>
       }
     </ol>
@@ -205,7 +207,7 @@
       </fieldset>
     }
 
-    <div class="turno__botones">
+    <div class="panel__botones" [class.panel__botones--par]="pasoActual() > 1">
       @if (pasoActual() > 1) {
         <button class="volver" type="button" (click)="atras()">Atrás</button>
       }

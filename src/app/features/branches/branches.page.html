@@ -19,6 +19,10 @@
   <p class="aviso" role="alert">{{ e }}</p>
 }
 
+@if (aviso(); as a) {
+  <p class="confirmacion" role="status">{{ a }}</p>
+}
+
 @if (!cargando() && lista().length === 0) {
   <div class="vacio">
     <p class="vacio__titulo">No hay sucursales</p>
@@ -76,6 +80,10 @@
       <h2 class="panel__titulo">
         {{ enCurso === 'nueva' ? 'Nueva sucursal' : 'Editar sucursal' }}
       </h2>
+
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
 
       <div class="campo">
         <label class="campo__etiqueta" for="name">Nombre</label>

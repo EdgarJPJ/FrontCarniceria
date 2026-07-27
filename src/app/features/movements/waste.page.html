@@ -63,6 +63,10 @@
     <h2 class="panel__titulo">Registrar merma</h2>
       <p class="campo__pista">Esto descuenta del inventario. No se puede deshacer.</p>
 
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
+
       <div class="campo">
         <label class="campo__etiqueta" for="producto">Producto</label>
         <select

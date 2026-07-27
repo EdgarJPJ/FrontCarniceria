@@ -93,6 +93,10 @@
         de servir en cuanto guardes.
       </p>
 
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
+
       @if (cargandoAccesos()) {
         <p class="campo__pista">Cargando…</p>
       } @else {

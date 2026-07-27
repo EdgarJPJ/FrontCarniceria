@@ -102,6 +102,10 @@
         {{ enCurso === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente' }}
       </h2>
 
+      @if (error(); as e) {
+        <p class="aviso" role="alert">{{ e }}</p>
+      }
+
       <div class="campo">
         <label class="campo__etiqueta" for="name">Nombre</label>
         <input id="name" class="campo__caja" formControlName="name" type="text" />
@@ -153,4 +157,16 @@
       </div>
     </form>
   </app-side-panel>
+}
+
+@if (dandoDeBajaConSaldo(); as cliente) {
+  <app-confirm-dialog
+    [mensaje]="
+      cliente.name + ' todavía debe ' + pesos(saldosClientes().get(cliente.id) ?? 0) +
+      '. La deuda se sigue viendo en Fiado, pero ¿de todos modos quieres darlo de baja?'
+    "
+    textoConfirmar="Dar de baja"
+    (confirmar)="confirmarBajaConSaldo()"
+    (cancelar)="dandoDeBajaConSaldo.set(null)"
+  />
 }

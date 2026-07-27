@@ -3,13 +3,15 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { SidePanel } from '../../shared/side-panel/side-panel';
+import { CreditService } from '../credit/credit.service';
 import { Client } from './client.models';
 import { ClientsService } from './clients.service';
 
 @Component({
   selector: 'app-clients-page',
-  imports: [ReactiveFormsModule, SidePanel],
+  imports: [ReactiveFormsModule, SidePanel, ConfirmDialog],
   templateUrl: './clients.page.html',
   styleUrl: './clients.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,12 +19,18 @@ import { ClientsService } from './clients.service';
 export class ClientsPage {
   private readonly fb = inject(FormBuilder);
   private readonly clientes = inject(ClientsService);
+  private readonly credito = inject(CreditService);
   protected readonly auth = inject(AuthService);
 
   protected readonly lista = signal<Client[]>([]);
   protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly guardando = signal(false);
+
+  /** Cuánto debe cada cliente ahora mismo, por id. Ausente = no debe nada. */
+  protected readonly saldosClientes = signal<Map<number, number>>(new Map());
+  /** Cliente a punto de darse de baja debiendo, en espera de que confirmen. */
+  protected readonly dandoDeBajaConSaldo = signal<Client | null>(null);
 
   /** null = panel cerrado; un cliente = editando; 'nuevo' = alta. */
   protected readonly editando = signal<Client | 'nuevo' | null>(null);
@@ -50,6 +58,10 @@ export class ClientsPage {
 
   constructor() {
     this.cargar();
+    this.credito.saldos().subscribe({
+      next: (ss) => this.saldosClientes.set(new Map(ss.map((s) => [s.clientId, s.balance]))),
+      error: () => this.saldosClientes.set(new Map()),
+    });
   }
 
   protected cargar(): void {
@@ -118,7 +130,25 @@ export class ClientsPage {
     });
   }
 
+  /**
+   * Dar de baja no borra la deuda —sigue viva en Fiado—, pero nadie debería
+   * hacerlo sin saber que ahí se queda. Reactivar no necesita este paso.
+   */
   protected alternarEstado(cliente: Client): void {
+    if (cliente.active && (this.saldosClientes().get(cliente.id) ?? 0) > 0) {
+      this.dandoDeBajaConSaldo.set(cliente);
+      return;
+    }
+    this.cambiarEstado(cliente);
+  }
+
+  protected confirmarBajaConSaldo(): void {
+    const cliente = this.dandoDeBajaConSaldo();
+    this.dandoDeBajaConSaldo.set(null);
+    if (cliente) this.cambiarEstado(cliente);
+  }
+
+  private cambiarEstado(cliente: Client): void {
     this.clientes.cambiarEstado(cliente.id, !cliente.active).subscribe({
       next: () => this.cargar(),
       error: (e: unknown) => this.error.set(mensajeDeError(e)),

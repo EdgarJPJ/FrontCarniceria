@@ -93,6 +93,10 @@
       </li>
     </ol>
 
+    @if (error(); as e) {
+      <p class="aviso" role="alert">{{ e }}</p>
+    }
+
     <p class="campo__pista">
       Debe {{ pesos(cliente.balance) }} en total. El abono se registra sobre una venta.
     </p>
