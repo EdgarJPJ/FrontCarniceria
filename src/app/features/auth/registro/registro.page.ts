@@ -36,6 +36,18 @@ export class RegistroPage {
   protected readonly errorServidor = signal<string | null>(null);
   protected readonly verContrasena = signal(false);
 
+  protected readonly pasos: ReadonlyArray<{
+    numero: number;
+    titulo: string;
+    grupo: 'empresa' | 'sucursal' | 'cuenta';
+  }> = [
+    { numero: 1, titulo: 'Tu carnicería', grupo: 'empresa' },
+    { numero: 2, titulo: 'Tu sucursal', grupo: 'sucursal' },
+    { numero: 3, titulo: 'Tu cuenta', grupo: 'cuenta' },
+  ];
+
+  protected readonly pasoActual = signal(1);
+
   protected readonly form = this.fb.nonNullable.group({
     empresa: this.fb.nonNullable.group({
       nombre: ['', [Validators.required, Validators.maxLength(150)]],
@@ -62,6 +74,10 @@ export class RegistroPage {
     }),
   });
 
+  constructor() {
+    this.enfocarPrimerCampo();
+  }
+
   protected get empresa(): FormGroup {
     return this.form.controls.empresa;
   }
@@ -85,6 +101,38 @@ export class RegistroPage {
 
   protected alternarContrasena(): void {
     this.verContrasena.update((visible) => !visible);
+  }
+
+  protected siguiente(): void {
+    const grupo = this.grupoDelPaso(this.pasoActual());
+    if (grupo.invalid) {
+      grupo.markAllAsTouched();
+      this.enfocarPrimerError();
+      return;
+    }
+    this.pasoActual.update((p) => Math.min(p + 1, this.pasos.length));
+    this.enfocarPrimerCampo();
+  }
+
+  protected atras(): void {
+    this.pasoActual.update((p) => Math.max(p - 1, 1));
+    this.enfocarPrimerCampo();
+  }
+
+  /**
+   * Entrar en un campo no debe mandar el formulario a medias: en los primeros
+   * dos pasos avanza como si fuera "Siguiente"; en el último se deja que
+   * ocurra el submit nativo.
+   */
+  protected alPresionarEnter(evento: Event): void {
+    if (this.pasoActual() < this.pasos.length) {
+      evento.preventDefault();
+      this.siguiente();
+    }
+  }
+
+  private grupoDelPaso(numero: number): FormGroup {
+    return this.form.controls[this.pasos.find((p) => p.numero === numero)!.grupo] as FormGroup;
   }
 
   protected crear(): void {
@@ -124,6 +172,20 @@ export class RegistroPage {
         const invalido = document.querySelector<HTMLElement>('[aria-invalid="true"]');
         invalido?.focus();
         invalido?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /**
+   * `autofocus` no sirve aquí: solo un `.bloque` está en el DOM a la vez y se
+   * pinta después de que cambia `pasoActual`, no al parsear el HTML. Se busca
+   * dentro de `.bloque` porque es el único paso presente en cada momento.
+   */
+  private enfocarPrimerCampo(): void {
+    afterNextRender(
+      () => {
+        document.querySelector<HTMLElement>('.bloque input, .bloque select')?.focus();
       },
       { injector: this.injector },
     );
