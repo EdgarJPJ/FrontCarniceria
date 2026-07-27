@@ -41,8 +41,20 @@ export interface BatchReport {
   /** Cuántas entradas de inventario se registraron contra esta canal. */
   entryCount: number;
   medible: boolean;
+  /** Verdadero cuando se marcó la última entrada de despiece de esta canal. */
+  despieceTerminado: boolean;
   /** Ya calculado por el backend, con la tolerancia de captura incluida. */
   agotado: boolean;
+  /** Lo que se pagó por la canal completa. */
+  totalCost: number;
+  /**
+   * Suma de lo vendido de esta canal en pesos, ya con el precio propio de
+   * cada corte en que se convirtió al despiezarla. Cero cuando no es
+   * `medible`.
+   */
+  revenueSold: number;
+  /** `revenueSold - totalCost`. Cero cuando no es `medible`. */
+  profit: number;
 }
 
 /** Cómo está una canal según lo que queda de ella. */

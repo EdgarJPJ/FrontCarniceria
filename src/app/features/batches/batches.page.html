@@ -215,6 +215,24 @@
         </div>
       </dl>
 
+      <!-- Lo vendido ya trae el precio propio de cada corte en que se
+           convirtió la canal al despiezarla, así que la ganancia sale bien
+           sin importar cuántos productos distintos haya dado. -->
+      <dl class="merma">
+        <div class="merma__fila">
+          <dt>Costo de la canal</dt>
+          <dd class="merma__cifra">{{ pesos(r.totalCost) }}</dd>
+        </div>
+        <div class="merma__fila">
+          <dt>Vendido</dt>
+          <dd class="merma__cifra">{{ pesos(r.revenueSold) }}</dd>
+        </div>
+        <div class="merma__fila" [class.merma__fila--perdida]="r.profit < 0">
+          <dt>Ganancia</dt>
+          <dd class="merma__cifra">{{ pesos(r.profit) }}</dd>
+        </div>
+      </dl>
+
       @if (estadoDeReporte(r) === 'agotada') {
         <p class="campo__pista nota">
           Esta canal ya se acabó: todo lo que salió de ella está vendido o registrado como
