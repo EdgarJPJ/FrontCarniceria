@@ -1,7 +1,7 @@
 <header class="encabezado">
   <div>
     <h1 class="encabezado__titulo">Mi carnicería</h1>
-    <p class="encabezado__resumen">Los datos de tu negocio y el código de tu personal</p>
+    <p class="encabezado__resumen">Los datos de tu negocio</p>
   </div>
 </header>
 
@@ -11,18 +11,6 @@
 
 @if (aviso(); as a) {
   <p class="confirmacion" role="status">{{ a }}</p>
-}
-
-<!-- El código de acceso vive aquí: es un ajuste del negocio, no algo que se
-     mire a diario en el mostrador. -->
-@if (!cargando() && empresa(); as e) {
-  <div class="codigo-caja">
-    <p class="codigo-caja__rotulo">Código para entrar</p>
-    <p class="codigo-caja__valor">{{ e.slug }}</p>
-    <p class="codigo-caja__nota">
-      Tu personal lo necesita junto con su clave para iniciar turno. No cambia.
-    </p>
-  </div>
 }
 
 @if (!cargando()) {
@@ -39,9 +27,7 @@
       @if (form.controls.name.touched && form.controls.name.invalid) {
         <p class="campo__alerta">Escribe el nombre de la carnicería.</p>
       } @else {
-        <p class="campo__pista">
-          Es el nombre que ves en el riel. No afecta tu código para entrar: ese no cambia.
-        </p>
+        <p class="campo__pista">Es el nombre que ves en el riel.</p>
       }
     </div>
 

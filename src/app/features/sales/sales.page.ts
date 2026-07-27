@@ -264,6 +264,11 @@ export class SalesPage {
     return p.unitOfMeasure === 'KILO' ? 'kg' : 'pz';
   }
 
+  /** Qué se vendió, para verlo de un vistazo en la lista sin abrir nada. */
+  protected productosVendidos(venta: Sale): string {
+    return venta.details.map((d) => d.productName).join(', ');
+  }
+
   /** El estado de pago en palabras del mostrador, no el enum del servidor. */
   protected estadoPago(v: Sale): string {
     switch (v.paymentStatus) {

@@ -53,8 +53,7 @@
                 <span class="etiqueta">cancelada</span>
               }
               <span class="secundario">
-                {{ venta.date | date: 'dd/MM/yy HH:mm' }} ·
-                {{ venta.details.length }} {{ venta.details.length === 1 ? 'producto' : 'productos' }}
+                {{ venta.date | date: 'dd/MM/yy HH:mm' }} · {{ productosVendidos(venta) }}
               </span>
             </th>
             <td class="dato">{{ venta.employeeName || '—' }}</td>
