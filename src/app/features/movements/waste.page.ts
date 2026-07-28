@@ -45,6 +45,13 @@ export class WastePage {
   protected readonly nota = signal('');
   protected readonly loteElegido = signal<number | null>(null);
 
+  /** En qué se captura el producto elegido: nadie debería adivinar si es a kilo o a pieza. */
+  protected readonly unidadElegida = computed(() => {
+    const id = this.productoElegido();
+    if (id === null) return null;
+    return this.unidadDe(Number(id)) === 'pz' ? 'piezas' : 'kilos';
+  });
+
   /** Cuánto se perdió este mes: es la cifra que duele y la que hay que vigilar. */
   protected readonly perdidoEsteMes = computed(() => {
     const ahora = new Date();

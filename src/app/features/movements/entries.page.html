@@ -96,7 +96,12 @@
       </div>
 
       <div class="campo">
-        <label class="campo__etiqueta" for="cantidad">Cantidad</label>
+        <label class="campo__etiqueta" for="cantidad">
+          Cantidad
+          @if (unidadElegida(); as u) {
+            <span class="campo__opcional">({{ u }})</span>
+          }
+        </label>
         <input
           id="cantidad"
           class="campo__caja campo__caja--clave"

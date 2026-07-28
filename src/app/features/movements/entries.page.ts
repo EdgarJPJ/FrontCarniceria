@@ -62,6 +62,13 @@ export class EntriesPage {
     this.lotesDisponibles().filter((l) => !this.reportes().get(l.id)?.agotado),
   );
 
+  /** En qué se captura el producto elegido: nadie debería adivinar si es a kilo o a pieza. */
+  protected readonly unidadElegida = computed(() => {
+    const id = this.productoElegido();
+    if (id === null) return null;
+    return this.unidadDe(Number(id)) === 'pz' ? 'piezas' : 'kilos';
+  });
+
   constructor() {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
