@@ -26,6 +26,23 @@
   color: #9fb0b3;
 }
 
+/* El scroll delgado del sistema es para fondos claros; aquí, sobre acero,
+   necesita un tono propio en vez de perderse o verse gris apagado. Va sobre
+   ".riel *" y no solo ".riel": la regla global también apunta a "*", y sin
+   esta selectividad extra la del riel perdería contra ella en sus hijos. */
+.riel,
+.riel * {
+  scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+}
+
+.riel *::-webkit-scrollbar-thumb {
+  background-color: rgb(255 255 255 / 0.2);
+}
+
+.riel *::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(255 255 255 / 0.35);
+}
+
 .riel__marca {
   padding: 0 22px 24px;
   border-bottom: 1px solid rgb(255 255 255 / 0.09);

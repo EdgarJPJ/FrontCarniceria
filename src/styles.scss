@@ -79,6 +79,36 @@ p {
   color: var(--hueso);
 }
 
+/*
+ * El scroll del sistema es ancho y gris claro siempre, hasta sobre el acero
+ * oscuro del riel, donde se ve fuera de lugar. Uno delgado y discreto, con
+ * los tonos propios, se nota menos y no compite con el contenido.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--acero-tenue) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--junta);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 20px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--acero-tenue);
+}
+
 /* Solo para lectores de pantalla. */
 .a-voz {
   position: absolute;
