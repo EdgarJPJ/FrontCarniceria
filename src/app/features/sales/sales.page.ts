@@ -76,6 +76,9 @@ export class SalesPage {
   /** Cuando existe, la caja muestra el recibo en vez del formulario. */
   protected readonly recibo = signal<Recibo | null>(null);
 
+  /** Venta cuyo detalle completo se está mirando. */
+  protected readonly viendoDetalle = signal<Sale | null>(null);
+
   /** El ticket en construcción. */
   protected readonly partidas = signal<Partida[]>([]);
   protected readonly productoElegido = signal<number | null>(null);
@@ -242,6 +245,14 @@ export class SalesPage {
     this.partidas.update((ps) => ps.filter((p) => p.product.id !== productId));
   }
 
+  /** Corrige una cantidad ya agregada, sin quitar la línea y volver a escribirla. */
+  protected cambiarCantidad(productId: number, cantidad: number): void {
+    if (!cantidad || cantidad <= 0) return;
+    this.partidas.update((ps) =>
+      ps.map((p) => (p.product.id === productId ? { ...p, quantity: cantidad } : p)),
+    );
+  }
+
   protected cobrar(): void {
     const p = this.perfil();
     if (this.partidas().length === 0 || this.cobrando()) return;
@@ -291,6 +302,14 @@ export class SalesPage {
   /** Tras cobrar: deja la caja lista para la siguiente sin cerrarla. */
   protected otraVenta(): void {
     this.abrirCaja();
+  }
+
+  protected verDetalle(venta: Sale): void {
+    this.viendoDetalle.set(venta);
+  }
+
+  protected cerrarDetalle(): void {
+    this.viendoDetalle.set(null);
   }
 
   protected cancelar(venta: Sale): void {

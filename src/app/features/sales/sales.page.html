@@ -39,9 +39,7 @@
           <th scope="col">Pago</th>
           <th scope="col" class="num">Total</th>
           <th scope="col">Estado</th>
-          @if (auth.esGestion()) {
-            <th scope="col"><span class="a-voz">Acciones</span></th>
-          }
+          <th scope="col"><span class="a-voz">Acciones</span></th>
         </tr>
       </thead>
       <tbody>
@@ -71,13 +69,12 @@
                 <span class="etiqueta etiqueta--tinta">{{ estadoPago(venta) }}</span>
               }
             </td>
-            @if (auth.esGestion()) {
-              <td class="acciones">
-                @if (venta.status === 'ACTIVA') {
-                  <button type="button" class="enlace" (click)="cancelar(venta)">Cancelar</button>
-                }
-              </td>
-            }
+            <td class="acciones">
+              <button type="button" class="enlace" (click)="verDetalle(venta)">Ver</button>
+              @if (auth.esGestion() && venta.status === 'ACTIVA') {
+                <button type="button" class="enlace" (click)="cancelar(venta)">Cancelar</button>
+              }
+            </td>
           </tr>
         }
       </tbody>
@@ -190,7 +187,16 @@
                 <div class="ticket__que">
                   {{ p.product.name }}
                   <span class="ticket__detalle">
-                    {{ p.quantity }} {{ unidad(p.product) }} × {{ pesos(p.product.salePrice) }}
+                    <input
+                      class="ticket__cantidad"
+                      type="number"
+                      min="0.001"
+                      step="0.001"
+                      [ngModel]="p.quantity"
+                      (ngModelChange)="cambiarCantidad(p.product.id, $event)"
+                      [attr.aria-label]="'Cantidad de ' + p.product.name"
+                    />
+                    {{ unidad(p.product) }} × {{ pesos(p.product.salePrice) }}
                   </span>
                 </div>
                 <span class="ticket__importe">{{ pesos(p.product.salePrice * p.quantity) }}</span>
@@ -329,5 +335,54 @@
         </div>
       }
     }
+  </app-side-panel>
+}
+
+<!-- Detalle: qué llevaba exactamente esa venta, sin tener que adivinarlo de la lista. -->
+@if (viendoDetalle(); as v) {
+  <app-side-panel (cerrar)="cerrarDetalle()">
+    <h2 class="panel__titulo">Venta #{{ v.id }}</h2>
+    <p class="campo__pista">
+      {{ v.date | date: 'dd/MM/yy HH:mm' }} · Vendió {{ v.employeeName || '—' }}
+      @if (v.clientName) {
+        · Fiado a {{ v.clientName }}
+      } @else {
+        · {{ v.paymentMethodName || 'Contado' }}
+      }
+    </p>
+
+    <ul class="ticket">
+      @for (d of v.details; track d.id) {
+        <li class="ticket__linea">
+          <div class="ticket__que">
+            {{ d.productName }}
+            <span class="ticket__detalle">{{ d.quantity }} × {{ pesos(d.unitPrice) }}</span>
+          </div>
+          <span class="ticket__importe">{{ pesos(d.subtotal) }}</span>
+        </li>
+      }
+    </ul>
+
+    @if (v.discount > 0) {
+      <p class="campo__pista">Subtotal {{ pesos(v.subtotal) }} · Descuento −{{ pesos(v.discount) }}</p>
+    }
+
+    <p class="total">
+      <span class="total__rotulo">Total</span>
+      <span class="total__cifra">{{ pesos(v.total) }}</span>
+    </p>
+
+    <p class="campo__pista">
+      <span class="etiqueta" [class.etiqueta--tinta]="v.paymentStatus !== 'PAGADO'">
+        {{ estadoPago(v) }}
+      </span>
+      @if (v.status === 'CANCELADA') {
+        · Esta venta está cancelada.
+      }
+    </p>
+
+    <div class="panel__botones">
+      <button class="cancelar" type="button" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
   </app-side-panel>
 }

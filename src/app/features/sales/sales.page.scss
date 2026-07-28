@@ -175,6 +175,32 @@
   color: var(--acero-tenue);
 }
 
+/* Se corrige ahí mismo: no hay que quitar la línea y volver a escribirla. */
+.ticket__cantidad {
+  width: 58px;
+  height: 24px;
+  padding: 0 5px;
+  font-family: var(--dato);
+  font-size: 12px;
+  color: var(--acero);
+  background: var(--azulejo);
+  border: 1px solid var(--junta);
+  border-radius: 3px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket__cantidad:hover {
+  background: var(--azulejo-hondo);
+}
+
+.ticket__cantidad:focus {
+  background: var(--hueso);
+  border-color: var(--sangre);
+  outline: 2px solid var(--sangre);
+  outline-offset: 1px;
+}
+
 .ticket__importe {
   font-family: var(--dato);
   font-size: 14.5px;
