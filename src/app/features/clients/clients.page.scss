@@ -2,3 +2,27 @@
   display: block;
   padding: clamp(24px, 3.5vw, 44px);
 }
+
+/* El límite de crédito es la única cifra en pesos que se captura aquí: el
+   signo dentro de la caja lo deja claro sin gastar una etiqueta aparte. */
+.campo__moneda {
+  position: relative;
+}
+
+.campo__signo {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  height: var(--toque);
+  font-family: var(--dato);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--acero-tenue);
+  pointer-events: none;
+}
+
+.campo__caja--moneda {
+  padding-left: 28px;
+}
