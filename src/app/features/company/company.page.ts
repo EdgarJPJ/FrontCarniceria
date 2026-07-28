@@ -31,7 +31,8 @@ export class CompanyPage {
     name: ['', [Validators.required, Validators.maxLength(150)]],
     rfc: ['', Validators.maxLength(20)],
     phone: ['', Validators.maxLength(20)],
-    plan: ['basico', Validators.required],
+    // Solo se muestra: cambiar de plan no es algo que se autogestione desde aquí.
+    plan: [{ value: 'basico', disabled: true }, Validators.required],
   });
 
   constructor() {
