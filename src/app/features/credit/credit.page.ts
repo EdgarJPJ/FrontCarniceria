@@ -156,6 +156,11 @@ export class CreditPage {
       });
   }
 
+  /** Qué se vendió, para no tener que adivinar de qué venta se trata. */
+  protected productosVendidos(venta: Sale): string {
+    return venta.details.map((d) => d.productName).join(', ');
+  }
+
   protected sobrepasa(c: SaldoCliente): boolean {
     return c.creditLimit > 0 && c.balance > c.creditLimit;
   }

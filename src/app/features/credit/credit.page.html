@@ -114,6 +114,7 @@
                 {{ v.date | date: 'dd/MM/yy' }} ·
                 {{ v.paymentStatus === 'PARCIAL' ? 'abonada en parte' : 'sin abonos' }}
               </p>
+              <p class="venta__detalle">{{ productosVendidos(v) }}</p>
             </div>
             <span class="venta__monto">{{ pesos(v.total) }}</span>
             <button class="enlace" type="button" (click)="abrirAbono(v)">Abonar</button>
