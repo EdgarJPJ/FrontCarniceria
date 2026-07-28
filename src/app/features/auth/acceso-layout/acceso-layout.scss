@@ -11,13 +11,21 @@
 
 /* ===================================================================
    La pared de azulejo
+
+   Va fija a la altura del visor (no de su fila del grid): el formulario de
+   la derecha cambia de alto entre pasos del alta, y si la pared solo
+   estirara con esa fila, el sello —anclado abajo con margin-top: auto—
+   se vería saltar de un paso a otro. Con sticky se queda clavada arriba
+   del visor sin importar cuánto mida el paso que se esté viendo.
    =================================================================== */
 .pared {
-  position: relative;
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 40px;
+  height: 100dvh;
   padding: clamp(32px, 5vw, 64px);
   overflow: hidden;
   background-color: var(--azulejo);
@@ -156,6 +164,10 @@
   }
 
   .pared {
+    /* Aquí es una cabecera compacta de alto fijo por su propio contenido,
+       no una columna que deba igualar al formulario: no hace falta clavarla. */
+    position: static;
+    height: auto;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
