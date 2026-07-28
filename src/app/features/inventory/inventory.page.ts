@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
 import { BranchesService } from '../branches/branches.service';
 import { Branch } from '../branches/branch.models';
@@ -19,6 +20,7 @@ const UMBRAL_BAJO = 5;
 export class InventoryPage {
   private readonly inventario = inject(InventoryService);
   private readonly sucursales = inject(BranchesService);
+  protected readonly auth = inject(AuthService);
 
   protected readonly lineas = signal<InventoryLine[]>([]);
   protected readonly branches = signal<Branch[]>([]);

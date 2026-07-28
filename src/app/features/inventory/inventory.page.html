@@ -28,7 +28,7 @@
     (input)="busqueda.set($any($event.target).value)"
   />
 
-  @if (branches().length > 1) {
+  @if (auth.esGestion() && branches().length > 1) {
     <label class="a-voz" for="sucursal">Sucursal</label>
     <select
       id="sucursal"
