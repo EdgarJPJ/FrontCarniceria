@@ -386,3 +386,12 @@
     </div>
   </app-side-panel>
 }
+
+@if (cancelando(); as v) {
+  <app-confirm-dialog
+    [mensaje]="'¿Cancelar la venta #' + v.id + ' de ' + pesos(v.total) + '? Esto devuelve el inventario y no se puede deshacer.'"
+    textoConfirmar="Cancelar venta"
+    (confirmar)="confirmarCancelar()"
+    (cancelar)="cancelando.set(null)"
+  />
+}

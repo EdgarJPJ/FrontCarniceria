@@ -11,6 +11,7 @@ import { Client } from '../clients/client.models';
 import { ClientsService } from '../clients/clients.service';
 import { CreditService } from '../credit/credit.service';
 import { Product, ProductsService } from '../products/products.service';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { SidePanel } from '../../shared/side-panel/side-panel';
 import { PaymentMethod, Sale } from './sale.models';
 import { SalesService } from './sales.service';
@@ -33,7 +34,7 @@ interface Recibo {
 
 @Component({
   selector: 'app-sales-page',
-  imports: [FormsModule, DatePipe, SidePanel],
+  imports: [FormsModule, DatePipe, SidePanel, ConfirmDialog],
   templateUrl: './sales.page.html',
   styleUrl: './sales.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,6 +79,9 @@ export class SalesPage {
 
   /** Venta cuyo detalle completo se está mirando. */
   protected readonly viendoDetalle = signal<Sale | null>(null);
+
+  /** Venta a punto de cancelarse, en espera de que confirmen. */
+  protected readonly cancelando = signal<Sale | null>(null);
 
   /** El ticket en construcción. */
   protected readonly partidas = signal<Partida[]>([]);
@@ -312,7 +316,19 @@ export class SalesPage {
     this.viendoDetalle.set(null);
   }
 
+  /**
+   * Cancelar descuenta la venta y devuelve el inventario: no es un clic del
+   * que se vuelva con un "deshacer", así que se confirma antes.
+   */
   protected cancelar(venta: Sale): void {
+    this.cancelando.set(venta);
+  }
+
+  protected confirmarCancelar(): void {
+    const venta = this.cancelando();
+    if (!venta) return;
+
+    this.cancelando.set(null);
     this.error.set(null);
     this.ventas.cancelar(venta.id).subscribe({
       next: () => this.cargar(),
