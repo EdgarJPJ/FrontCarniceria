@@ -143,6 +143,9 @@
               <option [value]="rol.id">{{ rol.name }}</option>
             }
           </select>
+          @if (form.controls.idRole.disabled) {
+            <p class="campo__pista">No puedes cambiar tu propio rol.</p>
+          }
         </div>
         <div>
           <label class="campo__etiqueta" for="idBranch">Sucursal</label>

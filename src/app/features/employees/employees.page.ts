@@ -78,6 +78,7 @@ export class EmployeesPage {
     // La clave y la contraseña solo se piden al dar de alta.
     this.form.controls.username.enable();
     this.form.controls.password.enable();
+    this.form.controls.idRole.enable();
     this.editando.set('nuevo');
   }
 
@@ -93,6 +94,14 @@ export class EmployeesPage {
     // La clave identifica al empleado y la contraseña tiene su propio panel.
     this.form.controls.username.disable();
     this.form.controls.password.disable();
+    // Si se quita el rol a sí mismo y no queda otro administrador, nadie
+    // podría volver a dar de alta ni gestionar nada: se cambia desde otra
+    // cuenta con el mismo rol, no desde la propia.
+    if (this.esUnoMismo(empleado)) {
+      this.form.controls.idRole.disable();
+    } else {
+      this.form.controls.idRole.enable();
+    }
     this.editando.set(empleado);
   }
 
