@@ -9,6 +9,19 @@ export interface Batch {
   branchName: string;
 }
 
+/**
+ * Para elegir canal al registrar una entrada o una merma: sin peso ni costo,
+ * que es información de gestión. `despieceTerminado` sí viaja porque no
+ * revela ninguna cifra, solo si ya se marcó la última entrada de esa canal.
+ */
+export interface BatchOption {
+  id: number;
+  description: string | null;
+  branchId: number;
+  branchName: string;
+  despieceTerminado: boolean;
+}
+
 export interface BatchRequest {
   description: string;
   totalWeight: number | null;

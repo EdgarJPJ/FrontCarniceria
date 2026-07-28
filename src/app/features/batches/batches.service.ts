@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Batch, BatchReport, BatchRequest } from './batch.models';
+import { Batch, BatchOption, BatchReport, BatchRequest } from './batch.models';
 
 @Injectable({ providedIn: 'root' })
 export class BatchesService {
@@ -14,6 +14,13 @@ export class BatchesService {
     let params = new HttpParams();
     if (idSucursal) params = params.set('idSucursal', idSucursal);
     return this.http.get<Batch[]>(this.base, { params });
+  }
+
+  /** Para el selector de Entradas y Mermas: cualquiera con turno abierto, sin costos. */
+  seleccionables(idSucursal?: number): Observable<BatchOption[]> {
+    let params = new HttpParams();
+    if (idSucursal) params = params.set('idSucursal', idSucursal);
+    return this.http.get<BatchOption[]>(`${this.base}/seleccionables`, { params });
   }
 
   registrar(datos: BatchRequest): Observable<Batch> {

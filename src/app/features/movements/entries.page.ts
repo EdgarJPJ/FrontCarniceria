@@ -1,12 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, of } from 'rxjs';
 
 import { Perfil } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
-import { Batch, BatchReport } from '../batches/batch.models';
+import { BatchOption } from '../batches/batch.models';
 import { BatchesService } from '../batches/batches.service';
 import { Product, ProductsService } from '../products/products.service';
 import { SidePanel } from '../../shared/side-panel/side-panel';
@@ -27,13 +26,7 @@ export class EntriesPage {
 
   protected readonly lista = signal<StockEntry[]>([]);
   protected readonly catalogo = signal<Product[]>([]);
-  protected readonly lotesDisponibles = signal<Batch[]>([]);
-  /**
-   * Reporte de cada lote, por id. Un reporte que falla se omite en vez de
-   * ocultar el lote: la canal queda seleccionable si no se pudo saber su
-   * estado, ya que el backend es quien de verdad impide usar una agotada.
-   */
-  protected readonly reportes = signal<Map<number, BatchReport>>(new Map());
+  protected readonly lotesDisponibles = signal<BatchOption[]>([]);
   protected readonly perfil = signal<Perfil | null>(null);
 
   protected readonly cargando = signal(true);
@@ -57,9 +50,12 @@ export class EntriesPage {
     () => this.lista().filter((e) => e.batchId === null).length,
   );
 
-  /** Las agotadas no aparecen en el selector: no tiene sentido despiezar más contra ellas. */
+  /**
+   * Las que ya se marcaron como terminadas no aparecen en el selector: no
+   * deberían recibir más despiece aunque todavía les quede algo por vender.
+   */
   protected readonly lotesSeleccionables = computed(() =>
-    this.lotesDisponibles().filter((l) => !this.reportes().get(l.id)?.agotado),
+    this.lotesDisponibles().filter((l) => !l.despieceTerminado),
   );
 
   /** En qué se captura el producto elegido: nadie debería adivinar si es a kilo o a pieza. */
@@ -72,29 +68,11 @@ export class EntriesPage {
   constructor() {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
-    // Los lotes son de gestión: a un vendedor le responde 403 y se queda sin selector.
-    this.lotes.listar().subscribe({
-      next: (ls) => {
-        this.lotesDisponibles.set(ls);
-        this.cargarReportes(ls);
-      },
+    this.lotes.seleccionables().subscribe({
+      next: (ls) => this.lotesDisponibles.set(ls),
       error: () => this.lotesDisponibles.set([]),
     });
     this.cargar();
-  }
-
-  private cargarReportes(lotes: Batch[]): void {
-    if (lotes.length === 0) return;
-
-    forkJoin(
-      lotes.map((l) => this.lotes.reporte(l.id).pipe(catchError(() => of(null)))),
-    ).subscribe((rs) => {
-      const mapa = new Map<number, BatchReport>();
-      rs.forEach((r) => {
-        if (r) mapa.set(r.batchId, r);
-      });
-      this.reportes.set(mapa);
-    });
   }
 
   protected cargar(): void {

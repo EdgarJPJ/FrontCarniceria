@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Perfil } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
-import { Batch } from '../batches/batch.models';
+import { BatchOption } from '../batches/batch.models';
 import { BatchesService } from '../batches/batches.service';
 import { Product, ProductsService } from '../products/products.service';
 import { SidePanel } from '../../shared/side-panel/side-panel';
@@ -31,7 +31,7 @@ export class WastePage {
 
   protected readonly lista = signal<Waste[]>([]);
   protected readonly catalogo = signal<Product[]>([]);
-  protected readonly lotesDisponibles = signal<Batch[]>([]);
+  protected readonly lotesDisponibles = signal<BatchOption[]>([]);
   protected readonly perfil = signal<Perfil | null>(null);
 
   protected readonly cargando = signal(true);
@@ -66,8 +66,7 @@ export class WastePage {
   constructor() {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
-    // Los lotes son de gestión: a un vendedor le responde 403 y se queda sin selector.
-    this.lotes.listar().subscribe({
+    this.lotes.seleccionables().subscribe({
       next: (ls) => this.lotesDisponibles.set(ls),
       error: () => this.lotesDisponibles.set([]),
     });
