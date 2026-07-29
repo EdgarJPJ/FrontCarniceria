@@ -50,14 +50,16 @@
             </td>
             <td class="dato">{{ empleado.branchName }}</td>
             <td class="acciones">
-              <button type="button" class="enlace" (click)="abrirEdicion(empleado)">Editar</button>
-              <button type="button" class="enlace" (click)="abrirReseteo(empleado)">
-                Contraseña
-              </button>
-              @if (!esUnoMismo(empleado)) {
-                <button type="button" class="enlace" (click)="alternarEstado(empleado)">
-                  {{ empleado.active ? 'Quitar acceso' : 'Devolver acceso' }}
+              @if (puedeGestionar(empleado)) {
+                <button type="button" class="enlace" (click)="abrirEdicion(empleado)">Editar</button>
+                <button type="button" class="enlace" (click)="abrirReseteo(empleado)">
+                  Contraseña
                 </button>
+                @if (!esUnoMismo(empleado)) {
+                  <button type="button" class="enlace" (click)="alternarEstado(empleado)">
+                    {{ empleado.active ? 'Quitar acceso' : 'Devolver acceso' }}
+                  </button>
+                }
               }
             </td>
           </tr>
@@ -139,7 +141,7 @@
         <div>
           <label class="campo__etiqueta" for="idRole">Rol</label>
           <select id="idRole" class="campo__caja" formControlName="idRole">
-            @for (rol of roles(); track rol.id) {
+            @for (rol of rolesAsignables(); track rol.id) {
               <option [value]="rol.id">{{ rol.name }}</option>
             }
           </select>

@@ -47,6 +47,24 @@ export class EmployeesPage {
       : this.branches().filter((b) => b.id === this.auth.sucursalOperativa()),
   );
 
+  /**
+   * El backend ya deja "propietario" en /api/roles (para no romper el
+   * selector al editar al propio dueño), y a un administrador solo lo deja
+   * asignar vendedor — pero nunca lo rechaza ofreciéndolo. Sin este filtro
+   * se ofrecen opciones que siempre truenan en 403 al guardar.
+   */
+  protected readonly rolesAsignables = computed(() => {
+    const enCurso = this.editando();
+    const idActual = enCurso && enCurso !== 'nuevo' ? enCurso.roleId : null;
+    return this.roles().filter((rol) => {
+      if (rol.id === idActual) return true;
+      const nombre = rol.name.toUpperCase();
+      if (nombre === 'PROPIETARIO') return false;
+      if (!this.auth.esPropietario() && nombre === 'ADMINISTRADOR') return false;
+      return true;
+    });
+  });
+
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
     username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
@@ -199,5 +217,14 @@ export class EmployeesPage {
   /** El propio turno abierto: no tiene caso ofrecerle darse de baja. */
   protected esUnoMismo(empleado: Employee): boolean {
     return empleado.username === this.auth.username();
+  }
+
+  /**
+   * Nadie más que el propio propietario (o soporte, que no pasa por aquí)
+   * puede tocar esa cuenta — el backend lo rechaza siempre con 403, así que
+   * ni se le ofrecen los botones a quien no sea él mismo.
+   */
+  protected puedeGestionar(empleado: Employee): boolean {
+    return empleado.roleName.toUpperCase() !== 'PROPIETARIO' || this.esUnoMismo(empleado);
   }
 }
