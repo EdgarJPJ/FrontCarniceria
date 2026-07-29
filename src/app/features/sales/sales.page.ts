@@ -409,6 +409,22 @@ export class SalesPage {
     });
   }
 
+  /**
+   * Cancelar solo devuelve el inventario y anula lo que se deba: un abono ya
+   * cobrado se queda en el historial de la venta, sin devolverse solo. Quien
+   * cancela tiene que saberlo antes de hacerlo, no descubrirlo después.
+   */
+  protected mensajeCancelar(v: Sale): string {
+    const base = `¿Cancelar la venta #${v.id} de ${this.pesos(v.total)}? Esto devuelve el inventario y no se puede deshacer.`;
+    if (v.paymentStatus === 'PAGADO') {
+      return `${base} Ya se cobraron ${this.pesos(v.total)} de esta venta: asegúrate de devolvérselos al cliente.`;
+    }
+    if (v.paymentStatus === 'PARCIAL') {
+      return `${base} Esta venta ya tiene abonos registrados: asegúrate de devolverle ese dinero al cliente.`;
+    }
+    return base;
+  }
+
   protected unidad(p: Product): string {
     return p.unitOfMeasure === 'KILO' ? 'kg' : 'pz';
   }
