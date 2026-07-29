@@ -51,6 +51,13 @@ export class SupportService {
     });
   }
 
+  /** El plan no se autogestiona: lo cambia soporte cuando el cliente contrata o baja de nivel. */
+  cambiarPlan(id: number, plan: string): Observable<Carniceria> {
+    return this.http.patch<Carniceria>(`${this.base}/carnicerias/${id}/plan`, null, {
+      params: new HttpParams().set('plan', plan),
+    });
+  }
+
   accesos(idCarniceria: number): Observable<Acceso[]> {
     return this.http.get<Acceso[]>(`${this.base}/carnicerias/${idCarniceria}/accesos`);
   }

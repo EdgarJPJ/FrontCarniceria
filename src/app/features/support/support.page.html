@@ -55,7 +55,18 @@
               {{ c.nombre }}
               <span class="secundario codigo">{{ c.slug }}</span>
             </th>
-            <td class="dato">{{ c.plan | lowercase }}</td>
+            <td class="dato">
+              <label class="a-voz" [attr.for]="'plan-' + c.id">Plan de {{ c.nombre }}</label>
+              <select
+                [id]="'plan-' + c.id"
+                class="campo__caja"
+                [ngModel]="c.plan.toLowerCase()"
+                (ngModelChange)="cambiarPlan(c, $event)"
+              >
+                <option value="basico">Básico</option>
+                <option value="pro">Pro</option>
+              </select>
+            </td>
             <td class="dato num">{{ c.sucursales }}</td>
             <td class="dato num">{{ c.empleados }}</td>
             <td class="dato">

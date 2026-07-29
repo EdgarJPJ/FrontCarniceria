@@ -1,4 +1,3 @@
-import { LowerCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -8,7 +7,7 @@ import { Acceso, Carniceria, SupportService } from './support.service';
 
 @Component({
   selector: 'app-support-page',
-  imports: [FormsModule, LowerCasePipe, SidePanel],
+  imports: [FormsModule, SidePanel],
   templateUrl: './support.page.html',
   styleUrl: './support.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,6 +71,18 @@ export class SupportPage {
             ? `${actualizada.nombre} puede volver a entrar.`
             : `${actualizada.nombre} queda suspendida: su personal ya no puede entrar.`,
         );
+      },
+      error: (e: unknown) => this.error.set(mensajeDeError(e)),
+    });
+  }
+
+  protected cambiarPlan(c: Carniceria, plan: string): void {
+    if (plan === c.plan.toLowerCase()) return;
+    this.error.set(null);
+    this.soporte.cambiarPlan(c.id, plan).subscribe({
+      next: (actualizada) => {
+        this.lista.update((cs) => cs.map((x) => (x.id === actualizada.id ? actualizada : x)));
+        this.aviso.set(`${actualizada.nombre} pasó al plan ${actualizada.plan.toLowerCase()}.`);
       },
       error: (e: unknown) => this.error.set(mensajeDeError(e)),
     });
