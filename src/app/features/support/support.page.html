@@ -60,8 +60,8 @@
               <select
                 [id]="'plan-' + c.id"
                 class="campo__caja plan-caja"
-                [ngModel]="c.plan.toLowerCase()"
-                (ngModelChange)="cambiarPlan(c, $event)"
+                [value]="c.plan.toLowerCase()"
+                (change)="cambiarPlan(c, $any($event.target))"
               >
                 <option value="basico">Básico</option>
                 <option value="pro">Pro</option>

@@ -76,7 +76,8 @@ export class SupportPage {
     });
   }
 
-  protected cambiarPlan(c: Carniceria, plan: string): void {
+  protected cambiarPlan(c: Carniceria, select: HTMLSelectElement): void {
+    const plan = select.value;
     if (plan === c.plan.toLowerCase()) return;
     this.error.set(null);
     this.soporte.cambiarPlan(c.id, plan).subscribe({
@@ -84,7 +85,13 @@ export class SupportPage {
         this.lista.update((cs) => cs.map((x) => (x.id === actualizada.id ? actualizada : x)));
         this.aviso.set(`${actualizada.nombre} pasó al plan ${actualizada.plan.toLowerCase()}.`);
       },
-      error: (e: unknown) => this.error.set(mensajeDeError(e)),
+      error: (e: unknown) => {
+        // El navegador ya pintó la opción elegida antes de saber que el
+        // backend la iba a rechazar: sin esto, el selector se queda
+        // mostrando un plan que nunca se guardó.
+        select.value = c.plan.toLowerCase();
+        this.error.set(mensajeDeError(e));
+      },
     });
   }
 
