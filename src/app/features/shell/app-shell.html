@@ -34,7 +34,20 @@
         <text x="80" y="92" text-anchor="middle" class="riel__sigla">C</text>
       </svg>
       <p class="riel__negocio">{{ rotulo() }}</p>
-      <p class="riel__sucursal">{{ subrotulo() }}</p>
+      @if (auth.esPropietario() && sucursalesDelDueno().length > 1) {
+        <select
+          class="riel__sucursal riel__sucursal--elegible"
+          aria-label="Sucursal en la que operas"
+          [ngModel]="auth.sucursalActiva()"
+          (ngModelChange)="elegirSucursal($event)"
+        >
+          @for (s of sucursalesDelDueno(); track s.id) {
+            <option [ngValue]="s.id">{{ s.name }}</option>
+          }
+        </select>
+      } @else {
+        <p class="riel__sucursal">{{ subrotulo() }}</p>
+      }
     </div>
 
     <button class="riel__cerrar" type="button" (click)="cerrarMenu()" aria-label="Cerrar secciones">

@@ -7,13 +7,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { Perfil } from '../../core/auth/auth.models';
 import { mensajeDeError } from '../../core/http/api-error';
+import { Branch } from '../branches/branch.models';
+import { BranchesService } from '../branches/branches.service';
 import { Client } from '../clients/client.models';
 import { ClientsService } from '../clients/clients.service';
 import { CreditService } from '../credit/credit.service';
+import { InventoryService } from '../inventory/inventory.service';
 import { Product, ProductsService } from '../products/products.service';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { SidePanel } from '../../shared/side-panel/side-panel';
-import { PaymentMethod, Sale } from './sale.models';
+import { Payment, PaymentMethod, Sale } from './sale.models';
 import { SalesService } from './sales.service';
 
 /** Una línea del ticket en construcción, antes de mandarla al servidor. */
@@ -42,6 +45,8 @@ interface Recibo {
 export class SalesPage {
   private readonly ventas = inject(SalesService);
   private readonly productos = inject(ProductsService);
+  private readonly inventario = inject(InventoryService);
+  private readonly sucursales = inject(BranchesService);
   private readonly clientes = inject(ClientsService);
   private readonly credito = inject(CreditService);
   protected readonly auth = inject(AuthService);
@@ -50,7 +55,18 @@ export class SalesPage {
 
   protected readonly lista = signal<Sale[]>([]);
   protected readonly catalogo = signal<Product[]>([]);
+  protected readonly branches = signal<Branch[]>([]);
+  /** Solo la usa el propietario: administrador y vendedor ya están fijos a la suya. */
+  protected readonly sucursalElegida = signal<number | null>(null);
   protected readonly clientesActivos = signal<Client[]>([]);
+
+  /** Cuánto hay de cada producto en la sucursal donde se está vendiendo. */
+  protected readonly existencias = signal<Map<number, number>>(new Map());
+
+  /** Ofrecer un corte que no tiene nada en el mostrador solo lleva a un error después. */
+  protected readonly productosConStock = computed(() =>
+    this.catalogo().filter((p) => (this.existencias().get(p.id) ?? 0) > 0),
+  );
   protected readonly metodos = signal<PaymentMethod[]>([]);
   protected readonly perfil = signal<Perfil | null>(null);
 
@@ -79,6 +95,8 @@ export class SalesPage {
 
   /** Venta cuyo detalle completo se está mirando. */
   protected readonly viendoDetalle = signal<Sale | null>(null);
+  /** Sus abonos, si los tiene: null mientras se cargan, [] si no hubo ninguno. */
+  protected readonly abonosDeVenta = signal<Payment[] | null>(null);
 
   /** Venta a punto de cancelarse, en espera de que confirmen. */
   protected readonly cancelando = signal<Sale | null>(null);
@@ -134,6 +152,7 @@ export class SalesPage {
       error: () => this.saldosClientes.set(new Map()),
     });
     this.ventas.metodosPago().subscribe({ next: (ms) => this.metodos.set(ms) });
+    this.sucursales.listar(true).subscribe({ next: (bs) => this.branches.set(bs) });
     this.cargar();
 
     // El riel abre la caja desde cualquier pantalla con ?nueva=1. Se limpia
@@ -148,7 +167,7 @@ export class SalesPage {
 
   protected cargar(): void {
     this.cargando.set(true);
-    this.ventas.listar().subscribe({
+    this.ventas.listar(this.sucursalElegida() ?? undefined).subscribe({
       next: (vs) => {
         this.lista.set(vs);
         this.cargando.set(false);
@@ -158,6 +177,11 @@ export class SalesPage {
         this.cargando.set(false);
       },
     });
+  }
+
+  protected cambiarSucursal(valor: string): void {
+    this.sucursalElegida.set(valor ? Number(valor) : null);
+    this.cargar();
   }
 
   protected abrirCaja(): void {
@@ -173,6 +197,20 @@ export class SalesPage {
     this.recibo.set(null);
     this.paso.set(1);
     this.cajaAbierta.set(true);
+    this.cargarExistencias();
+  }
+
+  /**
+   * Se pide de nuevo cada vez que se abre la caja: el stock cambia a lo
+   * largo del turno, y el propietario puede haber cambiado de sucursal
+   * activa desde la última venta.
+   */
+  private cargarExistencias(): void {
+    const sucursal = this.auth.sucursalOperativa();
+    this.inventario.listar(sucursal ?? undefined, true).subscribe({
+      next: (lineas) => this.existencias.set(new Map(lineas.map((l) => [l.productId, l.stock]))),
+      error: () => this.existencias.set(new Map()),
+    });
   }
 
   /** Cambiar de cliente no debe arrastrar la autorización que se dio para otro. */
@@ -257,14 +295,38 @@ export class SalesPage {
     );
   }
 
+  /**
+   * A veces es más fácil decir "deme $200 de bistec" que calcular a mano
+   * cuántos kilos son: se captura el importe y la cantidad sale del precio
+   * fijo del producto, redondeada como se pesa o se cuenta cada quien.
+   */
+  protected cambiarImporte(productId: number, importe: number): void {
+    if (!importe || importe <= 0) return;
+    const partida = this.partidas().find((p) => p.product.id === productId);
+    if (!partida || partida.product.salePrice <= 0) return;
+
+    const cruda = importe / partida.product.salePrice;
+    const cantidad =
+      partida.product.unitOfMeasure === 'PIEZA' ? Math.round(cruda) : Math.round(cruda * 1000) / 1000;
+    if (cantidad <= 0) return;
+
+    this.partidas.update((ps) =>
+      ps.map((p) => (p.product.id === productId ? { ...p, quantity: cantidad } : p)),
+    );
+  }
+
   protected cobrar(): void {
     const p = this.perfil();
+    const sucursal = this.auth.sucursalOperativa();
     if (this.partidas().length === 0 || this.cobrando()) return;
 
-    // Sin sucursal no hay dónde registrar la venta: es el caso del soporte,
-    // que no pertenece a ninguna carnicería. Antes fallaba en silencio.
-    if (!p?.sucursalId) {
-      this.error.set('Tu usuario no está en una sucursal, así que no hay dónde registrar la venta.');
+    /*
+     * Sin sucursal no hay dónde registrar la venta: es el caso del soporte,
+     * que no pertenece a ninguna carnicería, o del propietario que todavía
+     * no eligió en cuál de las suyas está operando.
+     */
+    if (!p || !sucursal) {
+      this.error.set('No hay una sucursal elegida, así que no hay dónde registrar la venta.');
       return;
     }
 
@@ -278,7 +340,7 @@ export class SalesPage {
     this.ventas
       .registrar({
         clientId: this.clienteElegido() ? Number(this.clienteElegido()) : null,
-        branchId: p.sucursalId,
+        branchId: sucursal,
         employeeId: p.empleadoId,
         paymentMethodId: this.metodoElegido() ? Number(this.metodoElegido()) : null,
         discount: this.descuento() || 0,
@@ -310,10 +372,21 @@ export class SalesPage {
 
   protected verDetalle(venta: Sale): void {
     this.viendoDetalle.set(venta);
+    // Una venta de contado (sin cliente) nunca tiene abonos que pedir.
+    if (venta.clientId === null) {
+      this.abonosDeVenta.set([]);
+      return;
+    }
+    this.abonosDeVenta.set(null);
+    this.ventas.abonos(venta.id).subscribe({
+      next: (as) => this.abonosDeVenta.set(as),
+      error: () => this.abonosDeVenta.set([]),
+    });
   }
 
   protected cerrarDetalle(): void {
     this.viendoDetalle.set(null);
+    this.abonosDeVenta.set(null);
   }
 
   /**
@@ -340,6 +413,13 @@ export class SalesPage {
     return p.unitOfMeasure === 'KILO' ? 'kg' : 'pz';
   }
 
+  /** Lo que queda en el mostrador de este producto, como se pesa o se cuenta. */
+  protected existencia(p: Product): string {
+    const stock = this.existencias().get(p.id) ?? 0;
+    const valor = p.unitOfMeasure === 'KILO' ? stock.toFixed(3) : String(Math.round(stock));
+    return `${valor} ${this.unidad(p)}`;
+  }
+
   /** Qué se vendió, para verlo de un vistazo en la lista sin abrir nada. */
   protected productosVendidos(venta: Sale): string {
     return venta.details.map((d) => d.productName).join(', ');
@@ -359,5 +439,10 @@ export class SalesPage {
 
   protected pesos(monto: number): string {
     return monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+  }
+
+  /** A dos decimales, para que el input de importe no arrastre ruido de punto flotante. */
+  protected redondeado(monto: number): number {
+    return Math.round(monto * 100) / 100;
   }
 }

@@ -17,6 +17,22 @@
   <p class="aviso" role="alert">{{ e }}</p>
 }
 
+@if (auth.esPropietario() && branches().length > 1) {
+  <div class="filtro">
+    <label class="a-voz" for="sucursal">Sucursal</label>
+    <select
+      id="sucursal"
+      class="filtro__caja"
+      (change)="cambiarSucursal($any($event.target).value)"
+    >
+      <option value="">Todas las sucursales</option>
+      @for (b of branches(); track b.id) {
+        <option [value]="b.id">{{ b.name }}</option>
+      }
+    </select>
+  </div>
+}
+
 <!-- Sin canal, el reporte de merma de esa canal no puede medir nada. -->
 @if (sinLigar() > 0 && auth.esGestion()) {
   <p class="advertencia">
@@ -59,7 +75,10 @@
             <td class="dato num">{{ entrada.quantity }} {{ unidadDe(entrada.productId) }}</td>
             <td class="dato">
               @if (entrada.batchId) {
-                Canal #{{ entrada.batchId }}
+                Canal #{{ entrada.batchId }}{{ entrada.batchDescription ? ' — ' + entrada.batchDescription : '' }}
+                @if (entrada.batchDate) {
+                  <span class="secundario">comprada {{ entrada.batchDate | date: 'dd/MM/yy' }}</span>
+                }
               } @else {
                 <span class="etiqueta">sin canal</span>
               }

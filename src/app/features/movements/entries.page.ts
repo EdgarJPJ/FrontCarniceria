@@ -7,6 +7,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
 import { BatchOption } from '../batches/batch.models';
 import { BatchesService } from '../batches/batches.service';
+import { Branch } from '../branches/branch.models';
+import { BranchesService } from '../branches/branches.service';
 import { Product, ProductsService } from '../products/products.service';
 import { SidePanel } from '../../shared/side-panel/side-panel';
 import { MovementsService, StockEntry } from './movements.service';
@@ -22,11 +24,15 @@ export class EntriesPage {
   private readonly movimientos = inject(MovementsService);
   private readonly productos = inject(ProductsService);
   private readonly lotes = inject(BatchesService);
+  private readonly sucursales = inject(BranchesService);
   protected readonly auth = inject(AuthService);
 
   protected readonly lista = signal<StockEntry[]>([]);
   protected readonly catalogo = signal<Product[]>([]);
   protected readonly lotesDisponibles = signal<BatchOption[]>([]);
+  protected readonly branches = signal<Branch[]>([]);
+  /** Solo la usa el propietario: administrador y vendedor ya están fijos a la suya. */
+  protected readonly sucursalElegida = signal<number | null>(null);
   protected readonly perfil = signal<Perfil | null>(null);
 
   protected readonly cargando = signal(true);
@@ -68,16 +74,26 @@ export class EntriesPage {
   constructor() {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
-    this.lotes.seleccionables().subscribe({
+    this.sucursales.listar(true).subscribe({ next: (bs) => this.branches.set(bs) });
+    this.cargarCanales();
+    this.cargar();
+  }
+
+  /**
+   * Se pide de nuevo cada vez que se abre el panel, no solo al arrancar:
+   * el propietario puede haber cambiado de sucursal activa desde entonces, y
+   * las canales de otra sucursal no le sirven aquí.
+   */
+  private cargarCanales(): void {
+    this.lotes.seleccionables(this.auth.sucursalOperativa() ?? undefined).subscribe({
       next: (ls) => this.lotesDisponibles.set(ls),
       error: () => this.lotesDisponibles.set([]),
     });
-    this.cargar();
   }
 
   protected cargar(): void {
     this.cargando.set(true);
-    this.movimientos.entradas().subscribe({
+    this.movimientos.entradas(this.sucursalElegida() ?? undefined).subscribe({
       next: (es) => {
         this.lista.set(es);
         this.cargando.set(false);
@@ -89,6 +105,11 @@ export class EntriesPage {
     });
   }
 
+  protected cambiarSucursal(valor: string): void {
+    this.sucursalElegida.set(valor ? Number(valor) : null);
+    this.cargar();
+  }
+
   protected abrir(): void {
     this.productoElegido.set(null);
     this.cantidad.set(null);
@@ -97,6 +118,7 @@ export class EntriesPage {
     this.despieceTerminado.set(false);
     this.error.set(null);
     this.panelAbierto.set(true);
+    this.cargarCanales();
   }
 
   protected cerrar(): void {
@@ -106,17 +128,18 @@ export class EntriesPage {
 
   protected guardar(): void {
     const p = this.perfil();
+    const sucursal = this.auth.sucursalOperativa();
     const producto = this.productoElegido();
     const cant = this.cantidad();
     // Sin sucursal no hay a qué inventario sumarle.
-    if (!p?.sucursalId || !producto || !cant || cant <= 0 || this.guardando()) return;
+    if (!p || !sucursal || !producto || !cant || cant <= 0 || this.guardando()) return;
 
     this.guardando.set(true);
     this.error.set(null);
 
     this.movimientos
       .registrarEntrada({
-        branchId: p.sucursalId,
+        branchId: sucursal,
         productId: Number(producto),
         employeeId: p.empleadoId,
         batchId: this.loteElegido() ? Number(this.loteElegido()) : null,

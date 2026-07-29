@@ -7,7 +7,10 @@ import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
 import { BatchOption } from '../batches/batch.models';
 import { BatchesService } from '../batches/batches.service';
+import { Branch } from '../branches/branch.models';
+import { BranchesService } from '../branches/branches.service';
 import { Product, ProductsService } from '../products/products.service';
+import { BatchReportModal } from '../../shared/batch-report-modal/batch-report-modal';
 import { SidePanel } from '../../shared/side-panel/side-panel';
 import { MovementsService, Waste } from './movements.service';
 
@@ -16,7 +19,7 @@ const MOTIVOS = ['Caducado', 'Descompuesto', 'Golpeado', 'Derrame', 'Robo', 'Otr
 
 @Component({
   selector: 'app-waste-page',
-  imports: [FormsModule, DatePipe, SidePanel],
+  imports: [FormsModule, DatePipe, SidePanel, BatchReportModal],
   templateUrl: './waste.page.html',
   styleUrl: './waste.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,6 +28,7 @@ export class WastePage {
   private readonly movimientos = inject(MovementsService);
   private readonly productos = inject(ProductsService);
   private readonly lotes = inject(BatchesService);
+  private readonly sucursales = inject(BranchesService);
   protected readonly auth = inject(AuthService);
 
   protected readonly motivos = MOTIVOS;
@@ -32,6 +36,9 @@ export class WastePage {
   protected readonly lista = signal<Waste[]>([]);
   protected readonly catalogo = signal<Product[]>([]);
   protected readonly lotesDisponibles = signal<BatchOption[]>([]);
+  protected readonly branches = signal<Branch[]>([]);
+  /** Solo la usa el propietario: administrador y vendedor ya están fijos a la suya. */
+  protected readonly sucursalElegida = signal<number | null>(null);
   protected readonly perfil = signal<Perfil | null>(null);
 
   protected readonly cargando = signal(true);
@@ -44,6 +51,8 @@ export class WastePage {
   protected readonly motivo = signal<string>(MOTIVOS[0]);
   protected readonly nota = signal('');
   protected readonly loteElegido = signal<number | null>(null);
+  /** El id de la canal cuyo desglose se está mirando; null si el modal está cerrado. */
+  protected readonly viendoDesgloseDe = signal<number | null>(null);
 
   /** En qué se captura el producto elegido: nadie debería adivinar si es a kilo o a pieza. */
   protected readonly unidadElegida = computed(() => {
@@ -66,16 +75,25 @@ export class WastePage {
   constructor() {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
-    this.lotes.seleccionables().subscribe({
+    this.sucursales.listar(true).subscribe({ next: (bs) => this.branches.set(bs) });
+    this.cargarCanales();
+    this.cargar();
+  }
+
+  /**
+   * Se pide de nuevo cada vez que se abre el panel: el propietario puede
+   * haber cambiado de sucursal activa desde que se cargó la pantalla.
+   */
+  private cargarCanales(): void {
+    this.lotes.seleccionables(this.auth.sucursalOperativa() ?? undefined).subscribe({
       next: (ls) => this.lotesDisponibles.set(ls),
       error: () => this.lotesDisponibles.set([]),
     });
-    this.cargar();
   }
 
   protected cargar(): void {
     this.cargando.set(true);
-    this.movimientos.mermas().subscribe({
+    this.movimientos.mermas(this.sucursalElegida() ?? undefined).subscribe({
       next: (ms) => {
         this.lista.set(ms);
         this.cargando.set(false);
@@ -87,6 +105,11 @@ export class WastePage {
     });
   }
 
+  protected cambiarSucursal(valor: string): void {
+    this.sucursalElegida.set(valor ? Number(valor) : null);
+    this.cargar();
+  }
+
   protected abrir(): void {
     this.productoElegido.set(null);
     this.cantidad.set(null);
@@ -95,6 +118,7 @@ export class WastePage {
     this.loteElegido.set(null);
     this.error.set(null);
     this.panelAbierto.set(true);
+    this.cargarCanales();
   }
 
   protected cerrar(): void {
@@ -104,10 +128,11 @@ export class WastePage {
 
   protected guardar(): void {
     const p = this.perfil();
+    const sucursal = this.auth.sucursalOperativa();
     const producto = this.productoElegido();
     const cant = this.cantidad();
     // Sin sucursal no hay de qué inventario descontar.
-    if (!p?.sucursalId || !producto || !cant || cant <= 0 || this.guardando()) return;
+    if (!p || !sucursal || !producto || !cant || cant <= 0 || this.guardando()) return;
 
     this.guardando.set(true);
     this.error.set(null);
@@ -115,7 +140,7 @@ export class WastePage {
     this.movimientos
       .registrarMerma({
         productId: Number(producto),
-        branchId: p.sucursalId,
+        branchId: sucursal,
         employeeId: p.empleadoId,
         // Sin lote la merma descuenta igual, pero no se le atribuye a ninguna
         // canal y el reporte de ese lote la contará como pérdida sin explicar.
@@ -135,6 +160,14 @@ export class WastePage {
           this.error.set(mensajeDeError(e));
         },
       });
+  }
+
+  protected verDesglose(batchId: number): void {
+    this.viendoDesgloseDe.set(batchId);
+  }
+
+  protected cerrarDesglose(): void {
+    this.viendoDesgloseDe.set(null);
   }
 
   protected unidadDe(productId: number): string {

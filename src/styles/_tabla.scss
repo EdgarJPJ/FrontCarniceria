@@ -265,8 +265,13 @@
 }
 
 /* La fila de navegación entre pasos: "Atrás" a la izquierda y la acción a la
-   derecha, ambos a la misma altura (sin el margen que empuja al botón suelto).
-   La comparten la caja de ventas y el cobro de fiado. */
+   derecha, ambos a la misma altura (sin el margen que empuja al botón suelto,
+   que aquí se mueve al contenedor para no perder la separación con el campo
+   de arriba). La comparten la caja de ventas y el cobro de fiado. */
+.panel__botones--par {
+  margin-top: 28px;
+}
+
 .panel__botones--par .entrar {
   margin-top: 0;
 }

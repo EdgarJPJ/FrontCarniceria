@@ -201,11 +201,48 @@
   outline-offset: 1px;
 }
 
-.ticket__importe {
+/* El importe de una línea ya vendida es de solo lectura: no reusa el estilo
+   de campo editable de .ticket__importe, que es para el ticket en construcción. */
+.ticket__monto {
   font-family: var(--dato);
   font-size: 14.5px;
   font-variant-numeric: tabular-nums;
   color: var(--acero);
+}
+
+.ticket__precio {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-family: var(--dato);
+  font-size: 14.5px;
+  color: var(--acero);
+}
+
+/* Igual que .ticket__cantidad: se corrige ahí mismo, sin rehacer la línea. */
+.ticket__importe {
+  width: 74px;
+  height: 24px;
+  padding: 0 5px;
+  font-family: var(--dato);
+  font-size: 12px;
+  color: var(--acero);
+  background: var(--azulejo);
+  border: 1px solid var(--junta);
+  border-radius: 3px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket__importe:hover {
+  background: var(--azulejo-hondo);
+}
+
+.ticket__importe:focus {
+  background: var(--hueso);
+  border-color: var(--sangre);
+  outline: 2px solid var(--sangre);
+  outline-offset: 1px;
 }
 
 .ticket__quitar {

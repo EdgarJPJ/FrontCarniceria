@@ -21,16 +21,36 @@ export class AuthService {
   readonly companySlug = computed(() => this._session()?.companySlug ?? null);
 
   /*
-   * Los mismos tres niveles que `config/Roles` en el backend. Esto solo decide
+   * Los mismos niveles que `config/Roles` en el backend. Esto solo decide
    * qué se dibuja: quien manda es el @PreAuthorize del servidor. Ocultar un
    * botón es cortesía, no seguridad.
    */
   readonly esSoporte = computed(() => this.tieneRol('DEVELOPER'));
-  readonly esGestion = computed(() => this.tieneRol('DEVELOPER', 'ADMINISTRADOR'));
+  readonly esPropietario = computed(() => this.tieneRol('PROPIETARIO'));
+  readonly esGestion = computed(() => this.tieneRol('DEVELOPER', 'PROPIETARIO', 'ADMINISTRADOR'));
+  /** Sucursales y datos de la empresa: ya no es cosa de cada administrador. */
+  readonly puedeAdministrarEmpresa = computed(() => this.tieneRol('DEVELOPER', 'PROPIETARIO'));
 
   private tieneRol(...roles: string[]): boolean {
     const propios = this._session()?.roles ?? [];
     return roles.some((rol) => propios.includes(`ROLE_${rol}`));
+  }
+
+  /**
+   * En qué sucursal opera ahora mismo. Para administrador y vendedor es fija
+   * (la del token); el propietario, que no está atado a una sola, la elige
+   * aquí — arranca en la suya propia y no se guarda entre sesiones, para no
+   * dejar puesta una sucursal vieja sin que el dueño se dé cuenta.
+   */
+  private readonly _sucursalActiva = signal<number | null>(null);
+  readonly sucursalActiva = this._sucursalActiva.asReadonly();
+
+  readonly sucursalOperativa = computed(() =>
+    this.esPropietario() ? this._sucursalActiva() : (this._session()?.branchId ?? null),
+  );
+
+  elegirSucursal(idSucursal: number): void {
+    this._sucursalActiva.set(idSucursal);
   }
 
   login(credenciales: LoginRequest): Observable<LoginResponse> {
@@ -39,7 +59,7 @@ export class AuthService {
       .pipe(tap((respuesta) => this.abrirTurno(respuesta.jwt)));
   }
 
-  /** Alta inicial: crea empresa, sucursal y administrador, y abre el turno. */
+  /** Alta inicial: crea empresa, sucursal y propietario, y abre el turno. */
   registrar(datos: RegistroRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${environment.apiUrl}/auth/registro`, datos)
@@ -54,7 +74,10 @@ export class AuthService {
   perfil(): Observable<Perfil> {
     this.perfilEnCurso ??= this.http
       .get<Perfil>(`${environment.apiUrl}/auth/perfil`)
-      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+      .pipe(
+        tap((p) => this._sucursalActiva.update((actual) => actual ?? p.sucursalId)),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
     return this.perfilEnCurso;
   }
 
@@ -73,6 +96,7 @@ export class AuthService {
   logout(): void {
     this._session.set(null);
     this.perfilEnCurso = null;
+    this._sucursalActiva.set(null);
     localStorage.removeItem(ALMACEN);
   }
 

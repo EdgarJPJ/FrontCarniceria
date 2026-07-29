@@ -1,0 +1,68 @@
+import { DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+
+import { mensajeDeError } from '../../core/http/api-error';
+import { BatchReport, estadoDeReporte } from '../../features/batches/batch.models';
+import { BatchesService } from '../../features/batches/batches.service';
+import { SidePanel } from '../side-panel/side-panel';
+
+/**
+ * El reporte de merma de una canal, con el desglose por producto. Antes vivía
+ * solo dentro de `batches.page.ts`; ahora lo abre también Mermas, así que se
+ * volvió un componente aparte en vez de duplicar el marcado.
+ */
+@Component({
+  selector: 'app-batch-report-modal',
+  imports: [SidePanel, DatePipe],
+  templateUrl: './batch-report-modal.html',
+  styleUrl: './batch-report-modal.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class BatchReportModal {
+  private readonly lotes = inject(BatchesService);
+
+  readonly batchId = input.required<number>();
+  readonly cerrar = output<void>();
+
+  protected readonly reporte = signal<BatchReport | null>(null);
+  protected readonly cargando = signal(true);
+  protected readonly error = signal<string | null>(null);
+
+  constructor() {
+    effect(() => {
+      const id = this.batchId();
+      this.reporte.set(null);
+      this.cargando.set(true);
+      this.error.set(null);
+
+      this.lotes.reporte(id).subscribe({
+        next: (r) => {
+          this.reporte.set(r);
+          this.cargando.set(false);
+        },
+        error: (e: unknown) => {
+          this.error.set(mensajeDeError(e));
+          this.cargando.set(false);
+        },
+      });
+    });
+  }
+
+  protected readonly estadoDeReporte = estadoDeReporte;
+
+  /** Qué proporción del peso comprado se perdió. */
+  protected porcentaje(parte: number, total: number): string {
+    if (!total) return '—';
+    return ((parte / total) * 100).toFixed(1) + '%';
+  }
+
+  protected kilos(valor: number | null): string {
+    return valor === null ? '—' : valor.toFixed(3) + ' kg';
+  }
+
+  protected pesos(monto: number | null): string {
+    return monto === null
+      ? '—'
+      : monto.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+  }
+}

@@ -5,7 +5,7 @@
       @if (cargando()) {
         Cargando…
       } @else if (porReponer() > 0) {
-        {{ lineas().length }} productos · {{ porReponer() }} por reponer
+        {{ lineas().length }} productos · {{ porReponer() }} con stock bajo
       } @else {
         {{ lineas().length }} productos en existencia
       }
@@ -28,7 +28,7 @@
     (input)="busqueda.set($any($event.target).value)"
   />
 
-  @if (auth.esGestion() && branches().length > 1) {
+  @if (auth.esPropietario() && branches().length > 1) {
     <label class="a-voz" for="sucursal">Sucursal</label>
     <select
       id="sucursal"
@@ -83,7 +83,7 @@
               @if (agotado(linea)) {
                 <span class="etiqueta etiqueta--tinta">agotado</span>
               } @else if (bajo(linea)) {
-                <span class="etiqueta">por reponer</span>
+                <span class="etiqueta">stock bajo</span>
               }
             </td>
             <td class="dato num">{{ pesos(linea.salePrice) }}</td>

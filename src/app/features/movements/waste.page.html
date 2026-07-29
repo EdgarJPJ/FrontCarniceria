@@ -17,6 +17,22 @@
   <p class="aviso" role="alert">{{ e }}</p>
 }
 
+@if (auth.esPropietario() && branches().length > 1) {
+  <div class="filtro">
+    <label class="a-voz" for="sucursal">Sucursal</label>
+    <select
+      id="sucursal"
+      class="filtro__caja"
+      (change)="cambiarSucursal($any($event.target).value)"
+    >
+      <option value="">Todas las sucursales</option>
+      @for (b of branches(); track b.id) {
+        <option [value]="b.id">{{ b.name }}</option>
+      }
+    </select>
+  </div>
+}
+
 @if (!cargando() && lista().length === 0) {
   <div class="vacio">
     <p class="vacio__titulo">No hay mermas registradas</p>
@@ -132,6 +148,11 @@
             De qué canal salió. Sin canal, esta pérdida no se le atribuye a ninguna y el reporte
             de merma la contará como faltante sin explicar.
           </p>
+          @if (loteElegido(); as id) {
+            <button type="button" class="enlace" (click)="verDesglose(id)">
+              Ver desglose de esta canal
+            </button>
+          }
         </div>
       }
 
@@ -154,4 +175,8 @@
         <button class="cancelar" type="button" (click)="cerrar()">Cancelar</button>
       </div>
   </app-side-panel>
+}
+
+@if (viendoDesgloseDe(); as id) {
+  <app-batch-report-modal [batchId]="id" (cerrar)="cerrarDesglose()" />
 }

@@ -10,10 +10,13 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { catchError, filter, of } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { Branch } from '../branches/branch.models';
+import { BranchesService } from '../branches/branches.service';
 import { Icono } from '../../shared/icono/icono';
 
 interface Seccion {
@@ -22,6 +25,8 @@ interface Seccion {
   icono: string;
   /** Si es true, solo la ve quien administra. */
   soloGestion?: boolean;
+  /** Si es true, solo la ve el dueño de la empresa (no cada administrador). */
+  soloPropietario?: boolean;
 }
 
 /**
@@ -46,13 +51,14 @@ interface Seccion {
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icono],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icono, FormsModule],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppShell {
   protected readonly auth = inject(AuthService);
+  private readonly branches = inject(BranchesService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -73,9 +79,9 @@ export class AppShell {
   private readonly deAjustes: Seccion[] = [
     { ruta: '/mermas', etiqueta: 'Mermas', icono: 'mermas' },
     { ruta: '/productos', etiqueta: 'Productos y precios', icono: 'productos' },
-    { ruta: '/sucursales', etiqueta: 'Sucursales', icono: 'sucursales' },
+    { ruta: '/sucursales', etiqueta: 'Sucursales', icono: 'sucursales', soloPropietario: true },
     { ruta: '/personal', etiqueta: 'Personal', icono: 'personal', soloGestion: true },
-    { ruta: '/empresa', etiqueta: 'Mi carnicería', icono: 'empresa', soloGestion: true },
+    { ruta: '/empresa', etiqueta: 'Mi carnicería', icono: 'empresa', soloPropietario: true },
   ];
 
   /** Lo que usa el soporte del sistema, que no tiene carnicería. */
@@ -91,6 +97,20 @@ export class AppShell {
     { initialValue: null },
   );
 
+  /**
+   * Solo el propietario elige sucursal: administrador y vendedor están fijos
+   * a la suya, así que ofrecerles el selector no tendría nada que hacer.
+   */
+  protected readonly sucursalesDelDueno = toSignal(
+    this.auth.esPropietario() ? this.branches.listar(true).pipe(catchError(() => of([]))) : of([]),
+    { initialValue: [] as Branch[] },
+  );
+
+  protected elegirSucursal(valor: string): void {
+    if (!valor) return;
+    this.auth.elegirSucursal(Number(valor));
+  }
+
   /** Solo importa en angosto: en escritorio el riel siempre está visible. */
   protected readonly menuAbierto = signal(false);
 
@@ -98,6 +118,7 @@ export class AppShell {
   protected readonly masAbierto = signal(false);
 
   private puedeVer(s: Seccion): boolean {
+    if (s.soloPropietario) return this.auth.puedeAdministrarEmpresa();
     return !s.soloGestion || this.auth.esGestion();
   }
 

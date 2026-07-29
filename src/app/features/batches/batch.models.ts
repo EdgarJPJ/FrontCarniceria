@@ -68,7 +68,35 @@ export interface BatchReport {
   revenueSold: number;
   /** `revenueSold - totalCost`. Cero cuando no es `medible`. */
   profit: number;
+  /** Qué salió de esta canal, corte por corte. Vacío si no hay entradas ligadas. */
+  productos: BatchProductBreakdown[];
+}
+
+/**
+ * `currentStock` es el stock actual del producto en la sucursal, no lo que
+ * queda "de esta canal": el inventario no se lleva por canal, así que si el
+ * mismo corte también entró por otra, esta cifra incluye esa mercancía.
+ */
+export interface BatchProductBreakdown {
+  productId: number;
+  productName: string;
+  producedQuantity: number;
+  soldQuantity: number;
+  manualWasteQuantity: number;
+  currentStock: number;
 }
 
 /** Cómo está una canal según lo que queda de ella. */
 export type EstadoCanal = 'agotada' | 'abierta' | 'sin-despiezar' | 'sin-datos';
+
+/**
+ * En qué punto va la canal. No hay campo en la base: se deduce del reporte, y
+ * cuando falta captura se dice eso en vez de inventar un estado. Es una
+ * función libre, no un método, porque tanto la lista de canales como el modal
+ * de su reporte la necesitan y no hay razón para que diverjan.
+ */
+export function estadoDeReporte(r: BatchReport): EstadoCanal {
+  if (r.entryCount === 0) return 'sin-despiezar';
+  if (!r.medible) return 'sin-datos';
+  return r.agotado ? 'agotada' : 'abierta';
+}

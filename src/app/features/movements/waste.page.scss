@@ -7,3 +7,10 @@
 .perdida {
   color: var(--sangre);
 }
+
+/* .enlace nació para ir junto a otro texto en una fila de tabla, con margen
+   a la izquierda; aquí va solo, debajo del selector de canal. */
+.campo .enlace {
+  display: block;
+  margin: 6px 0 0;
+}

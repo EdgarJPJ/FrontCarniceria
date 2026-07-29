@@ -36,6 +36,17 @@ export class EmployeesPage {
 
   protected readonly activos = computed(() => this.lista().filter((e) => e.active).length);
 
+  /**
+   * Un administrador ya no puede dar de alta ni mover a nadie fuera de su
+   * sucursal —el backend lo rechaza—, así que ni se le ofrece elegir otra.
+   * Solo el propietario ve la lista completa.
+   */
+  protected readonly sucursalesElegibles = computed(() =>
+    this.auth.esPropietario()
+      ? this.branches()
+      : this.branches().filter((b) => b.id === this.auth.sucursalOperativa()),
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
     username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
@@ -73,7 +84,7 @@ export class EmployeesPage {
     this.form.reset({
       name: '', username: '', password: '', phone: '',
       idRole: this.roles()[0]?.id ?? 0,
-      idBranch: this.branches()[0]?.id ?? 0,
+      idBranch: this.auth.sucursalOperativa() ?? this.sucursalesElegibles()[0]?.id ?? 0,
     });
     // La clave y la contraseña solo se piden al dar de alta.
     this.form.controls.username.enable();

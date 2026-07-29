@@ -3,16 +3,18 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, forkJoin, of } from 'rxjs';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { mensajeDeError } from '../../core/http/api-error';
+import { BatchReportModal } from '../../shared/batch-report-modal/batch-report-modal';
 import { SidePanel } from '../../shared/side-panel/side-panel';
 import { Branch } from '../branches/branch.models';
 import { BranchesService } from '../branches/branches.service';
-import { Batch, BatchReport, EstadoCanal } from './batch.models';
+import { Batch, BatchReport, EstadoCanal, estadoDeReporte } from './batch.models';
 import { BatchesService } from './batches.service';
 
 @Component({
   selector: 'app-batches-page',
-  imports: [ReactiveFormsModule, SidePanel, DatePipe],
+  imports: [ReactiveFormsModule, SidePanel, DatePipe, BatchReportModal],
   templateUrl: './batches.page.html',
   styleUrl: './batches.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,16 +23,28 @@ export class BatchesPage {
   private readonly fb = inject(FormBuilder);
   private readonly lotes = inject(BatchesService);
   private readonly sucursales = inject(BranchesService);
+  protected readonly auth = inject(AuthService);
 
   protected readonly lista = signal<Batch[]>([]);
   protected readonly branches = signal<Branch[]>([]);
+
+  /**
+   * Un administrador ya no puede registrar una canal en otra sucursal —el
+   * backend la forzaría a la suya igual—, así que ni se le ofrece elegir
+   * una distinta. Solo el propietario ve la lista completa.
+   */
+  protected readonly sucursalesElegibles = computed(() =>
+    this.auth.esPropietario()
+      ? this.branches()
+      : this.branches().filter((b) => b.id === this.auth.sucursalOperativa()),
+  );
   protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly guardando = signal(false);
 
   protected readonly editando = signal<Batch | 'nuevo' | null>(null);
-  protected readonly reporte = signal<BatchReport | null>(null);
-  protected readonly cargandoReporte = signal(false);
+  /** El id de la canal cuyo reporte se está mirando; null si el modal está cerrado. */
+  protected readonly viendoReporteDe = signal<number | null>(null);
 
   /**
    * El reporte de cada canal, por id. Es lo único que sabe cuánto queda de
@@ -63,12 +77,30 @@ export class BatchesPage {
     description: ['', Validators.maxLength(100)],
     totalWeight: [null as number | null, Validators.min(0)],
     totalPrice: [null as number | null, Validators.min(0)],
+    /**
+     * Solo de UI: no viaja a `BatchRequest` ni se guarda en la base. Rellena
+     * `totalPrice`, que sigue siendo el campo real y se puede corregir a mano
+     * después sin que esto se lo vuelva a pisar.
+     */
+    precioPorKilo: [null as number | null, Validators.min(0)],
     branchId: [0, [Validators.required, Validators.min(1)]],
   });
 
   constructor() {
     this.sucursales.listar(true).subscribe({ next: (bs) => this.branches.set(bs) });
     this.cargar();
+
+    this.form.controls.precioPorKilo.valueChanges.subscribe(() => this.recalcularTotalPagado());
+    this.form.controls.totalWeight.valueChanges.subscribe(() => this.recalcularTotalPagado());
+  }
+
+  /** Solo calcula si hay un precio por kilo capturado; si no, `totalPrice` se sigue tecleando a mano. */
+  private recalcularTotalPagado(): void {
+    const precio = this.form.controls.precioPorKilo.value;
+    const peso = this.form.controls.totalWeight.value;
+    if (!precio || !peso) return;
+
+    this.form.controls.totalPrice.setValue(Math.round(precio * peso * 100) / 100);
   }
 
   protected cargar(): void {
@@ -110,26 +142,36 @@ export class BatchesPage {
   }
 
   protected abrirAlta(): void {
-    this.form.reset({
-      description: '', totalWeight: null, totalPrice: null,
-      branchId: this.branches()[0]?.id ?? 0,
-    });
+    // emitEvent: false — si no, el propio reset dispara el recálculo y
+    // podría redondear un totalPrice que todavía ni se ha tecleado.
+    this.form.reset(
+      {
+        description: '', totalWeight: null, totalPrice: null, precioPorKilo: null,
+        branchId: this.auth.sucursalOperativa() ?? this.sucursalesElegibles()[0]?.id ?? 0,
+      },
+      { emitEvent: false },
+    );
     this.editando.set('nuevo');
   }
 
   protected abrirEdicion(lote: Batch): void {
-    this.form.reset({
-      description: lote.description ?? '',
-      totalWeight: lote.totalWeight,
-      totalPrice: lote.totalPrice,
-      branchId: lote.branchId,
-    });
+    this.form.reset(
+      {
+        description: lote.description ?? '',
+        totalWeight: lote.totalWeight,
+        totalPrice: lote.totalPrice,
+        // Se muestra el precio por kilo que ya tenía, solo informativo: no se
+        // recalcula totalPrice con él a menos que se toque uno de los dos.
+        precioPorKilo: lote.totalWeight && lote.totalPrice ? lote.totalPrice / lote.totalWeight : null,
+        branchId: lote.branchId,
+      },
+      { emitEvent: false },
+    );
     this.editando.set(lote);
   }
 
   protected cerrarPanel(): void {
     this.editando.set(null);
-    this.reporte.set(null);
     this.error.set(null);
   }
 
@@ -144,7 +186,7 @@ export class BatchesPage {
     this.guardando.set(true);
     this.error.set(null);
 
-    const v = this.form.getRawValue();
+    const { precioPorKilo, ...v } = this.form.getRawValue();
     const datos = { ...v, branchId: Number(v.branchId) };
     const peticion =
       enCurso === 'nuevo'
@@ -165,18 +207,11 @@ export class BatchesPage {
   }
 
   protected verReporte(lote: Batch): void {
-    this.cargandoReporte.set(true);
-    this.error.set(null);
-    this.lotes.reporte(lote.id).subscribe({
-      next: (r) => {
-        this.reporte.set(r);
-        this.cargandoReporte.set(false);
-      },
-      error: (e: unknown) => {
-        this.error.set(mensajeDeError(e));
-        this.cargandoReporte.set(false);
-      },
-    });
+    this.viendoReporteDe.set(lote.id);
+  }
+
+  protected cerrarReporte(): void {
+    this.viendoReporteDe.set(null);
   }
 
   /**
@@ -195,14 +230,7 @@ export class BatchesPage {
    */
   protected estado(lote: Batch): EstadoCanal {
     const r = this.reportes().get(lote.id);
-    return r ? this.estadoDeReporte(r) : 'sin-datos';
-  }
-
-  protected estadoDeReporte(r: BatchReport): EstadoCanal {
-    if (r.entryCount === 0) return 'sin-despiezar';
-    if (!r.medible) return 'sin-datos';
-
-    return r.agotado ? 'agotada' : 'abierta';
+    return r ? estadoDeReporte(r) : 'sin-datos';
   }
 
   /** Lo que se pinta en la columna de restante. */
@@ -217,12 +245,6 @@ export class BatchesPage {
       default:
         return this.kilos(this.restante(lote));
     }
-  }
-
-  /** Qué proporción del peso comprado se perdió. */
-  protected porcentaje(parte: number, total: number): string {
-    if (!total) return '—';
-    return ((parte / total) * 100).toFixed(1) + '%';
   }
 
   protected kilos(valor: number | null): string {

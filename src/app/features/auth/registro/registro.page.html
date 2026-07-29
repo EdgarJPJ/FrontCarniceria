@@ -9,8 +9,8 @@
     <header class="turno__encabezado">
       <h2 class="turno__titulo">Da de alta tu carnicería</h2>
       <p class="turno__entrada">
-        Se crea la carnicería, su primera sucursal y tu cuenta de administrador.
-        Después podrás agregar más sucursales y empleados.
+        Se crea la carnicería, su primera sucursal y tu cuenta de propietario.
+        Después podrás agregar más sucursales, administradores y vendedores.
       </p>
     </header>
 
@@ -123,7 +123,7 @@
       </fieldset>
     }
 
-    <!-- 3 · La cuenta. Queda como administrador de todo lo anterior. -->
+    <!-- 3 · La cuenta. Queda como propietario de todo lo anterior. -->
     @if (pasoActual() === 3) {
       <fieldset class="bloque" formGroupName="cuenta">
         <legend class="bloque__titulo">

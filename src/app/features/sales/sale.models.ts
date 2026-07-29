@@ -3,6 +3,8 @@ export interface SaleDetail {
   productId: number;
   productName: string;
   batchId: number | null;
+  /** Nulos si esta línea no quedó ligada a ninguna canal. */
+  batchDescription: string | null;
   quantity: number;
   unitPrice: number;
   subtotal: number;

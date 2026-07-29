@@ -20,6 +20,22 @@
   <p class="aviso" role="alert">{{ e }}</p>
 }
 
+@if (auth.esPropietario() && branches().length > 1) {
+  <div class="filtro">
+    <label class="a-voz" for="sucursal">Sucursal</label>
+    <select
+      id="sucursal"
+      class="filtro__caja"
+      (change)="cambiarSucursal($any($event.target).value)"
+    >
+      <option value="">Todas las sucursales</option>
+      @for (b of branches(); track b.id) {
+        <option [value]="b.id">{{ b.name }}</option>
+      }
+    </select>
+  </div>
+}
+
 @if (!cargando() && lista().length === 0) {
   <div class="vacio">
     <p class="vacio__titulo">Todavía no hay ventas</p>
@@ -153,12 +169,16 @@
               (ngModelChange)="productoElegido.set($event); avisoPaso.set(null)"
             >
               <option [ngValue]="null">Elige un producto…</option>
-              @for (p of catalogo(); track p.id) {
+              @for (p of productosConStock(); track p.id) {
                 <option [ngValue]="p.id">
-                  {{ p.name }} — {{ pesos(p.salePrice) }}/{{ unidad(p) }}
+                  {{ p.name }} — {{ pesos(p.salePrice) }}/{{ unidad(p) }} · disponible
+                  {{ existencia(p) }}
                 </option>
               }
             </select>
+            @if (catalogo().length > 0 && productosConStock().length === 0) {
+              <p class="campo__pista">No hay productos con existencia en esta sucursal.</p>
+            }
           </div>
 
           <div class="campo">
@@ -199,7 +219,18 @@
                     {{ unidad(p.product) }} × {{ pesos(p.product.salePrice) }}
                   </span>
                 </div>
-                <span class="ticket__importe">{{ pesos(p.product.salePrice * p.quantity) }}</span>
+                <span class="ticket__precio">
+                  $
+                  <input
+                    class="ticket__importe"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    [ngModel]="redondeado(p.product.salePrice * p.quantity)"
+                    (ngModelChange)="cambiarImporte(p.product.id, $event)"
+                    [attr.aria-label]="'Total de ' + p.product.name"
+                  />
+                </span>
                 <button
                   class="ticket__quitar"
                   type="button"
@@ -357,8 +388,13 @@
           <div class="ticket__que">
             {{ d.productName }}
             <span class="ticket__detalle">{{ d.quantity }} × {{ pesos(d.unitPrice) }}</span>
+            @if (d.batchId) {
+              <span class="ticket__detalle">
+                Canal #{{ d.batchId }}{{ d.batchDescription ? ' — ' + d.batchDescription : '' }}
+              </span>
+            }
           </div>
-          <span class="ticket__importe">{{ pesos(d.subtotal) }}</span>
+          <span class="ticket__monto">{{ pesos(d.subtotal) }}</span>
         </li>
       }
     </ul>
@@ -380,6 +416,25 @@
         · Esta venta está cancelada.
       }
     </p>
+
+    @if (abonosDeVenta(); as abonos) {
+      @if (abonos.length > 0) {
+        <h3 class="campo__etiqueta">Abonos</h3>
+        <ul class="ticket">
+          @for (a of abonos; track a.id) {
+            <li class="ticket__linea">
+              <div class="ticket__que">
+                {{ a.date | date: 'dd/MM/yy HH:mm' }}
+                <span class="ticket__detalle">{{ a.paymentMethodName || 'sin especificar' }}</span>
+              </div>
+              <span class="ticket__monto">{{ pesos(a.amount) }}</span>
+            </li>
+          }
+        </ul>
+      }
+    } @else if (v.clientId !== null) {
+      <p class="campo__pista">Cargando abonos…</p>
+    }
 
     <div class="panel__botones">
       <button class="cancelar" type="button" (click)="cerrarDetalle()">Cerrar</button>

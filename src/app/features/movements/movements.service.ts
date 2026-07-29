@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -11,6 +11,9 @@ export interface StockEntry {
   productName: string;
   employeeId: number;
   batchId: number | null;
+  /** Nulos si la entrada no está ligada a ninguna canal. */
+  batchDescription: string | null;
+  batchDate: string | null;
   quantity: number;
   date: string;
   note: string | null;
@@ -55,16 +58,20 @@ export interface WasteRequest {
 export class MovementsService {
   private readonly http = inject(HttpClient);
 
-  entradas(): Observable<StockEntry[]> {
-    return this.http.get<StockEntry[]>(`${environment.apiUrl}/stock-entries`);
+  entradas(branchId?: number): Observable<StockEntry[]> {
+    let params = new HttpParams();
+    if (branchId) params = params.set('branchId', branchId);
+    return this.http.get<StockEntry[]>(`${environment.apiUrl}/stock-entries`, { params });
   }
 
   registrarEntrada(datos: StockEntryRequest): Observable<StockEntry> {
     return this.http.post<StockEntry>(`${environment.apiUrl}/stock-entries`, datos);
   }
 
-  mermas(): Observable<Waste[]> {
-    return this.http.get<Waste[]>(`${environment.apiUrl}/waste`);
+  mermas(branchId?: number): Observable<Waste[]> {
+    let params = new HttpParams();
+    if (branchId) params = params.set('branchId', branchId);
+    return this.http.get<Waste[]>(`${environment.apiUrl}/waste`, { params });
   }
 
   registrarMerma(datos: WasteRequest): Observable<Waste> {

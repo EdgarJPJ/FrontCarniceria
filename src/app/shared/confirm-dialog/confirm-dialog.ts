@@ -10,6 +10,8 @@ import {
   output,
 } from '@angular/core';
 
+import { bloquearScroll, desbloquearScroll } from '../scroll-lock';
+
 /**
  * Confirmación para una acción que no se puede deshacer — hoy, quitar un
  * producto del catálogo. Un `confirm()` del navegador rompe la identidad
@@ -55,14 +57,14 @@ export class ConfirmDialog implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.quienTeniaElFoco = document.activeElement as HTMLElement;
-    document.body.style.overflow = 'hidden';
+    bloquearScroll();
     // Cancelar es el destino por defecto: perder de un tab es más barato
     // que perder de un clic accidental en "Quitar".
     queueMicrotask(() => this.botonCancelar.nativeElement.focus());
   }
 
   ngOnDestroy(): void {
-    document.body.style.overflow = '';
+    desbloquearScroll();
     this.quienTeniaElFoco?.focus?.();
   }
 

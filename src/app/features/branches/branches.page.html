@@ -10,7 +10,7 @@
     </p>
   </div>
 
-  @if (auth.esGestion()) {
+  @if (auth.puedeAdministrarEmpresa()) {
     <button class="accion" type="button" (click)="abrirAlta()">Nueva sucursal</button>
   }
 </header>
@@ -39,7 +39,7 @@
           <th scope="col">Sucursal</th>
           <th scope="col">Teléfono</th>
           <th scope="col">Estado</th>
-          @if (auth.esGestion()) {
+          @if (auth.puedeAdministrarEmpresa()) {
             <th scope="col"><span class="a-voz">Acciones</span></th>
           }
         </tr>
@@ -59,7 +59,7 @@
                 <span class="etiqueta etiqueta--tinta">cerrada</span>
               }
             </td>
-            @if (auth.esGestion()) {
+            @if (auth.puedeAdministrarEmpresa()) {
               <td class="acciones">
                 <button type="button" class="enlace" (click)="abrirEdicion(sucursal)">Editar</button>
                 <button type="button" class="enlace" (click)="alternarEstado(sucursal)">

@@ -10,6 +10,8 @@ import {
   output,
 } from '@angular/core';
 
+import { bloquearScroll, desbloquearScroll } from '../scroll-lock';
+
 const SELECTOR_ENFOCABLE =
   'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href]';
 
@@ -53,7 +55,7 @@ export class SidePanel implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.quienTeniaElFoco = document.activeElement as HTMLElement;
-    document.body.style.overflow = 'hidden';
+    bloquearScroll();
 
     // Un tick para que el contenido proyectado ya esté en el DOM.
     queueMicrotask(() => {
@@ -64,7 +66,7 @@ export class SidePanel implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    document.body.style.overflow = '';
+    desbloquearScroll();
     // Vuelve el foco a donde estaba: normalmente el botón que abrió esto.
     this.quienTeniaElFoco?.focus?.();
   }

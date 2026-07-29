@@ -24,6 +24,11 @@ export function mensajeDeError(error: unknown): string {
     case 'UNAUTHORIZED_ACCESS':
       return 'La clave o la contraseña no coinciden. Revísalas e intenta de nuevo.';
 
+    // A diferencia de AUTHENTICATION_FAILED_EXCEPTION, aquí la contraseña ya
+    // era correcta: decir la razón real no ayuda a nadie a tantear cuentas.
+    case 'CUENTA_DESACTIVADA_EXCEPTION':
+      return cuerpo.message ?? 'Tu cuenta fue desactivada. Habla con quien administra tu sucursal.';
+
     case 'SUBSCRIPTION_EXPIRED':
       return 'La suscripción de esta carnicería está suspendida. Contacta a soporte para reactivarla.';
 

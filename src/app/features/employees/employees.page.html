@@ -150,7 +150,7 @@
         <div>
           <label class="campo__etiqueta" for="idBranch">Sucursal</label>
           <select id="idBranch" class="campo__caja" formControlName="idBranch">
-            @for (sucursal of branches(); track sucursal.id) {
+            @for (sucursal of sucursalesElegibles(); track sucursal.id) {
               <option [value]="sucursal.id">{{ sucursal.name }}</option>
             }
           </select>
@@ -159,7 +159,8 @@
 
       <p class="campo__pista nota-rol">
         El vendedor vende, cobra, registra merma y recibe mercancía. El administrador además
-        maneja precios, personal, clientes y reportes.
+        maneja precios, personal, clientes y reportes de su sucursal. El propietario ve y opera
+        cualquier sucursal de la empresa; ese rol no se asigna desde aquí.
       </p>
 
       <div class="panel__botones">

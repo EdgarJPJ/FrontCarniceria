@@ -121,11 +121,11 @@
           />
         </div>
         <div>
-          <label class="campo__etiqueta" for="totalPrice">Lo que pagaste</label>
+          <label class="campo__etiqueta" for="precioPorKilo">Precio de compra ($/kg)</label>
           <input
-            id="totalPrice"
+            id="precioPorKilo"
             class="campo__caja campo__caja--clave"
-            formControlName="totalPrice"
+            formControlName="precioPorKilo"
             type="number"
             min="0"
             step="0.01"
@@ -134,9 +134,24 @@
       </div>
 
       <div class="campo">
+        <label class="campo__etiqueta" for="totalPrice">Lo que pagaste</label>
+        <input
+          id="totalPrice"
+          class="campo__caja campo__caja--clave"
+          formControlName="totalPrice"
+          type="number"
+          min="0"
+          step="0.01"
+        />
+        <p class="campo__pista">
+          Se calcula solo con el precio de compra, pero puedes corregirlo aquí.
+        </p>
+      </div>
+
+      <div class="campo">
         <label class="campo__etiqueta" for="branchId">Sucursal</label>
         <select id="branchId" class="campo__caja" formControlName="branchId">
-          @for (sucursal of branches(); track sucursal.id) {
+          @for (sucursal of sucursalesElegibles(); track sucursal.id) {
             <option [value]="sucursal.id">{{ sucursal.name }}</option>
           }
         </select>
@@ -158,94 +173,6 @@
 }
 
 <!-- Reporte de merma -->
-@if (reporte(); as r) {
-  <app-side-panel (cerrar)="cerrarPanel()">
-    <h2 class="panel__titulo">Merma de la canal</h2>
-      <p class="campo__pista">{{ r.description || 'Canal #' + r.batchId }}</p>
-
-      @if (!r.medible) {
-        <p class="sin-medir">
-          @if (r.entryCount === 0) {
-            Ninguna entrada de inventario está ligada a esta canal, así que no se sabe qué
-            salió de ella. Al registrar la entrada de los cortes, elige esta canal y las
-            cifras se calcularán solas.
-          } @else {
-            Falta el peso de compra de la canal. Sin él no hay contra qué comparar: anótalo
-            en «Editar» y el reporte se podrá calcular.
-          }
-        </p>
-      }
-
-      <!-- El recorrido del peso, de la compra al mostrador. -->
-      <dl class="merma">
-        <div class="merma__fila">
-          <dt>Se compró</dt>
-          <dd class="merma__cifra">{{ kilos(r.weightPurchased) }}</dd>
-        </div>
-        <div class="merma__fila merma__fila--perdida">
-          <dt>
-            Se perdió al despiezar
-            <span class="merma__nota">hueso, grasa y recortes</span>
-          </dt>
-          <dd class="merma__cifra">
-            {{ kilos(r.butcheringLoss) }}
-            <span class="merma__porcentaje">{{ porcentaje(r.butcheringLoss, r.weightPurchased) }}</span>
-          </dd>
-        </div>
-        <div class="merma__fila">
-          <dt>Entró al mostrador</dt>
-          <dd class="merma__cifra">{{ kilos(r.weightProduced) }}</dd>
-        </div>
-        <div class="merma__fila">
-          <dt>Se vendió</dt>
-          <dd class="merma__cifra">{{ kilos(r.weightSold) }}</dd>
-        </div>
-        <div class="merma__fila">
-          <dt>Merma registrada a mano</dt>
-          <dd class="merma__cifra">{{ kilos(r.weightManualWaste) }}</dd>
-        </div>
-        <!-- Lo que salió del despiece y no se ha vendido ni mermado. Mientras
-             la canal siga abierta eso está en el mostrador, así que no se
-             pinta en rojo: sólo es pérdida cuando ya no debería quedar nada. -->
-        <div class="merma__fila">
-          <dt>
-            Todavía sin vender
-            <span class="merma__nota">sigue en el mostrador, o se perdió sin registrarse</span>
-          </dt>
-          <dd class="merma__cifra">
-            {{ kilos(r.handlingWaste) }}
-            <span class="merma__porcentaje">{{ porcentaje(r.handlingWaste, r.weightPurchased) }}</span>
-          </dd>
-        </div>
-      </dl>
-
-      <!-- Lo vendido ya trae el precio propio de cada corte en que se
-           convirtió la canal al despiezarla, así que la ganancia sale bien
-           sin importar cuántos productos distintos haya dado. -->
-      <dl class="merma">
-        <div class="merma__fila">
-          <dt>Costo de la canal</dt>
-          <dd class="merma__cifra">{{ pesos(r.totalCost) }}</dd>
-        </div>
-        <div class="merma__fila">
-          <dt>Vendido</dt>
-          <dd class="merma__cifra">{{ pesos(r.revenueSold) }}</dd>
-        </div>
-        <div class="merma__fila" [class.merma__fila--perdida]="r.profit < 0">
-          <dt>Ganancia</dt>
-          <dd class="merma__cifra">{{ pesos(r.profit) }}</dd>
-        </div>
-      </dl>
-
-      @if (estadoDeReporte(r) === 'agotada') {
-        <p class="campo__pista nota">
-          Esta canal ya se acabó: todo lo que salió de ella está vendido o registrado como
-          merma.
-        </p>
-      }
-
-      <div class="panel__botones">
-        <button class="cancelar" type="button" (click)="cerrarPanel()">Cerrar</button>
-      </div>
-  </app-side-panel>
+@if (viendoReporteDe(); as id) {
+  <app-batch-report-modal [batchId]="id" (cerrar)="cerrarReporte()" />
 }

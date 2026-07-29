@@ -80,6 +80,21 @@
   color: #6d7e81;
 }
 
+/* El propietario elige entre sus sucursales; el resto solo ve la suya como texto. */
+.riel__sucursal--elegible {
+  appearance: none;
+  border: none;
+  border-bottom: 1px dotted #6d7e81;
+  background: transparent;
+  padding: 0 14px 2px 0;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--sangre);
+    outline-offset: 2px;
+  }
+}
+
 /* --- Las dos acciones del día ------------------------------------- */
 /* Van separadas de las secciones y encima de todas ellas: no son un lugar
    al que ir, son lo que se viene a hacer. */
