@@ -59,7 +59,7 @@
               <label class="a-voz" [attr.for]="'plan-' + c.id">Plan de {{ c.nombre }}</label>
               <select
                 [id]="'plan-' + c.id"
-                class="campo__caja"
+                class="campo__caja plan-caja"
                 [ngModel]="c.plan.toLowerCase()"
                 (ngModelChange)="cambiarPlan(c, $event)"
               >
