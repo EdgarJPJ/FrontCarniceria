@@ -8,8 +8,10 @@ RUN npm run build
 
 # Etapa 2: servir con nginx
 FROM nginx:alpine
-
 RUN rm /etc/nginx/conf.d/default.conf
+
+# Creamos la carpeta de templates si no existe
+RUN mkdir -p /etc/nginx/templates
 
 # Usamos una plantilla en vez de un archivo fijo
 RUN printf 'server {\n\
