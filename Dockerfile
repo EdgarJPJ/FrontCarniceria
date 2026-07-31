@@ -8,12 +8,10 @@ RUN npm run build
 
 # Etapa 2: servir con nginx
 FROM nginx:alpine
+
+# Generamos la configuración de nginx directamente aquí,
+# sin depender de un archivo externo
 RUN rm /etc/nginx/conf.d/default.conf
-
-# Creamos la carpeta de templates si no existe
-RUN mkdir -p /etc/nginx/templates
-
-# Usamos una plantilla en vez de un archivo fijo
 RUN printf 'server {\n\
     listen 80;\n\
     server_name _;\n\
@@ -21,8 +19,8 @@ RUN printf 'server {\n\
     index index.html;\n\
 \n\
     location /api/ {\n\
-        proxy_pass ${BACKEND_URL}/api/;\n\
-        proxy_set_header Host $host;\n\
+        proxy_pass https://proyectocarniceria-production.up.railway.app/api/;\n\
+        proxy_set_header Host proyectocarniceria-production.up.railway.app;\n\
         proxy_set_header X-Real-IP $remote_addr;\n\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n\
         proxy_set_header X-Forwarded-Proto $scheme;\n\
@@ -32,7 +30,7 @@ RUN printf 'server {\n\
     location / {\n\
         try_files $uri $uri/ /index.html;\n\
     }\n\
-}\n' > /etc/nginx/templates/default.conf.template
+}\n' > /etc/nginx/conf.d/default.conf
 
 COPY --from=build /app/dist/FrontCarniceria/browser /usr/share/nginx/html
 
