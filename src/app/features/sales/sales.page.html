@@ -79,7 +79,7 @@
             </td>
             <td class="dato num">{{ pesos(venta.total) }}</td>
             <td class="dato">
-              @if (venta.paymentStatus === 'PAGADO') {
+              @if (venta.status !== 'CANCELADA' && venta.paymentStatus === 'PAGADO') {
                 <span class="etiqueta">{{ estadoPago(venta) }}</span>
               } @else {
                 <span class="etiqueta etiqueta--tinta">{{ estadoPago(venta) }}</span>
@@ -333,7 +333,7 @@
         @if (esFiado()) {
           <p class="fiado-nota">
             Esta venta queda <strong>fiada</strong>. No se cobra ahora: aparecerá en los saldos del
-            cliente y se abona desde <strong>Fiado y cobros</strong>.
+            cliente y se le puede abonar después, desde el detalle de esta venta.
           </p>
         } @else {
           <div class="campo">
@@ -436,9 +436,63 @@
       <p class="campo__pista">Cargando abonos…</p>
     }
 
-    <div class="panel__botones">
-      <button class="cancelar" type="button" (click)="cerrarDetalle()">Cerrar</button>
-    </div>
+    <!-- Abonar sin salir del detalle: es la única forma en que un vendedor puede cobrarle a esta venta. -->
+    @if (v.status === 'ACTIVA' && v.paymentStatus !== 'PAGADO') {
+      @if (abonandoDetalle()) {
+        @if (avisoAbono(); as a) {
+          <p class="aviso" role="alert">{{ a }}</p>
+        }
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="montoAbono">Cuánto entrega</label>
+          <input
+            id="montoAbono"
+            class="campo__caja campo__caja--clave"
+            type="number"
+            min="0.01"
+            step="0.01"
+            [ngModel]="montoAbono()"
+            (ngModelChange)="montoAbono.set($event); avisoAbono.set(null)"
+          />
+        </div>
+
+        <div class="campo">
+          <label class="campo__etiqueta" for="metodoAbono">Con qué paga</label>
+          <select
+            id="metodoAbono"
+            class="campo__caja"
+            [ngModel]="metodoAbono()"
+            (ngModelChange)="metodoAbono.set($event)"
+          >
+            <option [ngValue]="null">Sin especificar</option>
+            @for (m of metodos(); track m.id) {
+              <option [ngValue]="m.id">{{ m.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="panel__botones panel__botones--par">
+          <button class="volver" type="button" (click)="cancelarAbonoDetalle()">Atrás</button>
+          <button
+            class="entrar"
+            type="button"
+            (click)="registrarAbonoDetalle()"
+            [disabled]="guardandoAbono()"
+          >
+            {{ guardandoAbono() ? 'Registrando' : 'Registrar abono' }}
+          </button>
+        </div>
+      } @else {
+        <div class="panel__botones">
+          <button class="entrar" type="button" (click)="abrirAbonoDetalle()">Abonar</button>
+          <button class="cancelar" type="button" (click)="cerrarDetalle()">Cerrar</button>
+        </div>
+      }
+    } @else {
+      <div class="panel__botones">
+        <button class="cancelar" type="button" (click)="cerrarDetalle()">Cerrar</button>
+      </div>
+    }
   </app-side-panel>
 }
 

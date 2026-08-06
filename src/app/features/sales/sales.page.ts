@@ -98,6 +98,18 @@ export class SalesPage {
   /** Sus abonos, si los tiene: null mientras se cargan, [] si no hubo ninguno. */
   protected readonly abonosDeVenta = signal<Payment[] | null>(null);
 
+  /**
+   * Cobrar un abono sin salir del detalle de la venta: es lo único que un
+   * vendedor puede ver de lo que debe un cliente (`/fiado` es de gestión
+   * porque lista los saldos de todos), así que aquí es donde tiene que poder
+   * abonarle a la venta puntual que ya tiene enfrente.
+   */
+  protected readonly abonandoDetalle = signal(false);
+  protected readonly montoAbono = signal<number | null>(null);
+  protected readonly metodoAbono = signal<number | null>(null);
+  protected readonly guardandoAbono = signal(false);
+  protected readonly avisoAbono = signal<string | null>(null);
+
   /** Venta a punto de cancelarse, en espera de que confirmen. */
   protected readonly cancelando = signal<Sale | null>(null);
 
@@ -264,6 +276,14 @@ export class SalesPage {
     const product = this.catalogo().find((p) => p.id === Number(id));
     if (!product) return;
 
+    // No dejar armar un ticket que el backend va a rechazar hasta el último
+    // paso: se avisa aquí, con lo que ya lleva de ese corte sumado.
+    const yaEnTicket = this.partidas().find((p) => p.product.id === product.id)?.quantity ?? 0;
+    if (yaEnTicket + cant > this.stockDisponible(product.id)) {
+      this.avisoPaso.set(`Solo hay ${this.existencia(product)} de ${product.name} en el mostrador.`);
+      return;
+    }
+
     this.avisoPaso.set(null);
 
     // Si el producto ya está en el ticket, se suma en vez de duplicar la línea.
@@ -290,6 +310,11 @@ export class SalesPage {
   /** Corrige una cantidad ya agregada, sin quitar la línea y volver a escribirla. */
   protected cambiarCantidad(productId: number, cantidad: number): void {
     if (!cantidad || cantidad <= 0) return;
+    const producto = this.partidas().find((p) => p.product.id === productId)?.product;
+    if (producto && cantidad > this.stockDisponible(productId)) {
+      this.avisoPaso.set(`Solo hay ${this.existencia(producto)} de ${producto.name} en el mostrador.`);
+      return;
+    }
     this.partidas.update((ps) =>
       ps.map((p) => (p.product.id === productId ? { ...p, quantity: cantidad } : p)),
     );
@@ -309,6 +334,12 @@ export class SalesPage {
     const cantidad =
       partida.product.unitOfMeasure === 'PIEZA' ? Math.round(cruda) : Math.round(cruda * 1000) / 1000;
     if (cantidad <= 0) return;
+    if (cantidad > this.stockDisponible(productId)) {
+      this.avisoPaso.set(
+        `Solo hay ${this.existencia(partida.product)} de ${partida.product.name} en el mostrador.`,
+      );
+      return;
+    }
 
     this.partidas.update((ps) =>
       ps.map((p) => (p.product.id === productId ? { ...p, quantity: cantidad } : p)),
@@ -372,6 +403,7 @@ export class SalesPage {
 
   protected verDetalle(venta: Sale): void {
     this.viendoDetalle.set(venta);
+    this.cancelarAbonoDetalle();
     // Una venta de contado (sin cliente) nunca tiene abonos que pedir.
     if (venta.clientId === null) {
       this.abonosDeVenta.set([]);
@@ -387,6 +419,64 @@ export class SalesPage {
   protected cerrarDetalle(): void {
     this.viendoDetalle.set(null);
     this.abonosDeVenta.set(null);
+    this.cancelarAbonoDetalle();
+  }
+
+  protected abrirAbonoDetalle(): void {
+    this.abonandoDetalle.set(true);
+    this.montoAbono.set(null);
+    this.metodoAbono.set(null);
+    this.avisoAbono.set(null);
+  }
+
+  protected cancelarAbonoDetalle(): void {
+    this.abonandoDetalle.set(false);
+    this.montoAbono.set(null);
+    this.metodoAbono.set(null);
+    this.avisoAbono.set(null);
+  }
+
+  /**
+   * Igual que `registrarAbono` en `/fiado`, pero sobre la venta que ya se
+   * está viendo: no hace falta volver a elegir cliente ni venta.
+   */
+  protected registrarAbonoDetalle(): void {
+    const venta = this.viendoDetalle();
+    const cantidad = this.montoAbono();
+    if (!venta || this.guardandoAbono()) return;
+
+    if (!cantidad || cantidad <= 0) {
+      this.avisoAbono.set('Escribe cuánto está entregando el cliente.');
+      return;
+    }
+
+    this.avisoAbono.set(null);
+    this.guardandoAbono.set(true);
+
+    this.ventas
+      .abonar({
+        saleId: venta.id,
+        paymentMethodId: this.metodoAbono() ? Number(this.metodoAbono()) : null,
+        amount: cantidad,
+        note: '',
+      })
+      .subscribe({
+        next: (abono) => {
+          this.guardandoAbono.set(false);
+          this.cancelarAbonoDetalle();
+          this.abonosDeVenta.update((as) => [...(as ?? []), abono]);
+          // El estado de pago de la venta cambió: se refleja aquí y en la lista de atrás.
+          const resta = abono.remainingBalance ?? 0;
+          this.viendoDetalle.update((v) =>
+            v ? { ...v, paymentStatus: resta > 0 ? 'PARCIAL' : 'PAGADO' } : v,
+          );
+          this.cargar();
+        },
+        error: (e: unknown) => {
+          this.guardandoAbono.set(false);
+          this.avisoAbono.set(mensajeDeError(e));
+        },
+      });
   }
 
   /**
@@ -436,6 +526,11 @@ export class SalesPage {
     return `${valor} ${this.unidad(p)}`;
   }
 
+  /** Cuánto queda de un producto en la sucursal donde se está vendiendo. */
+  private stockDisponible(productId: number): number {
+    return this.existencias().get(productId) ?? 0;
+  }
+
   /** Qué se vendió, para verlo de un vistazo en la lista sin abrir nada. */
   protected productosVendidos(venta: Sale): string {
     return venta.details.map((d) => d.productName).join(', ');
@@ -443,6 +538,7 @@ export class SalesPage {
 
   /** El estado de pago en palabras del mostrador, no el enum del servidor. */
   protected estadoPago(v: Sale): string {
+    if (v.status === 'CANCELADA') return 'cancelada';
     switch (v.paymentStatus) {
       case 'PAGADO':
         return 'pagada';
