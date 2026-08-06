@@ -5,7 +5,8 @@
       @if (cargando()) {
         Cargando…
       } @else {
-        {{ lista().length }} entradas registradas
+        {{ lista().length }}
+        {{ lista().length === 1 ? 'entrada registrada' : 'entradas registradas' }}
       }
     </p>
   </div>

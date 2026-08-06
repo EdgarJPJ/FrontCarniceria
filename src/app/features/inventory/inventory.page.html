@@ -5,9 +5,10 @@
       @if (cargando()) {
         Cargando…
       } @else if (porReponer() > 0) {
-        {{ lineas().length }} productos · {{ porReponer() }} con stock bajo
+        {{ lineas().length }} {{ lineas().length === 1 ? 'producto' : 'productos' }} ·
+        {{ porReponer() }} con stock bajo
       } @else {
-        {{ lineas().length }} productos en existencia
+        {{ lineas().length }} {{ lineas().length === 1 ? 'producto' : 'productos' }} en existencia
       }
     </p>
   </div>

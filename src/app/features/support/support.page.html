@@ -5,7 +5,7 @@
       @if (cargando()) {
         Cargando…
       } @else {
-        {{ lista().length }} carnicerías
+        {{ lista().length }} {{ lista().length === 1 ? 'carnicería' : 'carnicerías' }}
         @if (suspendidas() > 0) {
           · {{ suspendidas() }} suspendidas
         }
