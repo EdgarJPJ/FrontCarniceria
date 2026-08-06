@@ -34,6 +34,13 @@ export class SalesService {
     return this.http.get<Payment[]>(`${environment.apiUrl}/payments/sale/${saleId}`);
   }
 
+  /** Todos los abonos de la sucursal (o de todas, si quien pregunta opera en cualquiera). */
+  listarAbonos(branchId?: number): Observable<Payment[]> {
+    let params = new HttpParams();
+    if (branchId) params = params.set('branchId', branchId);
+    return this.http.get<Payment[]>(`${environment.apiUrl}/payments`, { params });
+  }
+
   abonar(datos: PaymentRequest): Observable<Payment> {
     return this.http.post<Payment>(`${environment.apiUrl}/payments`, datos);
   }

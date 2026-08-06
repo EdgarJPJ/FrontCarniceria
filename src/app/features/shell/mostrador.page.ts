@@ -6,7 +6,7 @@ import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { Icono } from '../../shared/icono/icono';
 import { InventoryLine, InventoryService } from '../inventory/inventory.service';
-import { Sale } from '../sales/sale.models';
+import { Payment, Sale } from '../sales/sale.models';
 import { SalesService } from '../sales/sales.service';
 
 /** Debajo de esto se avisa: hay que reponer antes de que se acabe. */
@@ -38,11 +38,14 @@ export class MostradorPage {
   );
 
   protected readonly lista = signal<Sale[]>([]);
+  protected readonly abonos = signal<Payment[]>([]);
   protected readonly existencias = signal<InventoryLine[]>([]);
   protected readonly cargando = signal(true);
 
+  private readonly hoy = computed(() => new Date().toDateString());
+
   private readonly deHoy = computed(() => {
-    const hoy = new Date().toDateString();
+    const hoy = this.hoy();
     return this.lista().filter(
       (v) => v.status === 'ACTIVA' && new Date(v.date).toDateString() === hoy,
     );
@@ -54,15 +57,35 @@ export class MostradorPage {
 
   protected readonly ventasHoy = computed(() => this.deHoy().length);
 
-  /** Lo cobrado de contado hoy: es lo que debería estar en la caja. */
-  protected readonly enCajaHoy = computed(() =>
+  /**
+   * Lo cobrado de contado hoy. Se filtra por si la venta tiene cliente, no
+   * por su `paymentStatus` actual: una venta fiada que se salda el mismo día
+   * también queda `PAGADO`, y contarla aquí la duplicaría con lo que ya suma
+   * `abonosHoy` a través de sus abonos.
+   */
+  private readonly contadoHoy = computed(() =>
     this.deHoy()
-      .filter((v) => v.paymentStatus === 'PAGADO')
+      .filter((v) => v.clientId === null)
       .reduce((s, v) => s + v.total, 0),
   );
 
-  /** Lo que se fio hoy y todavía no entra. */
-  protected readonly fiadoHoy = computed(() => this.vendidoHoy() - this.enCajaHoy());
+  /**
+   * Abonos que entraron hoy, sin importar de qué día sea la venta que
+   * liquidan. Un abono de una venta fiada la semana pasada es dinero que
+   * entra a la caja hoy igual que una venta de contado.
+   */
+  private readonly abonosHoy = computed(() => {
+    const hoy = this.hoy();
+    return this.abonos()
+      .filter((a) => new Date(a.date).toDateString() === hoy)
+      .reduce((s, a) => s + a.amount, 0);
+  });
+
+  /** Todo lo que debería estar en la caja hoy: contado más abonos cobrados hoy. */
+  protected readonly enCajaHoy = computed(() => this.contadoHoy() + this.abonosHoy());
+
+  /** Lo que se fio hoy y todavía no entra, de las ventas de hoy nada más. */
+  protected readonly fiadoHoy = computed(() => this.vendidoHoy() - this.contadoHoy());
 
   protected readonly pendientes = computed(
     () => this.lista().filter((v) => v.status === 'ACTIVA' && v.paymentStatus !== 'PAGADO').length,
@@ -91,6 +114,11 @@ export class MostradorPage {
         this.cargando.set(false);
       },
       error: () => this.cargando.set(false),
+    });
+
+    this.ventas.listarAbonos().subscribe({
+      next: (ps) => this.abonos.set(ps),
+      error: () => this.abonos.set([]),
     });
 
     this.inventario.listar().subscribe({
