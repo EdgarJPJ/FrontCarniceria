@@ -50,8 +50,12 @@ export function mensajeDeError(error: unknown): string {
     case 'RECURSO_DUPLICADO_EXCEPTION':
       return cuerpo.message ?? 'Esa clave de usuario ya está ocupada. Elige otra.';
 
+    // No es solo la clave de usuario: el mismo código lo lanza cualquier
+    // conflicto de datos relacionados o duplicados (por ejemplo, borrar un
+    // producto que ya tiene ventas). El mensaje del backend ya es genérico
+    // y correcto para cualquiera de esos casos.
     case 'DATA_INTEGRITY_VIOLATION_EXCEPTION':
-      return 'Esos datos chocan con algo que ya existe. Revisa la clave de usuario.';
+      return cuerpo.message ?? 'Esos datos chocan con algo que ya existe.';
 
     case 'BATCH_AGOTADA_EXCEPTION':
       return 'Esa canal ya se agotó, no se le pueden ligar más entradas.';

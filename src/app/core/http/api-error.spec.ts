@@ -32,6 +32,22 @@ describe('mensajeDeError', () => {
     expect(mensaje).toBe('username: Usuario requerido');
   });
 
+  it('usa el mensaje del backend para un conflicto de datos, no uno fijo sobre usuarios', () => {
+    // El mismo código lo lanza cualquier violación de integridad, no solo un
+    // usuario duplicado (por ejemplo, borrar un producto que ya tiene ventas).
+    const mensaje = mensajeDeError(
+      respuestaDeError(
+        409,
+        'DATA_INTEGRITY_VIOLATION_EXCEPTION',
+        'No se puede completar la operación porque el recurso tiene datos relacionados o duplicados.',
+      ),
+    );
+    expect(mensaje).toBe(
+      'No se puede completar la operación porque el recurso tiene datos relacionados o duplicados.',
+    );
+    expect(mensaje).not.toContain('clave de usuario');
+  });
+
   it('trata un 5xx sin cuerpo como backend inalcanzable, no como falla interna', () => {
     expect(mensajeDeError(respuestaDeError(500))).toContain('No se pudo contactar');
   });
