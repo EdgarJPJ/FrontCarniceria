@@ -10,10 +10,13 @@ export class SalesService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/sales`;
 
-  listar(branchId?: number, paymentStatus?: string): Observable<Sale[]> {
+  /** `from`/`to` son fechas en formato `YYYY-MM-DD`, el mismo que entrega un `<input type="date">`. */
+  listar(branchId?: number, paymentStatus?: string, from?: string, to?: string): Observable<Sale[]> {
     let params = new HttpParams();
     if (branchId) params = params.set('branchId', branchId);
     if (paymentStatus) params = params.set('paymentStatus', paymentStatus);
+    if (from) params = params.set('from', from);
+    if (to) params = params.set('to', to);
     return this.http.get<Sale[]>(this.base, { params });
   }
 

@@ -60,6 +60,15 @@ export class SalesPage {
   protected readonly sucursalElegida = signal<number | null>(null);
   protected readonly clientesActivos = signal<Client[]>([]);
 
+  /**
+   * Rango opcional para ver ventas de otro día, semana o mes: sin esto la
+   * tabla trae todo el historial y el encabezado solo destaca lo de hoy. En
+   * formato `YYYY-MM-DD`, el mismo que entrega el `<input type="date">`.
+   */
+  protected readonly desde = signal<string | null>(null);
+  protected readonly hasta = signal<string | null>(null);
+  protected readonly rangoActivo = computed(() => this.desde() !== null || this.hasta() !== null);
+
   /** Cuánto hay de cada producto en la sucursal donde se está vendiendo. */
   protected readonly existencias = signal<Map<number, number>>(new Map());
 
@@ -151,6 +160,21 @@ export class SalesPage {
       .reduce((s, v) => s + v.total, 0);
   });
 
+  /**
+   * Con un rango de fechas activo, `lista()` ya viene filtrada por el
+   * backend: el total de "hoy" no tendría sentido, así que el encabezado
+   * muestra esto en su lugar.
+   */
+  private readonly ventasActivasDelRango = computed(() =>
+    this.lista().filter((v) => v.status === 'ACTIVA'),
+  );
+
+  protected readonly totalDelRango = computed(() =>
+    this.ventasActivasDelRango().reduce((s, v) => s + v.total, 0),
+  );
+
+  protected readonly cantidadDelRango = computed(() => this.ventasActivasDelRango().length);
+
   protected readonly porCobrar = computed(() =>
     this.lista().filter((v) => v.status === 'ACTIVA' && v.paymentStatus !== 'PAGADO').length,
   );
@@ -179,20 +203,43 @@ export class SalesPage {
 
   protected cargar(): void {
     this.cargando.set(true);
-    this.ventas.listar(this.sucursalElegida() ?? undefined).subscribe({
-      next: (vs) => {
-        this.lista.set(vs);
-        this.cargando.set(false);
-      },
-      error: (e: unknown) => {
-        this.error.set(mensajeDeError(e));
-        this.cargando.set(false);
-      },
-    });
+    this.ventas
+      .listar(
+        this.sucursalElegida() ?? undefined,
+        undefined,
+        this.desde() ?? undefined,
+        this.hasta() ?? undefined,
+      )
+      .subscribe({
+        next: (vs) => {
+          this.lista.set(vs);
+          this.cargando.set(false);
+        },
+        error: (e: unknown) => {
+          this.error.set(mensajeDeError(e));
+          this.cargando.set(false);
+        },
+      });
   }
 
   protected cambiarSucursal(valor: string): void {
     this.sucursalElegida.set(valor ? Number(valor) : null);
+    this.cargar();
+  }
+
+  protected cambiarDesde(valor: string): void {
+    this.desde.set(valor || null);
+    this.cargar();
+  }
+
+  protected cambiarHasta(valor: string): void {
+    this.hasta.set(valor || null);
+    this.cargar();
+  }
+
+  protected limpiarRango(): void {
+    this.desde.set(null);
+    this.hasta.set(null);
     this.cargar();
   }
 

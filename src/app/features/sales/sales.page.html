@@ -4,6 +4,9 @@
     <p class="encabezado__resumen">
       @if (cargando()) {
         Cargando…
+      } @else if (rangoActivo()) {
+        {{ pesos(totalDelRango()) }} en el periodo · {{ cantidadDelRango() }}
+        {{ cantidadDelRango() === 1 ? 'venta' : 'ventas' }}
       } @else {
         {{ pesos(ventaDelDia()) }} hoy
         @if (porCobrar() > 0) {
@@ -20,8 +23,8 @@
   <p class="aviso" role="alert">{{ e }}</p>
 }
 
-@if (auth.esPropietario() && branches().length > 1) {
-  <div class="filtro">
+<div class="filtro">
+  @if (auth.esPropietario() && branches().length > 1) {
     <label class="a-voz" for="sucursal">Sucursal</label>
     <select
       id="sucursal"
@@ -33,8 +36,32 @@
         <option [value]="b.id">{{ b.name }}</option>
       }
     </select>
-  </div>
-}
+  }
+
+  <label class="a-voz" for="desde">Desde</label>
+  <input
+    id="desde"
+    type="date"
+    class="filtro__caja"
+    [attr.max]="hasta()"
+    [ngModel]="desde()"
+    (ngModelChange)="cambiarDesde($event)"
+  />
+
+  <label class="a-voz" for="hasta">Hasta</label>
+  <input
+    id="hasta"
+    type="date"
+    class="filtro__caja"
+    [attr.min]="desde()"
+    [ngModel]="hasta()"
+    (ngModelChange)="cambiarHasta($event)"
+  />
+
+  @if (rangoActivo()) {
+    <button type="button" class="enlace" (click)="limpiarRango()">Quitar filtro</button>
+  }
+</div>
 
 @if (!cargando() && lista().length === 0) {
   <div class="vacio">
