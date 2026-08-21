@@ -108,6 +108,18 @@ export class SalesPage {
   protected readonly abonosDeVenta = signal<Payment[] | null>(null);
 
   /**
+   * El total y los abonos por separado obligan a restar a mano para saber
+   * qué falta. Nulo si no aplica (pagada, cancelada, o sin venta abierta),
+   * así que el detalle no muestra la línea en vez de mostrar un cero raro.
+   */
+  protected readonly restaPorPagar = computed(() => {
+    const v = this.viendoDetalle();
+    if (!v || v.status === 'CANCELADA' || v.paymentStatus === 'PAGADO') return null;
+    const pagado = (this.abonosDeVenta() ?? []).reduce((s, a) => s + a.amount, 0);
+    return Math.max(0, v.total - pagado);
+  });
+
+  /**
    * Cobrar un abono sin salir del detalle de la venta: es lo único que un
    * vendedor puede ver de lo que debe un cliente (`/fiado` es de gestión
    * porque lista los saldos de todos), así que aquí es donde tiene que poder

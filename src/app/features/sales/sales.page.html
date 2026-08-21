@@ -435,6 +435,13 @@
       <span class="total__cifra">{{ pesos(v.total) }}</span>
     </p>
 
+    @if (restaPorPagar(); as resta) {
+      <p class="total">
+        <span class="total__rotulo">Resta por pagar</span>
+        <span class="total__cifra">{{ pesos(resta) }}</span>
+      </p>
+    }
+
     <p class="campo__pista">
       <span class="etiqueta" [class.etiqueta--tinta]="v.paymentStatus !== 'PAGADO'">
         {{ estadoPago(v) }}
