@@ -352,6 +352,10 @@
     height: 52px;
     padding: 0 8px 0 6px;
     background: var(--acero);
+    /* Fila de un grid a 1fr: sin esto, el ancho mínimo por defecto es el del
+       contenido (el nombre de la carnicería sin acortar), y esa fila crece
+       aunque .barra-movil__negocio ya tenga su propio overflow/ellipsis. */
+    min-width: 0;
   }
 
   .barra-movil__menu {

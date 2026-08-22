@@ -98,6 +98,11 @@
 /* --- La libreta --------------------------------------------------- */
 .libreta {
   overflow-x: auto; /* la tabla hace su propio scroll, la página no */
+  /* Sin esto, el ancho mínimo de la tabla se filtra hacia el <html> del
+     documento (no el <body>) y la página entera queda con scroll
+     horizontal, aunque .libreta ya esté bien acotada y con su propio
+     scroll interno funcionando. */
+  contain: layout;
   border: 1px solid var(--junta);
   border-radius: var(--canto);
 }
