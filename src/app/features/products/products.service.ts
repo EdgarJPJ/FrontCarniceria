@@ -10,6 +10,12 @@ export interface Product {
   unitOfMeasure: 'KILO' | 'PIEZA';
   salePrice: number;
   active: boolean;
+  /**
+   * Si este corte sale de despiezar una canal. Cuando es `true`, la pantalla
+   * de Entradas avisa si se registra una entrada suya sin ligarla a un lote;
+   * cuando es `false` (mercancía que llega ya despiezada de fuera) no molesta.
+   */
+  sourcedFromBatch: boolean;
   createdAt: string;
 }
 
@@ -18,6 +24,7 @@ export interface ProductRequest {
   /** El backend lo compara sin distinguir mayúsculas: "kilo" o "pieza". */
   unitMeasure: string;
   salePrice: number;
+  sourcedFromBatch: boolean;
 }
 
 /** Catálogo de productos. Lo lee todo el mostrador: hace falta para vender. */

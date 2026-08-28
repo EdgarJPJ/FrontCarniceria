@@ -34,13 +34,17 @@
   </div>
 }
 
-<!-- Sin canal, el reporte de merma de esa canal no puede medir nada. -->
+<!-- Solo avisa de los cortes que salen de canal: son los únicos que dejan
+     el reporte de merma incompleto si no se ligan. -->
 @if (sinLigar() > 0 && auth.esGestion()) {
   <p class="advertencia">
     {{ sinLigar() }}
-    {{ sinLigar() === 1 ? 'entrada no está ligada' : 'entradas no están ligadas' }}
-    a ninguna canal. El reporte de merma se calcula contra la canal, así que esa mercancía no
-    cuenta como producción de ninguna.
+    {{
+      sinLigar() === 1
+        ? 'entrada de un corte que sale de canal quedó sin ligar'
+        : 'entradas de cortes que salen de canal quedaron sin ligar'
+    }}. El reporte de merma se calcula contra la canal, así que esa mercancía no cuenta como
+    producción de ninguna.
   </p>
 }
 
@@ -149,12 +153,7 @@
               </option>
             }
           </select>
-          @if (sinLote()) {
-            <p class="campo__alerta">
-              Sin canal, esta mercancía no contará como producción de ninguna y el reporte de
-              merma no podrá medirla.
-            </p>
-          } @else {
+          @if (loteElegido() !== null) {
             <p class="campo__pista">De qué canal salió esta mercancía.</p>
             <label class="casilla">
               <input
@@ -164,6 +163,16 @@
               />
               Esta fue la última entrada de esta canal
             </label>
+          } @else if (faltaLigarCanal()) {
+            <p class="campo__alerta">
+              Este corte sale de una canal. Si no la ligas, no contará como producción de
+              ninguna y el reporte de merma no podrá medirla.
+            </p>
+          } @else {
+            <p class="campo__pista">
+              Si esta mercancía salió de una canal, elígela. Si llegó ya despiezada de fuera,
+              déjalo en «Sin canal».
+            </p>
           }
         </div>
       }

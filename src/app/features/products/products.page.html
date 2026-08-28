@@ -65,6 +65,9 @@
               @if (!p.active) {
                 <span class="etiqueta">retirado</span>
               }
+              @if (p.sourcedFromBatch) {
+                <span class="secundario">sale de canal</span>
+              }
             </th>
             <td class="dato">{{ unidad(p) }}</td>
             <td class="dato num">{{ pesos(p.salePrice) }}</td>
@@ -130,6 +133,17 @@
             <p class="campo__alerta">El precio debe ser mayor que cero.</p>
           }
         </div>
+      </div>
+
+      <div class="campo">
+        <label class="casilla">
+          <input type="checkbox" formControlName="sourcedFromBatch" />
+          Este corte sale de una canal que despiezas aquí
+        </label>
+        <p class="campo__pista">
+          Márcalo solo para lo que sacas de despiezar una canal. La mercancía que llega ya
+          lista de fuera —grasa, patas, cabeza, espinazo, costillas, piezas— déjala sin marcar.
+        </p>
       </div>
 
       <div class="panel__botones">

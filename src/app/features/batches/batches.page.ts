@@ -83,6 +83,8 @@ export class BatchesPage {
      * después sin que esto se lo vuelva a pisar.
      */
     precioPorKilo: [null as number | null, Validators.min(0)],
+    /** Merma de despiece esperada, como % del peso comprado. Opcional. */
+    expectedLossPercent: [null as number | null, [Validators.min(0), Validators.max(100)]],
     branchId: [0, [Validators.required, Validators.min(1)]],
   });
 
@@ -147,6 +149,7 @@ export class BatchesPage {
     this.form.reset(
       {
         description: '', totalWeight: null, totalPrice: null, precioPorKilo: null,
+        expectedLossPercent: null,
         branchId: this.auth.sucursalOperativa() ?? this.sucursalesElegibles()[0]?.id ?? 0,
       },
       { emitEvent: false },
@@ -163,6 +166,7 @@ export class BatchesPage {
         // Se muestra el precio por kilo que ya tenía, solo informativo: no se
         // recalcula totalPrice con él a menos que se toque uno de los dos.
         precioPorKilo: lote.totalWeight && lote.totalPrice ? lote.totalPrice / lote.totalWeight : null,
+        expectedLossPercent: lote.expectedLossPercent,
         branchId: lote.branchId,
       },
       { emitEvent: false },

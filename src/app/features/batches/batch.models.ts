@@ -4,6 +4,8 @@ export interface Batch {
   description: string | null;
   totalWeight: number | null;
   totalPrice: number | null;
+  /** Merma de despiece esperada, como % del peso comprado. Null si no se capturó. */
+  expectedLossPercent: number | null;
   createdAt: string;
   branchId: number;
   branchName: string;
@@ -26,6 +28,8 @@ export interface BatchRequest {
   description: string;
   totalWeight: number | null;
   totalPrice: number | null;
+  /** Merma de despiece esperada, como % del peso comprado (0 a 100). */
+  expectedLossPercent: number | null;
   branchId: number;
 }
 
@@ -51,6 +55,17 @@ export interface BatchReport {
   weightManualWaste: number;
   butcheringLoss: number;
   handlingWaste: number;
+  /**
+   * Merma de despiece que se esperaba de esta canal, como % del peso
+   * comprado. Null si no se capturó: entonces no hay comparación que mostrar.
+   */
+  expectedLossPercent: number | null;
+  /**
+   * Ese % llevado a kilos. Cero cuando no es `medible` o no se capturó el %.
+   * Contra esto se compara `butcheringLoss` para ver si la canal rindió lo
+   * previsto.
+   */
+  expectedLoss: number;
   /** Cuántas entradas de inventario se registraron contra esta canal. */
   entryCount: number;
   medible: boolean;

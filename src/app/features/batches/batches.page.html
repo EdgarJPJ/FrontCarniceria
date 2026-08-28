@@ -149,6 +149,29 @@
       </div>
 
       <div class="campo">
+        <label class="campo__etiqueta" for="expectedLossPercent">
+          Merma esperada al despiezar (%)
+        </label>
+        <input
+          id="expectedLossPercent"
+          class="campo__caja campo__caja--clave"
+          formControlName="expectedLossPercent"
+          type="number"
+          min="0"
+          max="100"
+          step="0.5"
+        />
+        @if (form.controls.expectedLossPercent.touched && form.controls.expectedLossPercent.invalid) {
+          <p class="campo__alerta">La merma esperada va de 0 a 100.</p>
+        } @else {
+          <p class="campo__pista">
+            Cuánto hueso, grasa y recorte esperas de esta canal, en porcentaje del peso. El
+            reporte compara esa cifra con la merma real. Opcional.
+          </p>
+        }
+      </div>
+
+      <div class="campo">
         <label class="campo__etiqueta" for="branchId">Sucursal</label>
         <select id="branchId" class="campo__caja" formControlName="branchId">
           @for (sucursal of sucursalesElegibles(); track sucursal.id) {

@@ -37,6 +37,19 @@
           <span class="merma__porcentaje">{{ porcentaje(r.butcheringLoss, r.weightPurchased) }}</span>
         </dd>
       </div>
+      @if (hayComparacionDeMerma(r)) {
+        <div class="merma__fila">
+          <dt>Merma que esperabas</dt>
+          <dd class="merma__cifra">
+            {{ kilos(r.expectedLoss) }}
+            <span class="merma__porcentaje">{{ r.expectedLossPercent }}%</span>
+          </dd>
+        </div>
+        <div class="merma__fila" [class.merma__fila--perdida]="peorQueEsperado(r)">
+          <dt>Diferencia</dt>
+          <dd class="merma__cifra">{{ textoDifEsperada(r) }}</dd>
+        </div>
+      }
       <div class="merma__fila">
         <dt>Entró al mostrador</dt>
         <dd class="merma__cifra">{{ kilos(r.weightProduced) }}</dd>

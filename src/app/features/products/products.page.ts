@@ -40,6 +40,12 @@ export class ProductsPage {
     name: ['', [Validators.required, Validators.maxLength(100)]],
     unitMeasure: ['kilo', Validators.required],
     salePrice: [0, [Validators.required, Validators.min(0.01)]],
+    /**
+     * Si el corte sale de una canal que se despieza aquí. Por defecto no: la
+     * mayoría de la mercancía llega ya despiezada de fuera, y solo los cortes
+     * que de verdad salen de una canal conviene ligarlos a un lote.
+     */
+    sourcedFromBatch: [false],
   });
 
   constructor() {
@@ -61,7 +67,7 @@ export class ProductsPage {
   }
 
   protected abrirAlta(): void {
-    this.form.reset({ name: '', unitMeasure: 'kilo', salePrice: 0 });
+    this.form.reset({ name: '', unitMeasure: 'kilo', salePrice: 0, sourcedFromBatch: false });
     this.editando.set('nuevo');
   }
 
@@ -70,6 +76,7 @@ export class ProductsPage {
       name: p.name,
       unitMeasure: p.unitOfMeasure.toLowerCase(),
       salePrice: p.salePrice,
+      sourcedFromBatch: p.sourcedFromBatch,
     });
     this.editando.set(p);
   }

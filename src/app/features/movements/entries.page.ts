@@ -46,15 +46,33 @@ export class EntriesPage {
   protected readonly nota = signal('');
   protected readonly despieceTerminado = signal(false);
 
-  /**
-   * El reporte de merma se calcula contra el lote. Una entrada sin lote no
-   * aporta produccion a ningun lote, y el reporte no puede medir nada.
-   */
-  protected readonly sinLote = computed(() => this.loteElegido() === null);
+  /** Si el corte elegido sale de una canal (ver `Product.sourcedFromBatch`). */
+  protected readonly productoEsDeCanal = computed(() => {
+    const id = this.productoElegido();
+    if (id === null) return false;
+    return this.catalogo().find((p) => p.id === Number(id))?.sourcedFromBatch === true;
+  });
 
-  protected readonly sinLigar = computed(
-    () => this.lista().filter((e) => e.batchId === null).length,
+  /**
+   * El reporte de merma se calcula contra el lote, así que una entrada de un
+   * corte que sale de canal conviene ligarla. Para la mercancía que llega ya
+   * despiezada de fuera no aplica: no es producción de ninguna canal.
+   */
+  protected readonly faltaLigarCanal = computed(
+    () => this.productoEsDeCanal() && this.loteElegido() === null,
   );
+
+  /**
+   * Solo cuenta las entradas de cortes que salen de canal y quedaron sin
+   * ligar: son las únicas que dejan un reporte de merma incompleto. Las de
+   * mercancía independiente sin canal son lo normal y no se avisan.
+   */
+  protected readonly sinLigar = computed(() => {
+    const deCanal = new Set(
+      this.catalogo().filter((p) => p.sourcedFromBatch).map((p) => p.id),
+    );
+    return this.lista().filter((e) => e.batchId === null && deCanal.has(e.productId)).length;
+  });
 
   /**
    * Las que ya se marcaron como terminadas no aparecen en el selector: no

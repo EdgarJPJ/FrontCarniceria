@@ -50,6 +50,31 @@ export class BatchReportModal {
 
   protected readonly estadoDeReporte = estadoDeReporte;
 
+  /** Los 50 g de tolerancia que usa el backend para dar una canal por cuadrada. */
+  private static readonly TOLERANCIA_KG = 0.05;
+
+  /** Verdadero solo si se capturó la merma esperada y hay con qué compararla. */
+  protected hayComparacionDeMerma(r: BatchReport): boolean {
+    return r.medible && r.expectedLossPercent !== null;
+  }
+
+  /** `butcheringLoss - expectedLoss`: positivo cuando se perdió más de lo previsto. */
+  protected difEsperada(r: BatchReport): number {
+    return r.butcheringLoss - r.expectedLoss;
+  }
+
+  /** Rojo solo cuando la merma real superó a la esperada más allá de la tolerancia. */
+  protected peorQueEsperado(r: BatchReport): boolean {
+    return this.difEsperada(r) > BatchReportModal.TOLERANCIA_KG;
+  }
+
+  protected textoDifEsperada(r: BatchReport): string {
+    const d = this.difEsperada(r);
+    if (Math.abs(d) <= BatchReportModal.TOLERANCIA_KG) return 'como lo esperado';
+    const abs = Math.abs(d).toFixed(3) + ' kg';
+    return d > 0 ? abs + ' más de lo esperado' : abs + ' menos de lo esperado';
+  }
+
   /** Qué proporción del peso comprado se perdió. */
   protected porcentaje(parte: number, total: number): string {
     if (!total) return '—';
