@@ -168,6 +168,40 @@
   color: var(--acero-tenue);
 }
 
+/* De qué se compone la cifra de arriba: la resta a la vista. */
+.corte__desglose {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--junta);
+}
+.corte__desglose > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.corte__desglose > div + div {
+  margin-top: 4px;
+}
+.corte__desglose dt {
+  font-size: 12.5px;
+  color: var(--acero-medio);
+}
+.corte__desglose dd {
+  margin: 0;
+  font-family: var(--dato);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--acero);
+}
+.corte__dato--tinta {
+  color: var(--sangre);
+}
+
+/* La caja es el renglón que se cuadra al cerrar: se marca con la barra de acero. */
+.corte__cifra--caja {
+  box-shadow: inset 3px 0 0 var(--acero);
+}
+
 /* ===================================================================
    Lo que pide atención
    =================================================================== */

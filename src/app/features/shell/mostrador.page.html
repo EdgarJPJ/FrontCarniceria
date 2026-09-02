@@ -1,5 +1,5 @@
-<p class="gremio">Turno abierto</p>
-<h1 class="titulo">Hola, {{ perfil()?.nombre ?? auth.username() }}</h1>
+<p class="gremio">Hola, {{ perfil()?.nombre ?? auth.username() }} · turno abierto</p>
+<h1 class="titulo">Mostrador</h1>
 
 <!-- Lo primero de la portada es lo que se viene a hacer, no lo que se lee. -->
 <section class="acciones" aria-label="Acciones">
@@ -13,34 +13,47 @@
   @if (auth.esGestion()) {
     <a class="hacer hacer--cobrar" routerLink="/fiado">
       <app-icono class="hacer__icono" nombre="pago" />
-      <span class="hacer__nombre">Registrar pago</span>
+      <span class="hacer__nombre">Cobrar</span>
       <span class="hacer__nota">Abono de un cliente fiado</span>
     </a>
   }
 </section>
 
-<!-- El corte del día: lo que se vendió, y de eso qué entró y qué se fio. -->
+<!--
+  El corte del día como cuenta, no como tres cifras sueltas:
+    Ventas de hoy  =  de contado  +  fiado (sin cobrar)
+    En caja hoy    =  de contado  +  abonos de fiados
+  Cada tarjeta dice de qué se compone para que los números cuadren solos.
+-->
 <section class="corte" aria-label="Corte del día">
   <div class="corte__cifra">
-    <p class="corte__rotulo">Vendido hoy</p>
+    <p class="corte__rotulo">Ventas de hoy</p>
     <p class="corte__monto">{{ cargando() ? '—' : pesos(vendidoHoy()) }}</p>
-    <p class="corte__nota">
-      {{ ventasHoy() }} {{ ventasHoy() === 1 ? 'venta' : 'ventas' }}
-    </p>
+    <p class="corte__nota">{{ ventasHoy() }} {{ ventasHoy() === 1 ? 'venta' : 'ventas' }}</p>
+    @if (!cargando()) {
+      <dl class="corte__desglose">
+        <div>
+          <dt>De contado</dt>
+          <dd>{{ pesos(contadoHoy()) }}</dd>
+        </div>
+        <div>
+          <dt>Fiado (sin cobrar)</dt>
+          <dd [class.corte__dato--tinta]="fiadoHoy() > 0">{{ pesos(fiadoHoy()) }}</dd>
+        </div>
+      </dl>
+    }
   </div>
 
   <div class="corte__cifra">
-    <p class="corte__rotulo">Entró en caja</p>
+    <p class="corte__rotulo">Abonos de fiados</p>
+    <p class="corte__monto">{{ cargando() ? '—' : pesos(abonosHoy()) }}</p>
+    <p class="corte__nota">entran hoy, de cualquier fecha</p>
+  </div>
+
+  <div class="corte__cifra corte__cifra--caja">
+    <p class="corte__rotulo">En caja hoy</p>
     <p class="corte__monto">{{ cargando() ? '—' : pesos(enCajaHoy()) }}</p>
-    <p class="corte__nota">contado y abonos de hoy</p>
-  </div>
-
-  <div class="corte__cifra">
-    <p class="corte__rotulo">Se fio hoy</p>
-    <p class="corte__monto" [class.corte__monto--tinta]="fiadoHoy() > 0">
-      {{ cargando() ? '—' : pesos(fiadoHoy()) }}
-    </p>
-    <p class="corte__nota">todavía no entra</p>
+    <p class="corte__nota">contado + abonos</p>
   </div>
 </section>
 

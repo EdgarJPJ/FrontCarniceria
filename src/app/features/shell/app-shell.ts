@@ -62,15 +62,19 @@ export class AppShell {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  /** El día del carnicero: lo que abre a diario o casi. */
+  /*
+   * El día del carnicero: lo que abre a diario o casi. Cada etiqueta es
+   * idéntica al <h1> de su pantalla; si difieren, tocar algo y aterrizar en
+   * una página con otro nombre hace que nadie aprenda a moverse.
+   */
   private readonly delDia: Seccion[] = [
-    { ruta: '/mostrador', etiqueta: 'Inicio', icono: 'inicio' },
-    { ruta: '/ventas', etiqueta: 'Ventas del día', icono: 'ventas' },
+    { ruta: '/mostrador', etiqueta: 'Mostrador', icono: 'inicio' },
+    { ruta: '/ventas', etiqueta: 'Ventas', icono: 'ventas' },
     // El fiado va junto a las ventas: es la venta que todavía no se cobra.
-    { ruta: '/fiado', etiqueta: 'Fiado y cobros', icono: 'pago', soloGestion: true },
+    { ruta: '/fiado', etiqueta: 'Fiado', icono: 'pago', soloGestion: true },
     { ruta: '/inventario', etiqueta: 'Inventario', icono: 'inventario' },
     { ruta: '/clientes', etiqueta: 'Clientes', icono: 'clientes' },
-    { ruta: '/entradas', etiqueta: 'Entrada de mercancía', icono: 'entradas' },
+    { ruta: '/entradas', etiqueta: 'Entradas', icono: 'entradas' },
     // "Lote" es palabra de sistema; la del oficio es la canal que se compró.
     { ruta: '/lotes', etiqueta: 'Canales compradas', icono: 'canal', soloGestion: true },
   ];
@@ -78,7 +82,7 @@ export class AppShell {
   /** Lo que se ajusta de vez en cuando, no lo que se atiende. */
   private readonly deAjustes: Seccion[] = [
     { ruta: '/mermas', etiqueta: 'Mermas', icono: 'mermas' },
-    { ruta: '/productos', etiqueta: 'Productos y precios', icono: 'productos' },
+    { ruta: '/productos', etiqueta: 'Productos', icono: 'productos' },
     { ruta: '/sucursales', etiqueta: 'Sucursales', icono: 'sucursales', soloPropietario: true },
     { ruta: '/personal', etiqueta: 'Personal', icono: 'personal', soloGestion: true },
     { ruta: '/empresa', etiqueta: 'Mi carnicería', icono: 'empresa', soloPropietario: true },

@@ -158,8 +158,11 @@
 
 @if (borrando(); as p) {
   <app-confirm-dialog
-    [mensaje]="'¿Quitar «' + p.name + '» del catálogo? No se puede deshacer.'"
-    textoConfirmar="Quitar"
+    [mensaje]="
+      'Quitar «' + p.name + '» lo borra del catálogo y de las ventas donde aparece. ' +
+      'Si ya lo vendiste alguna vez, edítalo en vez de quitarlo.'
+    "
+    textoConfirmar="Quitar de todos modos"
     (confirmar)="confirmarEliminar()"
     (cancelar)="borrando.set(null)"
   />

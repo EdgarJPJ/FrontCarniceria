@@ -4,13 +4,11 @@
     <p class="encabezado__resumen">
       @if (cargando()) {
         Cargando…
-      } @else if (rangoActivo()) {
-        {{ pesos(totalDelRango()) }} en el periodo · {{ cantidadDelRango() }}
-        {{ cantidadDelRango() === 1 ? 'venta' : 'ventas' }}
       } @else {
-        {{ pesos(ventaDelDia()) }} hoy
+        {{ pesos(totalDelPeriodo()) }} · {{ cantidadDelPeriodo() }}
+        {{ cantidadDelPeriodo() === 1 ? 'venta' : 'ventas' }} · {{ periodoLabel() }}
         @if (porCobrar() > 0) {
-          · {{ porCobrar() }} por cobrar
+          · {{ porCobrar() }} sin cobrar
         }
       }
     </p>
@@ -38,30 +36,76 @@
     </select>
   }
 
-  <label class="a-voz" for="desde">Desde</label>
-  <input
-    id="desde"
-    type="date"
-    class="filtro__caja"
-    [attr.max]="hasta()"
-    [ngModel]="desde()"
-    (ngModelChange)="cambiarDesde($event)"
-  />
-
-  <label class="a-voz" for="hasta">Hasta</label>
-  <input
-    id="hasta"
-    type="date"
-    class="filtro__caja"
-    [attr.min]="desde()"
-    [ngModel]="hasta()"
-    (ngModelChange)="cambiarHasta($event)"
-  />
-
-  @if (rangoActivo()) {
-    <button type="button" class="enlace" (click)="limpiarRango()">Quitar filtro</button>
-  }
+  <div class="periodos" role="group" aria-label="Periodo que se muestra">
+    <button
+      type="button"
+      class="periodos__opt"
+      [class.periodos__opt--activo]="periodo() === 'hoy'"
+      (click)="elegirPeriodo('hoy')"
+    >
+      Hoy
+    </button>
+    <button
+      type="button"
+      class="periodos__opt"
+      [class.periodos__opt--activo]="periodo() === 'semana'"
+      (click)="elegirPeriodo('semana')"
+    >
+      Semana
+    </button>
+    <button
+      type="button"
+      class="periodos__opt"
+      [class.periodos__opt--activo]="periodo() === 'mes'"
+      (click)="elegirPeriodo('mes')"
+    >
+      Mes
+    </button>
+    <button
+      type="button"
+      class="periodos__opt"
+      [class.periodos__opt--activo]="periodo() === 'todo'"
+      (click)="elegirPeriodo('todo')"
+    >
+      Todo
+    </button>
+    <button
+      type="button"
+      class="periodos__opt"
+      [class.periodos__opt--activo]="periodo() === 'rango'"
+      (click)="elegirPeriodo('rango')"
+    >
+      Otras fechas
+    </button>
+  </div>
 </div>
+
+@if (periodo() === 'rango') {
+  <div class="filtro filtro--fechas">
+    <div class="campo-fecha">
+      <label class="campo-fecha__rotulo" for="desde">Desde</label>
+      <input
+        id="desde"
+        type="date"
+        class="filtro__caja"
+        [attr.max]="hasta()"
+        [ngModel]="desde()"
+        (ngModelChange)="cambiarDesde($event)"
+      />
+    </div>
+    <div class="campo-fecha">
+      <label class="campo-fecha__rotulo" for="hasta">Hasta</label>
+      <input
+        id="hasta"
+        type="date"
+        class="filtro__caja"
+        [attr.min]="desde()"
+        [ngModel]="hasta()"
+        (ngModelChange)="cambiarHasta($event)"
+      />
+    </div>
+  </div>
+}
 
 @if (!cargando() && lista().length === 0) {
   <div class="vacio">
@@ -197,13 +241,14 @@
             >
               <option [ngValue]="null">Elige un producto…</option>
               @for (p of productosConStock(); track p.id) {
-                <option [ngValue]="p.id">
-                  {{ p.name }} — {{ pesos(p.salePrice) }}/{{ unidad(p) }} · disponible
-                  {{ existencia(p) }}
-                </option>
+                <option [ngValue]="p.id">{{ p.name }}</option>
               }
             </select>
-            @if (catalogo().length > 0 && productosConStock().length === 0) {
+            @if (productoActual(); as p) {
+              <p class="campo__pista">
+                {{ pesos(p.salePrice) }}/{{ unidad(p) }} · quedan {{ existencia(p) }}
+              </p>
+            } @else if (catalogo().length > 0 && productosConStock().length === 0) {
               <p class="campo__pista">No hay productos con existencia en esta sucursal.</p>
             }
           </div>

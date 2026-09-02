@@ -9,7 +9,7 @@
     }
 
     <div class="campo">
-      <label class="campo__etiqueta" for="username">Clave de empleado</label>
+      <label class="campo__etiqueta" for="username">Usuario</label>
       <input
         id="username"
         class="campo__caja campo__caja--clave"
@@ -25,10 +25,10 @@
         [attr.aria-invalid]="username.touched && username.invalid ? 'true' : null"
       />
       @if (username.touched && username.hasError('required')) {
-        <p class="campo__alerta">Escribe tu clave para entrar.</p>
+        <p class="campo__alerta">Escribe tu usuario para entrar.</p>
       } @else {
         <p class="campo__pista" id="username-pista">
-          Es la clave corta que te dieron, no tu nombre completo.
+          El usuario corto que te dieron, no tu nombre completo.
         </p>
       }
     </div>
@@ -80,15 +80,11 @@
     }
 
     <button class="entrar" type="submit" [disabled]="enviando()">
-      <span class="entrar__texto">{{ enviando() ? 'Entrando' : 'Entrar' }}</span>
+      <span class="entrar__texto">{{ enviando() ? 'Entrando…' : 'Entrar' }}</span>
     </button>
 
-    <p class="turno__nota" aria-live="polite">
-      @if (enviando()) {
-        Comprobando tu clave…
-      } @else {
-        ¿Olvidaste tu contraseña? Pídele al administrador que te la cambie.
-      }
+    <p class="turno__nota">
+      ¿Olvidaste tu contraseña? Pídele al administrador que te la cambie.
     </p>
 
     <p class="turno__nota">

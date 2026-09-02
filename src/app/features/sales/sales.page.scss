@@ -8,6 +8,76 @@
    styles/_pasos.scss, cargado una sola vez, no copiado aquí. */
 
 /* ===================================================================
+   Atajos de periodo de la lista: Hoy · Semana · Mes · Todo · Otras fechas
+   =================================================================== */
+.periodos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.periodos__opt {
+  height: 42px;
+  padding: 0 14px;
+  font-family: var(--dato);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--acero-medio);
+  background: var(--azulejo);
+  border: 1px solid var(--junta);
+  border-radius: var(--canto);
+  cursor: pointer;
+}
+
+.periodos__opt:hover {
+  color: var(--acero);
+  background: var(--azulejo-hondo);
+}
+
+/* El periodo activo: acero lleno, como la pestaña donde estás parado. */
+.periodos__opt--activo,
+.periodos__opt--activo:hover {
+  color: var(--hueso);
+  background: var(--acero);
+  border-color: var(--acero);
+}
+
+.periodos__opt:focus-visible {
+  outline: 2px solid var(--sangre);
+  outline-offset: 2px;
+}
+
+/* "Otras fechas" abre esta fila; el rótulo va visible, no oculto a lectores. */
+.filtro--fechas {
+  margin-top: -8px;
+}
+
+.campo-fecha {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+  max-width: 260px;
+}
+
+.campo-fecha .filtro__caja {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.campo-fecha__rotulo {
+  font-family: var(--dato);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acero-medio);
+}
+
+/* ===================================================================
    Total compacto: acompaña en los pasos 2 y 3 para no perder el monto
    =================================================================== */
 .resumen-total {

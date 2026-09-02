@@ -13,11 +13,12 @@
     </button>
     <p class="barra-movil__negocio">{{ rotulo() }}</p>
 
-    <!-- La acción del día también en angosto: es a lo que se viene. -->
+    <!-- La acción del día también en angosto: es a lo que se viene. Mismo
+         nombre que en el riel y en la portada: una acción, una palabra. -->
     @if (!auth.esSoporte()) {
       <a class="barra-movil__venta" routerLink="/ventas" [queryParams]="{ nueva: 1 }">
         <app-icono nombre="nueva" class="barra-movil__cruz" />
-        Vender
+        Nueva venta
       </a>
     }
   </header>
@@ -67,7 +68,7 @@
         @if (auth.esGestion()) {
           <a class="riel__pago" routerLink="/fiado">
             <app-icono nombre="pago" class="riel__icono" />
-            Registrar pago
+            Cobrar
           </a>
         }
       </div>

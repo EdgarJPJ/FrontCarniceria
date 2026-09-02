@@ -63,7 +63,7 @@ export class MostradorPage {
    * también queda `PAGADO`, y contarla aquí la duplicaría con lo que ya suma
    * `abonosHoy` a través de sus abonos.
    */
-  private readonly contadoHoy = computed(() =>
+  protected readonly contadoHoy = computed(() =>
     this.deHoy()
       .filter((v) => v.clientId === null)
       .reduce((s, v) => s + v.total, 0),
@@ -74,7 +74,7 @@ export class MostradorPage {
    * liquidan. Un abono de una venta fiada la semana pasada es dinero que
    * entra a la caja hoy igual que una venta de contado.
    */
-  private readonly abonosHoy = computed(() => {
+  protected readonly abonosHoy = computed(() => {
     const hoy = this.hoy();
     return this.abonos()
       .filter((a) => new Date(a.date).toDateString() === hoy)

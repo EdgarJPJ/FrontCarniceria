@@ -149,7 +149,7 @@
         </div>
 
         <div class="campo">
-          <label class="campo__etiqueta" for="cuenta-usuario">Clave de usuario</label>
+          <label class="campo__etiqueta" for="cuenta-usuario">Usuario</label>
           <input
             id="cuenta-usuario"
             class="campo__caja campo__caja--clave"
@@ -165,10 +165,10 @@
             "
           />
           @if (campo('cuenta', 'usuario').touched && campo('cuenta', 'usuario').invalid) {
-            <p class="campo__alerta">La clave debe tener entre 3 y 50 caracteres.</p>
+            <p class="campo__alerta">El usuario debe tener entre 3 y 50 caracteres.</p>
           } @else {
             <p class="campo__pista" id="usuario-pista">
-              Con esta clave entrarás cada día. Corta y fácil de teclear.
+              Con este usuario entrarás cada día. Corto y fácil de teclear.
             </p>
           }
         </div>

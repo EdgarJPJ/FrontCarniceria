@@ -28,6 +28,9 @@ interface Partida {
 /** Los tres pasos de la caja, en orden. */
 type Paso = 1 | 2 | 3;
 
+/** Qué tramo de ventas muestra la tabla. */
+type Periodo = 'hoy' | 'semana' | 'mes' | 'todo' | 'rango';
+
 /** Lo que se muestra al terminar: el recibo de que la venta quedó. */
 interface Recibo {
   total: number;
@@ -61,13 +64,14 @@ export class SalesPage {
   protected readonly clientesActivos = signal<Client[]>([]);
 
   /**
-   * Rango opcional para ver ventas de otro día, semana o mes: sin esto la
-   * tabla trae todo el historial y el encabezado solo destaca lo de hoy. En
-   * formato `YYYY-MM-DD`, el mismo que entrega el `<input type="date">`.
+   * Qué ventas muestra la tabla. Arranca en "hoy" para que el encabezado y la
+   * tabla digan lo mismo desde el primer momento; antes la tabla traía todo
+   * el historial y el encabezado solo hablaba de hoy.
    */
+  protected readonly periodo = signal<Periodo>('hoy');
+  /** Extremos del rango en `YYYY-MM-DD`, el mismo formato que da `<input type="date">`. */
   protected readonly desde = signal<string | null>(null);
   protected readonly hasta = signal<string | null>(null);
-  protected readonly rangoActivo = computed(() => this.desde() !== null || this.hasta() !== null);
 
   /** Cuánto hay de cada producto en la sucursal donde se está vendiendo. */
   protected readonly existencias = signal<Map<number, number>>(new Map());
@@ -75,6 +79,11 @@ export class SalesPage {
   /** Ofrecer un corte que no tiene nada en el mostrador solo lleva a un error después. */
   protected readonly productosConStock = computed(() =>
     this.catalogo().filter((p) => (this.existencias().get(p.id) ?? 0) > 0),
+  );
+
+  /** El producto elegido en el paso 1: su precio y existencia se muestran bajo el selector. */
+  protected readonly productoActual = computed(
+    () => this.productosConStock().find((p) => p.id === Number(this.productoElegido())) ?? null,
   );
   protected readonly metodos = signal<PaymentMethod[]>([]);
   protected readonly perfil = signal<Perfil | null>(null);
@@ -165,27 +174,38 @@ export class SalesPage {
     return saldoActual + this.total() > cliente.creditLimit;
   });
 
-  protected readonly ventaDelDia = computed(() => {
-    const hoy = new Date().toDateString();
-    return this.lista()
-      .filter((v) => v.status === 'ACTIVA' && new Date(v.date).toDateString() === hoy)
-      .reduce((s, v) => s + v.total, 0);
-  });
-
-  /**
-   * Con un rango de fechas activo, `lista()` ya viene filtrada por el
-   * backend: el total de "hoy" no tendría sentido, así que el encabezado
-   * muestra esto en su lugar.
-   */
-  private readonly ventasActivasDelRango = computed(() =>
+  /** `lista()` ya viene filtrada por el backend al periodo elegido. */
+  private readonly ventasActivasDelPeriodo = computed(() =>
     this.lista().filter((v) => v.status === 'ACTIVA'),
   );
 
-  protected readonly totalDelRango = computed(() =>
-    this.ventasActivasDelRango().reduce((s, v) => s + v.total, 0),
+  protected readonly totalDelPeriodo = computed(() =>
+    this.ventasActivasDelPeriodo().reduce((s, v) => s + v.total, 0),
   );
 
-  protected readonly cantidadDelRango = computed(() => this.ventasActivasDelRango().length);
+  protected readonly cantidadDelPeriodo = computed(() => this.ventasActivasDelPeriodo().length);
+
+  /** Cómo se nombra el periodo activo en el encabezado. */
+  protected readonly periodoLabel = computed(() => {
+    switch (this.periodo()) {
+      case 'hoy':
+        return 'hoy';
+      case 'semana':
+        return 'los últimos 7 días';
+      case 'mes':
+        return 'los últimos 30 días';
+      case 'todo':
+        return 'todo el historial';
+      default: {
+        const d = this.desde();
+        const h = this.hasta();
+        if (d && h) return `del ${this.fechaCorta(d)} al ${this.fechaCorta(h)}`;
+        if (d) return `desde el ${this.fechaCorta(d)}`;
+        if (h) return `hasta el ${this.fechaCorta(h)}`;
+        return 'todo el historial';
+      }
+    }
+  });
 
   protected readonly porCobrar = computed(() =>
     this.lista().filter((v) => v.status === 'ACTIVA' && v.paymentStatus !== 'PAGADO').length,
@@ -201,7 +221,8 @@ export class SalesPage {
     });
     this.ventas.metodosPago().subscribe({ next: (ms) => this.metodos.set(ms) });
     this.sucursales.listar(true).subscribe({ next: (bs) => this.branches.set(bs) });
-    this.cargar();
+    // Arranca en "hoy": fija el rango a la fecha de hoy y carga.
+    this.elegirPeriodo('hoy');
 
     // El riel abre la caja desde cualquier pantalla con ?nueva=1. Se limpia
     // el parámetro al vuelo para que recargar o volver atrás no la reabra.
@@ -239,20 +260,49 @@ export class SalesPage {
     this.cargar();
   }
 
+  /** Los atajos "Hoy · Semana · Mes · Todo": fijan el rango y recargan. */
+  protected elegirPeriodo(p: Periodo): void {
+    this.periodo.set(p);
+    const hoy = new Date();
+    if (p === 'hoy') {
+      this.desde.set(this.ymd(hoy));
+      this.hasta.set(this.ymd(hoy));
+    } else if (p === 'semana' || p === 'mes') {
+      const inicio = new Date(hoy);
+      inicio.setDate(inicio.getDate() - (p === 'semana' ? 6 : 29));
+      this.desde.set(this.ymd(inicio));
+      this.hasta.set(this.ymd(hoy));
+    } else if (p === 'todo') {
+      this.desde.set(null);
+      this.hasta.set(null);
+    }
+    // 'rango' conserva lo que ya haya escrito en los dos campos de fecha.
+    this.cargar();
+  }
+
   protected cambiarDesde(valor: string): void {
+    this.periodo.set('rango');
     this.desde.set(valor || null);
     this.cargar();
   }
 
   protected cambiarHasta(valor: string): void {
+    this.periodo.set('rango');
     this.hasta.set(valor || null);
     this.cargar();
   }
 
-  protected limpiarRango(): void {
-    this.desde.set(null);
-    this.hasta.set(null);
-    this.cargar();
+  private ymd(d: Date): string {
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mes}-${dia}`;
+  }
+
+  private fechaCorta(iso: string): string {
+    return new Date(`${iso}T00:00:00`).toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
+    });
   }
 
   protected abrirCaja(): void {
