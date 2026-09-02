@@ -9,9 +9,6 @@ import { InventoryLine, InventoryService } from '../inventory/inventory.service'
 import { Payment, Sale } from '../sales/sale.models';
 import { SalesService } from '../sales/sales.service';
 
-/** Debajo de esto se avisa: hay que reponer antes de que se acabe. */
-const UMBRAL_BAJO = 5;
-
 /** Cuántos cortes bajos se listan antes de mandar al inventario completo. */
 const MAX_BAJOS = 5;
 
@@ -92,20 +89,40 @@ export class MostradorPage {
   );
 
   /**
+   * Un corte pide reponerse si se agotó, o si su existencia bajó del punto de
+   * reorden que le pusieron. Sin punto de reorden solo cuenta el cero: un
+   * umbral único para todo llenaba la sección de cortes que en realidad
+   * estaban bien y enseñaba a ignorarla.
+   */
+  private esBajo(l: InventoryLine): boolean {
+    return l.stock <= 0 || (l.reorderPoint !== null && l.stock <= l.reorderPoint);
+  }
+
+  /**
    * Los cortes que están por acabarse, los más urgentes primero: agotado
    * antes que bajo, y dentro de cada grupo el de menos existencia. Es el
    * estado del inventario que se mira de reojo sin entrar a la lista entera.
    */
   protected readonly cortesBajos = computed(() =>
     this.existencias()
-      .filter((l) => l.stock <= UMBRAL_BAJO)
+      .filter((l) => this.esBajo(l))
       .sort((a, b) => a.stock - b.stock)
       .slice(0, MAX_BAJOS),
   );
 
   protected readonly totalBajos = computed(
-    () => this.existencias().filter((l) => l.stock <= UMBRAL_BAJO).length,
+    () => this.existencias().filter((l) => this.esBajo(l)).length,
   );
+
+  /**
+   * Verdadero cuando hay existencias pero a ningún producto se le puso punto
+   * de reorden: entonces esta sección solo avisará de agotados, y conviene
+   * decir cómo activarla.
+   */
+  protected readonly sinPuntosDeReorden = computed(() => {
+    const ls = this.existencias();
+    return ls.length > 0 && ls.every((l) => l.reorderPoint === null);
+  });
 
   constructor() {
     this.ventas.listar().subscribe({

@@ -86,7 +86,11 @@ Tests cover `jwt.ts` and `api-error.ts` — the two pieces with real logic and n
 
 **Expected butchering merma is optional and lives on the batch.** `BatchRequest.expectedLossPercent` (0–100, a % of purchased weight so one figure fits any canal size) feeds `BatchReport.expectedLoss` (kg); `batch-report-modal` shows a "Merma que esperabas" / "Diferencia" pair, red only when the real loss beats the expected one by more than `TOLERANCIA_KG`. Absent percent → no comparison rows.
 
-Known gaps: product removal calls a hard `DELETE` so a sold product takes its history with it, and `Product.active` is never set false by any endpoint (would need a soft-delete endpoint on the backend first, same shape as clients/branches).
+**The Mostrador's "por reponer" list is driven by a per-product reorder point, not a blanket number.** `Product.reorderPoint` / `InventoryLine.reorderPoint` (`punto_reorden`); `mostrador.page.ts` `esBajo(l)` flags a line when `stock <= 0` **or** `reorderPoint != null && stock <= reorderPoint`. With no reorder points set anywhere the section only ever shows agotados, so it also renders a one-time hint pointing at Productos. Set the point in the products panel ("Punto de reponer", optional).
+
+**Products soft-delete.** `ProductsService.cambiarEstado(id, activo)` → `PATCH /api/productos/{id}/estado`. Active rows show "Dejar de vender"; retired rows go greyed with "Volver a vender" plus a "Borrar" that still calls the hard `DELETE` (kept only for a product that was never sold, behind the "no se puede deshacer" dialog). `catalogo().filter(p => p.active)` in sales/entries/waste already hides retired products from the pickers.
+
+**Ventas has a "Por cobrar (N)" quick filter** next to the period chips (`sales.page.ts` `soloPorCobrar` / `ventasVisibles`). It's the vendedor's short path to a fiado they're being paid for — `/fiado` is gestion-only, but "Ver" → "Abonar" on a sale's detail is not. Turning it on also widens the period to "Todo" (a debt can be from any date); it's a client-side filter over the already-loaded `lista()`.
 
 ## Git
 

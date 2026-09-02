@@ -78,6 +78,17 @@
       Otras fechas
     </button>
   </div>
+
+  @if (porCobrar() > 0 || soloPorCobrar()) {
+    <button
+      type="button"
+      class="periodos__opt periodos__opt--cobrar"
+      [class.periodos__opt--activo]="soloPorCobrar()"
+      (click)="togglePorCobrar()"
+    >
+      Por cobrar ({{ porCobrar() }})
+    </button>
+  }
 </div>
 
 @if (periodo() === 'rango') {
@@ -107,13 +118,18 @@
   </div>
 }
 
-@if (!cargando() && lista().length === 0) {
+@if (!cargando() && ventasVisibles().length === 0) {
   <div class="vacio">
-    <p class="vacio__titulo">Todavía no hay ventas</p>
-    <p class="vacio__nota">
-      Cada venta descuenta del inventario. Si la registras a nombre de un cliente, queda fiada
-      y aparece en sus saldos hasta que la liquide.
-    </p>
+    @if (soloPorCobrar()) {
+      <p class="vacio__titulo">Nada por cobrar</p>
+      <p class="vacio__nota">Ninguna venta del periodo tiene saldo pendiente.</p>
+    } @else {
+      <p class="vacio__titulo">Todavía no hay ventas</p>
+      <p class="vacio__nota">
+        Cada venta descuenta del inventario. Si la registras a nombre de un cliente, queda fiada
+        y aparece en sus saldos hasta que la liquide.
+      </p>
+    }
   </div>
 } @else if (!cargando()) {
   <div class="libreta">
@@ -130,7 +146,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (venta of lista(); track venta.id) {
+        @for (venta of ventasVisibles(); track venta.id) {
           <tr [class.baja]="venta.status === 'CANCELADA'">
             <th scope="row" class="nombre">
               #{{ venta.id }}

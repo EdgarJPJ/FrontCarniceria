@@ -211,6 +211,20 @@ export class SalesPage {
     this.lista().filter((v) => v.status === 'ACTIVA' && v.paymentStatus !== 'PAGADO').length,
   );
 
+  /**
+   * Filtro rápido para dejar solo las ventas que todavía deben algo. Es la vía
+   * corta de un vendedor para encontrar el fiado que le vienen a pagar: `/fiado`
+   * es de gestión, pero abonarle a una venta desde su detalle no lo es.
+   */
+  protected readonly soloPorCobrar = signal(false);
+
+  /** Las filas que se pintan en la tabla: todas, o solo las que deben. */
+  protected readonly ventasVisibles = computed(() =>
+    this.soloPorCobrar()
+      ? this.lista().filter((v) => v.status === 'ACTIVA' && v.paymentStatus !== 'PAGADO')
+      : this.lista(),
+  );
+
   constructor() {
     this.auth.perfil().subscribe({ next: (p) => this.perfil.set(p) });
     this.productos.listar().subscribe({ next: (ps) => this.catalogo.set(ps.filter((p) => p.active)) });
@@ -258,6 +272,18 @@ export class SalesPage {
   protected cambiarSucursal(valor: string): void {
     this.sucursalElegida.set(valor ? Number(valor) : null);
     this.cargar();
+  }
+
+  /**
+   * Al encender el filtro también se amplía el periodo a "todo": lo que se le
+   * debe a la carnicería puede ser de cualquier fecha, no solo de hoy.
+   */
+  protected togglePorCobrar(): void {
+    const encendiendo = !this.soloPorCobrar();
+    this.soloPorCobrar.set(encendiendo);
+    if (encendiendo && this.periodo() !== 'todo') {
+      this.elegirPeriodo('todo');
+    }
   }
 
   /** Los atajos "Hoy · Semana · Mes · Todo": fijan el rango y recargan. */

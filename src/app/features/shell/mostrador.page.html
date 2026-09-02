@@ -84,6 +84,13 @@
         <app-icono class="existencias__palomita" nombre="inicio" />
         Todo con existencia. Nada por reponer ahora mismo.
       </p>
+      @if (sinPuntosDeReorden() && auth.esGestion()) {
+        <p class="existencias__resumen">
+          Ponle un “punto de reponer” a tus cortes en
+          <a class="existencias__ver" routerLink="/productos">Productos</a>
+          y te aviso aquí antes de que se acaben.
+        </p>
+      }
     } @else {
       <p class="existencias__resumen">
         {{ totalBajos() }}

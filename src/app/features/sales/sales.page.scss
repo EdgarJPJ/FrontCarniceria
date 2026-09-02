@@ -43,6 +43,26 @@
   border-color: var(--acero);
 }
 
+/*
+ * "Por cobrar" no es un periodo, es dinero que falta entrar: se separa del
+ * grupo y usa la tinta roja, que en este sistema significa exactamente eso.
+ */
+.periodos__opt--cobrar {
+  margin-left: 8px;
+  color: var(--sangre);
+  border-color: var(--sangre-lavada);
+}
+.periodos__opt--cobrar:hover {
+  color: var(--sangre);
+  background: var(--sangre-lavada);
+}
+.periodos__opt--cobrar.periodos__opt--activo,
+.periodos__opt--cobrar.periodos__opt--activo:hover {
+  color: var(--hueso);
+  background: var(--sangre);
+  border-color: var(--sangre);
+}
+
 .periodos__opt:focus-visible {
   outline: 2px solid var(--sangre);
   outline-offset: 2px;

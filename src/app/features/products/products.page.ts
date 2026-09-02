@@ -25,8 +25,10 @@ export class ProductsPage {
   protected readonly guardando = signal(false);
   protected readonly editando = signal<Product | 'nuevo' | null>(null);
   protected readonly busqueda = signal('');
-  /** Producto a punto de quitarse, en espera de que confirmen. */
+  /** Producto a punto de borrarse del todo, en espera de que confirmen. */
   protected readonly borrando = signal<Product | null>(null);
+  /** Id del producto cuyo estado (activo/retirado) se está cambiando. */
+  protected readonly cambiandoEstado = signal<number | null>(null);
 
   protected readonly activos = computed(() => this.lista().filter((p) => p.active).length);
 
@@ -46,6 +48,11 @@ export class ProductsPage {
      * que de verdad salen de una canal conviene ligarlos a un lote.
      */
     sourcedFromBatch: [false],
+    /**
+     * Punto de reponer, en la unidad del producto. Opcional: vacío = el
+     * Mostrador solo avisa cuando este corte llega a cero.
+     */
+    reorderPoint: [null as number | null, [Validators.min(0)]],
   });
 
   constructor() {
@@ -67,7 +74,9 @@ export class ProductsPage {
   }
 
   protected abrirAlta(): void {
-    this.form.reset({ name: '', unitMeasure: 'kilo', salePrice: 0, sourcedFromBatch: false });
+    this.form.reset({
+      name: '', unitMeasure: 'kilo', salePrice: 0, sourcedFromBatch: false, reorderPoint: null,
+    });
     this.editando.set('nuevo');
   }
 
@@ -77,6 +86,7 @@ export class ProductsPage {
       unitMeasure: p.unitOfMeasure.toLowerCase(),
       salePrice: p.salePrice,
       sourcedFromBatch: p.sourcedFromBatch,
+      reorderPoint: p.reorderPoint,
     });
     this.editando.set(p);
   }
@@ -117,8 +127,37 @@ export class ProductsPage {
   }
 
   /**
-   * El backend borra de verdad, y la fila se va con sus ventas colgando. Por
-   * eso se avisa antes: no hay forma de deshacerlo.
+   * Baja lógica: la vía normal para dejar de vender un corte. Es reversible,
+   * así que no se pregunta antes; el producto queda "retirado" y se puede
+   * volver a activar.
+   */
+  protected dejarDeVender(p: Product): void {
+    this.cambiarEstado(p, false);
+  }
+
+  protected volverAVender(p: Product): void {
+    this.cambiarEstado(p, true);
+  }
+
+  private cambiarEstado(p: Product, activo: boolean): void {
+    if (this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(p.id);
+    this.error.set(null);
+    this.productos.cambiarEstado(p.id, activo).subscribe({
+      next: () => {
+        this.cambiandoEstado.set(null);
+        this.cargar();
+      },
+      error: (e: unknown) => {
+        this.cambiandoEstado.set(null);
+        this.error.set(mensajeDeError(e));
+      },
+    });
+  }
+
+  /**
+   * Borrado duro. Se lleva el historial de ventas del producto, así que solo
+   * se ofrece para uno ya retirado y se avisa antes: no hay forma de deshacerlo.
    */
   protected eliminar(p: Product): void {
     this.borrando.set(p);
@@ -138,6 +177,14 @@ export class ProductsPage {
 
   protected unidad(p: Product): string {
     return p.unitOfMeasure === 'KILO' ? 'por kilo' : 'por pieza';
+  }
+
+  /** El punto de reponer con su unidad: "5 kg" o "10 pz". */
+  protected reorden(p: Product): string {
+    if (p.reorderPoint === null) return '—';
+    return p.unitOfMeasure === 'KILO'
+      ? `${p.reorderPoint} kg`
+      : `${Math.round(p.reorderPoint)} pz`;
   }
 
   protected pesos(monto: number): string {

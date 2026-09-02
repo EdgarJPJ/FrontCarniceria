@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -16,6 +16,12 @@ export interface Product {
    * cuando es `false` (mercancía que llega ya despiezada de fuera) no molesta.
    */
   sourcedFromBatch: boolean;
+  /**
+   * Punto de reorden en la unidad del producto. Cuando la existencia baja de
+   * aquí, el Mostrador lo lista como "por reponer". `null` = solo avisa si se
+   * agota del todo.
+   */
+  reorderPoint: number | null;
   createdAt: string;
 }
 
@@ -25,6 +31,7 @@ export interface ProductRequest {
   unitMeasure: string;
   salePrice: number;
   sourcedFromBatch: boolean;
+  reorderPoint: number | null;
 }
 
 /** Catálogo de productos. Lo lee todo el mostrador: hace falta para vender. */
@@ -45,6 +52,13 @@ export class ProductsService {
     return this.http.put<Product>(`${this.base}/${id}`, datos);
   }
 
+  /** Baja/alta lógica. Es la vía normal: el producto deja de venderse pero su historial queda. */
+  cambiarEstado(id: number, activo: boolean): Observable<Product> {
+    const params = new HttpParams().set('activo', activo);
+    return this.http.patch<Product>(`${this.base}/${id}/estado`, null, { params });
+  }
+
+  /** Borrado duro: se lleva el historial de ventas del producto. Solo para uno que nunca se vendió. */
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }

@@ -68,13 +68,35 @@
               @if (p.sourcedFromBatch) {
                 <span class="secundario">sale de canal</span>
               }
+              @if (p.reorderPoint !== null) {
+                <span class="secundario">reponer bajo {{ reorden(p) }}</span>
+              }
             </th>
             <td class="dato">{{ unidad(p) }}</td>
             <td class="dato num">{{ pesos(p.salePrice) }}</td>
             @if (auth.esGestion()) {
               <td class="acciones">
                 <button type="button" class="enlace" (click)="abrirEdicion(p)">Editar</button>
-                <button type="button" class="enlace" (click)="eliminar(p)">Quitar</button>
+                @if (p.active) {
+                  <button
+                    type="button"
+                    class="enlace"
+                    [disabled]="cambiandoEstado() === p.id"
+                    (click)="dejarDeVender(p)"
+                  >
+                    Dejar de vender
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="enlace"
+                    [disabled]="cambiandoEstado() === p.id"
+                    (click)="volverAVender(p)"
+                  >
+                    Volver a vender
+                  </button>
+                  <button type="button" class="enlace" (click)="eliminar(p)">Borrar</button>
+                }
               </td>
             }
           </tr>
@@ -146,6 +168,26 @@
         </p>
       </div>
 
+      <div class="campo">
+        <label class="campo__etiqueta" for="reorderPoint">Punto de reponer</label>
+        <input
+          id="reorderPoint"
+          class="campo__caja campo__caja--clave"
+          formControlName="reorderPoint"
+          type="number"
+          min="0"
+          step="0.001"
+          placeholder="Opcional"
+        />
+        @if (form.controls.reorderPoint.touched && form.controls.reorderPoint.invalid) {
+          <p class="campo__alerta">El punto de reponer no puede ser negativo.</p>
+        } @else {
+          <p class="campo__pista">
+            El Mostrador te avisa cuando baje de aquí. Déjalo vacío y solo avisa cuando se agote.
+          </p>
+        }
+      </div>
+
       <div class="panel__botones">
         <button class="entrar" type="submit" [disabled]="guardando()">
           {{ guardando() ? 'Guardando' : 'Guardar' }}
@@ -159,10 +201,10 @@
 @if (borrando(); as p) {
   <app-confirm-dialog
     [mensaje]="
-      'Quitar «' + p.name + '» lo borra del catálogo y de las ventas donde aparece. ' +
-      'Si ya lo vendiste alguna vez, edítalo en vez de quitarlo.'
+      'Borrar «' + p.name + '» del todo también lo quita de las ventas donde aparece, y eso ' +
+      'no se puede deshacer. Si alguna vez lo vendiste, mejor déjalo retirado.'
     "
-    textoConfirmar="Quitar de todos modos"
+    textoConfirmar="Borrar del todo"
     (confirmar)="confirmarEliminar()"
     (cancelar)="borrando.set(null)"
   />

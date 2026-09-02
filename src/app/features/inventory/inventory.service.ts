@@ -12,6 +12,8 @@ export interface InventoryLine {
   productName: string;
   unitOfMeasure: 'KILO' | 'PIEZA';
   salePrice: number;
+  /** Punto de reorden del producto. `null` si no se configuró. */
+  reorderPoint: number | null;
   stock: number;
   updatedAt: string;
 }
